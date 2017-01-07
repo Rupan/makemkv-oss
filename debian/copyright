@@ -1,0 +1,11 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: makemkv
+Source: http://www.makemkv.com/download/makemkv-oss-1.10.4.tar.gz
+
+Files: *
+Copyright: 2007-2016 GuinpinSoft inc
+License: LGPL-2.1
+
+Files: debian/*
+Copyright: 2016 Michael Mohr <akihana@gmail.com>
+License: GPL-3+
