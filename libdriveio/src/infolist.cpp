@@ -314,6 +314,7 @@ extern "C" int DIO_CDECL DriveInfoList_GetItemById(DIO_INFOLIST List,DriveInfoId
 {
     LibDriveIo::CDriveInfoList* plist = (LibDriveIo::CDriveInfoList*) List;
 
+    if (List==NULL) return -1;
     return plist->GetItemById(Id,Item) ? 0 : -1;
 }
 

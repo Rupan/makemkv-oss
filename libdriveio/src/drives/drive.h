@@ -23,6 +23,4 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include <driveio/driveio.h>
-#include "../scsihlp.h"
-
+#include <driveio/scsihlp.h>

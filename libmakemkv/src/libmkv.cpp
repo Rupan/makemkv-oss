@@ -1016,16 +1016,10 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
             fetch_frames = 1;
         }
 
-        if (false==stream->FetchFrames(fetch_frames,true))
-        {
-            throw mkv_error_exception("Error while reading input");
-        }
-
-        frames_count = stream->GetAvailableFramesCount();
-
+        frames_count = fetch_frames;
         if (frames_count>lacing_frames) frames_count=lacing_frames;
 
-        MKV_ASSERT(frames_count>0);
+        MKV_ASSERT(stream->GetAvailableFramesCount()>0);
 
         if (frames_count>1)
         {
@@ -1039,6 +1033,20 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
         for (unsigned int i=1;i<frames_count;i++)
         {
             prev_frame = frame;
+
+            if (stream->GetAvailableFramesCount()<(i+1))
+            {
+                if (false==stream->FetchFrames(i+1,true))
+                {
+                    throw mkv_error_exception("Error while reading input");
+                }
+                if (stream->GetAvailableFramesCount()<(i+1))
+                {
+                    frames_count=i;
+                    break;
+                }
+            }
+
             frame=stream->PeekFrame(i);
             if ( (frame->keyframe()!=frame_keyframe) || frame->cluster_start() )
             {

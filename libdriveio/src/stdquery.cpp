@@ -22,9 +22,9 @@
 #include <stdint.h>
 #include <driveio/scsicmd.h>
 #include <driveio/driveio.h>
+#include <driveio/scsihlp.h>
 #include <errno.h>
 #include <string.h>
-#include "scsihlp.h"
 
 //
 // This table lists all specific query routines
