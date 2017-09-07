@@ -35,7 +35,7 @@
 */
 
 #include <lgpl/cassert>
-#include <algorithm>
+#include <lgpl/stl.h>
 
 #include "ebml/EbmlMaster.h"
 #include "ebml/EbmlStream.h"

@@ -1,7 +1,7 @@
 /*
     libMakeMKV - MKV multiplexer library
 
-    Copyright (C) 2007-2016 GuinpinSoft inc <libmkv@makemkv.com>
+    Copyright (C) 2007-2017 GuinpinSoft inc <libmkv@makemkv.com>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -21,11 +21,10 @@
 #include <libmkv/libmkv.h>
 #include <libmkv/internal.h>
 #include <libmkv/ebmlwrite.h>
+#include <lgpl/stl.h>
 #include <lgpl/cassert>
-#include <exception>
 #include <lgpl/sstring.h>
 #include <lgpl/world.h>
-#include <vector>
 #include <lgpl/apdefs.h>
 
 #ifndef __STDC_FORMAT_MACROS
@@ -398,7 +397,7 @@ public:
             have |= 2;
             for (unsigned int i=0;i<info.source_id[0];i++)
             {
-                sprintf(buffer+i*2,"%02X",info.source_id[i+1]);
+                sprintf_s(buffer+i*2,(sizeof(buffer)-(i*2)),"%02X",info.source_id[i+1]);
             }
             AddSimple(tag,names[5],buffer);
         }

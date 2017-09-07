@@ -36,8 +36,11 @@
 
 //#include <streams.h>
 
+#ifndef EBML_NO_READ
 #include "ebml/MemReadIOCallback.h"
 #include "ebml/SafeReadIOCallback.h"
+#endif
+
 #include "matroska/KaxBlock.h"
 #include "matroska/KaxContexts.h"
 #include "matroska/KaxBlockData.h"

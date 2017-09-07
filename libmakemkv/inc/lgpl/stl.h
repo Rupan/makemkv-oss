@@ -18,37 +18,14 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
+#ifndef LGPL_STL_H_INCLUDED
+#define LGPL_STL_H_INCLUDED
 
-/* AVCodecID */
-#undef FFABI_HAVE_AVCODECID
+#include <string.h>
+#include <memory>
+#include <algorithm>
+#include <exception>
+#include <vector>
+#include <stdexcept>
 
-/* have avcodec_free_frame */
-#undef FFABI_HAVE_AVCODEC_FREE_FRAME
-
-/* have av_frame_free */
-#undef FFABI_HAVE_AV_FRAME_FREE
-
-/* AV_CODEC_ID_XXX */
-#undef FFABI_HAVE_AV_CODEC_ID_NAMES
-
-/* have av_frame_get_channels */
-#undef FFABI_HAVE_AV_FRAME_CHANNELS
-
-/* have av_frame_get_sample_rate */
-#undef FFABI_HAVE_AV_FRAME_SAMPLE_RATE
-
-/* have av_frame_set_channel_layout */
-#undef FFABI_HAVE_AV_FRAME_CHANNEL_LAYOUT
-
-/* have av_log_format_line */
-#undef FFABI_HAVE_AV_LOG_FORMAT_LINE
-
-/* have AVCodecParserContext.duration */
-#undef FFABI_HAVE_PARSER_DURATION
-
-/* have refcounted frames */
-#undef FFABI_HAVE_REFCOUNTED_FRAMES
-
-/* have <libavutil/channel_layout.h> */
-#undef FFABI_HAVE_AVUTIL_CHANNEL_LAYOUT_H
-
+#endif // LGPL_STL_H_INCLUDED

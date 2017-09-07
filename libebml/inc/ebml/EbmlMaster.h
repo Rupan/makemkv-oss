@@ -37,7 +37,7 @@
 #define LIBEBML_MASTER_H
 
 #include <lgpl/stdstring.h>
-#include <vector>
+#include <lgpl/stl.h>
 
 #include "EbmlTypes.h"
 #include "EbmlElement.h"

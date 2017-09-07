@@ -1,7 +1,7 @@
 /*
     libDriveIo - MMC drive interrogation library
 
-    Copyright (C) 2007-2016 GuinpinSoft inc <libdriveio@makemkv.com>
+    Copyright (C) 2007-2017 GuinpinSoft inc <libdriveio@makemkv.com>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -36,11 +36,21 @@
 
 #undef EAGAIN
 
+#ifndef EISCONN
 #define EISCONN     WSAEISCONN
+#endif
+#ifndef ENOTCONN
 #define ENOTCONN    WSAENOTCONN
+#endif
+#ifndef EAGAIN
 #define EAGAIN      WSAENOBUFS
+#endif
+#ifndef EINPROGRESS
 #define EINPROGRESS WSAEINPROGRESS
+#endif
+#ifndef EALREADY
 #define EALREADY    WSAEALREADY
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -94,6 +104,7 @@ static int __inline tcpip_errno()
 #include <netdb.h>
 #include <unistd.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <sys/ioctl.h>
 

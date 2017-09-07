@@ -1,7 +1,7 @@
 /*
     libMakeMKV - MKV multiplexer library
 
-    Copyright (C) 2007-2016 GuinpinSoft inc <libmkv@makemkv.com>
+    Copyright (C) 2007-2017 GuinpinSoft inc <libmkv@makemkv.com>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -25,6 +25,7 @@
 #include <lgpl/httpabi.h>
 #include <lgpl/sstring.h>
 #include <lgpl/sysabi.h>
+#include <sys/ioctl.h>
 
 int HTTP_Download(const char* Url,const char* Agent,void* Buffer,uint32_t* Size)
 {
@@ -65,9 +66,15 @@ int HTTP_Download(const char* Url,const char* Agent,void* Buffer,uint32_t* Size)
         return err;
     }
 
-    for (uint32_t i=0;i<(*Size);i++)
+    for (uint32_t i=0;i<(*Size);)
     {
-        rd = (int) read(pipe_fd[0],((char*)Buffer)+i,1);
+        int sz;
+
+        if (ioctl(pipe_fd[0], FIONREAD, &sz)!=0) sz=1;
+        if (sz<=0) sz=1;
+        if (sz>((*Size)-i)) sz=((*Size)-i);
+
+        rd = (int) read(pipe_fd[0],((char*)Buffer)+i,sz);
 
         if (rd==0)
         {
@@ -76,11 +83,12 @@ int HTTP_Download(const char* Url,const char* Agent,void* Buffer,uint32_t* Size)
             return 0;
         }
 
-        if (rd!=1)
+        if ((rd<0) || (rd>sz))
         {
             close(pipe_fd[0]);
             return errno|0x80000000;
         }
+        i += ((unsigned int)rd);
     }
 
     close(pipe_fd[0]);
