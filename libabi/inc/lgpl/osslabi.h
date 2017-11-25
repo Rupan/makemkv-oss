@@ -48,14 +48,21 @@ void OSSL_AES_cbc_decrypt(const unsigned char *in, unsigned char *out,
 	unsigned char *ivec);
 
 /* SHA */
-typedef struct _OSSL_SHA_CTX OSSL_SHA_CTX;
-#define OSSL_SHA_DIGEST_LENGTH  20
+typedef struct _OSSL_SHA_CTX    OSSL_SHA_CTX;
+typedef struct _OSSL_SHA256_CTX OSSL_SHA256_CTX;
+#define OSSL_SHA_DIGEST_LENGTH      20
+#define OSSL_SHA256_DIGEST_LENGTH   32
 
 unsigned int OSSL_sizeof_SHA_CTX();
+unsigned int OSSL_sizeof_SHA256_CTX();
 
 int OSSL_SHA1_Init(OSSL_SHA_CTX *c);
 int OSSL_SHA1_Update(OSSL_SHA_CTX *c, const void *data, size_t len);
 int OSSL_SHA1_Final(unsigned char *md, OSSL_SHA_CTX *c);
+
+int OSSL_SHA256_Init(OSSL_SHA256_CTX *c);
+int OSSL_SHA256_Update(OSSL_SHA256_CTX *c, const void *data, size_t len);
+int OSSL_SHA256_Final(unsigned char *md, OSSL_SHA256_CTX *c);
 
 /* BN */
 typedef struct _OSSL_BIGNUM     OSSL_BIGNUM;

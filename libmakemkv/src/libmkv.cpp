@@ -38,7 +38,7 @@
 #define AUTO_DURATION_TIMECODE      4500000000ll
 #define BAD_TIMECODE                ((1ll<<62)+1)
 
-#define CNZ(x) if (!(x)) { throw mkv_error_exception( "Error in " #x ); };
+#define CNZ(x) if (!(x)) { throw mkv_error_exception_unbuffered( "Error in " #x ); };
 
 template <class Tv,class Te>
 static inline Tv& GetChild(EbmlMaster *node)

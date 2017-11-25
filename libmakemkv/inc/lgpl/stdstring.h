@@ -72,6 +72,7 @@ namespace buf
             const ref::string* pr = static_cast<const ref::string*>(p);
             return *pr;
         }
+        void format(size_t maxSize,const char* fmt, ...);
     };
 };
 

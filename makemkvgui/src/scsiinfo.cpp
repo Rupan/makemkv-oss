@@ -25,7 +25,7 @@ static inline void append_item(QString &Qstr,const char *Str)
     append_const(Qstr,Str);
 }
 
-static QString FormatProtectionString(AP_DiskFsFlags FsFlags,const uint8_t* CopyrightInfo,const uint8_t* MkbSmall,const uint8_t* SvmSmall)
+static QString FormatProtectionString(AP_DiskFsFlags FsFlags,const uint8_t* CopyrightInfo,const uint8_t* MkbSmall,const uint8_t* CCSmall,const uint8_t* SvmSmall)
 {
     bool have_css=false,have_aacs=false,have_bdsvm=false,have_cprm=false;
     unsigned int aacs_ver = 0;
@@ -75,12 +75,49 @@ static QString FormatProtectionString(AP_DiskFsFlags FsFlags,const uint8_t* Copy
 
     if (have_css)   append_item(str,"CSS/CPPM");
     if (have_cprm)  append_item(str,"CPRM/CPPM");
-    if (have_aacs)  append_item(str,"AACS");
-    if (aacs_ver)
+    if (have_aacs)
     {
-        char    ver[8];
-        sprintf(ver," v%u",aacs_ver);
-        append_const(str,ver);
+        uint8_t version  = (MkbSmall != NULL) ? MkbSmall[5] : 4;
+        uint8_t category = (CCSmall != NULL) ? ((CCSmall[1]>>5)&3) : 0;
+
+        append_item(str, "AACS");
+        switch (version)
+        {
+        default:
+        case 3:
+        case 4:
+            break;
+        case 10:
+            append_const(str, "/II");
+            break;
+        case 20:
+            append_const(str, "2.0");
+            break;
+        case 21:
+            append_const(str, "2.1");
+            break;
+        }
+        if (version >= 20)
+        {
+            switch (category)
+            {
+            case 0:
+                append_const(str, "/C");
+                break;
+            case 1:
+                append_const(str, "/B");
+                break;
+            case 2:
+                append_const(str, "/A");
+                break;
+            }
+        }
+        if (aacs_ver)
+        {
+            char    ver[8];
+            sprintf(ver, " v%u", aacs_ver);
+            append_const(str, ver);
+        }
     }
     if (have_bdsvm) append_item(str,"BD+");
 
@@ -241,6 +278,7 @@ bool FormatDriveDiskInfo(QString& ProtectionString,QString& FullInfoString,const
     ProtectionString=FormatProtectionString(FsFlags,
         (items.copyright_info.Size>=8)?items.copyright_info.Data:NULL,
         (items.mkb_small.Size>=12)?items.mkb_small.Data:NULL,
+        (items.ccert_small.Size>=4)?items.ccert_small.Data:NULL,
         (items.svm_small.Size>=17)?items.svm_small.Data:NULL
         );
 
@@ -476,7 +514,8 @@ bool FormatDriveDiskInfo(QString& ProtectionString,QString& FullInfoString,const
                 (
                 (0==cmemcmp(items.bd_disc_info.Data+4+8,"BDO",3)) ||
                 (0==cmemcmp(items.bd_disc_info.Data+4+8,"BDW",3)) ||
-                (0==cmemcmp(items.bd_disc_info.Data+4+8,"BDR",3))
+                (0==cmemcmp(items.bd_disc_info.Data+4+8,"BDR",3)) ||
+                (0==cmemcmp(items.bd_disc_info.Data+4+8,"BDU",3))
                 ) &&
                 true)
             {
@@ -487,6 +526,7 @@ bool FormatDriveDiskInfo(QString& ProtectionString,QString& FullInfoString,const
                 case 1:     p="BD-ROM"; break;
                 case 2:     p="BD-R"; break;
                 case 4:     p="BD-RE"; break;
+                case 9:     p="BD-ROM UHD"; break;
                 default:    p=NULL; break;
                 }
                 if (NULL!=p)
@@ -506,6 +546,7 @@ bool FormatDriveDiskInfo(QString& ProtectionString,QString& FullInfoString,const
                 {
                 case 1:     pw=AP_UI_STRING(APP_SI_DISCCBL25); break;
                 case 2:     pw=AP_UI_STRING(APP_SI_DISCCBL27); break;
+                case 5: // what is UHD channel bit length?
                 default:    pw=NULL; break;
                 }
                 if (NULL!=pw)

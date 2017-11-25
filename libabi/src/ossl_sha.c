@@ -43,3 +43,23 @@ int OSSL_SHA1_Final(unsigned char *md, OSSL_SHA_CTX *c)
     return SHA1_Final(md,(SHA_CTX*)c);
 }
 
+unsigned int OSSL_sizeof_SHA256_CTX()
+{
+    return (((sizeof(SHA256_CTX) + (sizeof(void*) - 1)) / sizeof(void*))*sizeof(void*));
+}
+
+int OSSL_SHA256_Init(OSSL_SHA256_CTX *c)
+{
+    return SHA256_Init((SHA256_CTX*)c);
+}
+
+int OSSL_SHA256_Update(OSSL_SHA256_CTX *c, const void *data, size_t len)
+{
+    return SHA256_Update((SHA256_CTX*)c, data, len);
+}
+
+int OSSL_SHA256_Final(unsigned char *md, OSSL_SHA256_CTX *c)
+{
+    return SHA256_Final(md, (SHA256_CTX*)c);
+}
+

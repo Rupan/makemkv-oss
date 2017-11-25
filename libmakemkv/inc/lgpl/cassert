@@ -22,13 +22,17 @@
 #define CASSERT_LGPL_H_INCLUDED
 
 #include <lgpl/stl.h>
+#include <lgpl/stdstring.h>
 
-class mkv_error_exception : public std::exception
+class mkv_error_exception_unbuffered : public std::exception
 {
     const char* m_message;
 public:
-  mkv_error_exception(const char* Message)
-    : m_message(Message)
+    mkv_error_exception_unbuffered(const char* Message) throw()
+        : m_message(Message)
+    {
+    }
+    ~mkv_error_exception_unbuffered() throw()
     {
     }
     const char* what() const throw()
@@ -36,6 +40,31 @@ public:
       return m_message;
     }
 };
+
+class mkv_error_exception_buffered : public std::exception
+{
+    buf::string m_message;
+public:
+    mkv_error_exception_buffered(const char* Message) throw()
+        : m_message(Message)
+    {
+    }
+    mkv_error_exception_buffered(const StringPointer& Message) throw()
+        : m_message(Message)
+    {
+    }
+    ~mkv_error_exception_buffered() throw()
+    {
+    }
+    const char* what() const throw()
+    {
+        return m_message.c_str();
+    }
+};
+
+typedef mkv_error_exception_buffered mkv_logic_error;
+
+#define mkv_error_exception(x) mkv_error_exception_unbuffered(x "\0")
 
 int MkvAssertHelper(const char* Message);
 

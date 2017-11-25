@@ -197,6 +197,7 @@ static unsigned int CalculateRealBDDISize(const uint8_t* Buffer,unsigned int Len
         if (0==memcmp(ptr+8,"BDO",3)) struct_size=64;
         if (0==memcmp(ptr+8,"BDW",3)) struct_size=112;
         if (0==memcmp(ptr+8,"BDR",3)) struct_size=112;
+        if (0==memcmp(ptr+8,"BDU",3)) struct_size=64;
         if (0==struct_size) break;
         if (struct_size>rest)
         {
