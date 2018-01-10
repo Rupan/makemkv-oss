@@ -73,6 +73,7 @@ public:
     }
     ~CDriveInfoList();
     bool AddItem(DriveInfoId Id,const void* Data,size_t Size);
+    bool AddOrUpdateItem(DriveInfoId Id, const void* Data, size_t Size);
     size_t GetCount();
     void GetItem(size_t Index,DriveInfoItem *Item);
     bool GetItemById(DriveInfoId Id,DriveInfoItem *Item);
@@ -153,7 +154,7 @@ void CDriveInfoList::GetItem(size_t Index,DriveInfoItem *Item)
         pitem = m_last;
     } else {
         // slist is way too slow for random access.
-        // on the other hand this list normally contains less then
+        // on the other hand this list normally contains less than
         // 100 items, so enumeration/search performance should
         // not be an issue
         pitem = m_first;
@@ -181,6 +182,26 @@ bool CDriveInfoList::GetItemById(DriveInfoId Id,DriveInfoItem *Item)
     return false;
 }
 
+bool CDriveInfoList::AddOrUpdateItem(DriveInfoId Id, const void* Data, size_t Size)
+{
+    CDriveInfoItem* pitem;
+
+    for (pitem = m_first; pitem != NULL; pitem = pitem->m_next)
+    {
+        if (pitem->m_item.Id == Id)
+        {
+            if (pitem->m_item.Size >= Size)
+            {
+                pitem->m_item.Size = Size;
+                memcpy((void*)(pitem->m_item.Data), Data, Size);
+            } else {
+                return false;
+            }
+        }
+    }
+
+    return AddItem(Id,Data,Size);
+}
 
 static void uint32_put_ns(uint32_t Value,void *Buf)
 {
@@ -294,6 +315,13 @@ extern "C" int DIO_CDECL DriveInfoList_AddItem(DIO_INFOLIST List,DriveInfoId Id,
     LibDriveIo::CDriveInfoList* plist = (LibDriveIo::CDriveInfoList*) List;
 
     return plist->AddItem(Id,Data,Size) ? 0 : -1;
+}
+
+extern "C" int DIO_CDECL DriveInfoList_AddOrUpdateItem(DIO_INFOLIST List, DriveInfoId Id, const void* Data, size_t Size)
+{
+    LibDriveIo::CDriveInfoList* plist = (LibDriveIo::CDriveInfoList*) List;
+
+    return plist->AddOrUpdateItem(Id, Data, Size) ? 0 : -1;
 }
 
 extern "C" size_t DIO_CDECL DriveInfoList_GetCount(DIO_INFOLIST List)

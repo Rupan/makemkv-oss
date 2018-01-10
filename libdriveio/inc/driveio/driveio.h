@@ -53,6 +53,7 @@ typedef enum _DriveInfoId
     // dicat_Invalid
     diid_InvalidValue=0,
     diid_DriveioTag=(dicat_Invalid<<24) + (1<<16),
+    diid_DriveioPad=(dicat_Invalid<<24) + (2<<16),
 
     // dicat_DriveStandard
     diid_InquiryData=(dicat_DriveStandard<<24)+(0<<16),
@@ -152,7 +153,8 @@ size_t          DIO_CDECL   DriveInfoList_GetCount(DIO_INFOLIST List);
 void            DIO_CDECL   DriveInfoList_GetItem(DIO_INFOLIST List,size_t Index,DriveInfoItem *Item);
 int             DIO_CDECL   DriveInfoList_GetItemById(DIO_INFOLIST List,DriveInfoId Id,DriveInfoItem *Item);
 int             DIO_CDECL   DriveInfoList_AddItem(DIO_INFOLIST List,DriveInfoId Id,const void* Data,size_t Size);
-size_t          DIO_CDECL   DriveInfoList_Serialize(DIO_INFOLIST List,void* Buffer,size_t BufferSize);
+int             DIO_CDECL   DriveInfoList_AddOrUpdateItem(DIO_INFOLIST List, DriveInfoId Id, const void* Data, size_t Size);
+size_t          DIO_CDECL   DriveInfoList_Serialize(DIO_INFOLIST List, void* Buffer, size_t BufferSize);
 DIO_INFOLIST    DIO_CDECL   DriveInfoList_Deserialize(const void* Buffer,size_t BufferSize);
 size_t          DIO_CDECL   DriveInfoList_GetSerializedChunkSize(const void* Buffer);
 void            DIO_CDECL   DriveInfoList_GetSerializedChunkInfo(const void* Buffer,DriveInfoItem *Item);

@@ -38,7 +38,7 @@
 #define AUTO_DURATION_TIMECODE      4500000000ll
 #define BAD_TIMECODE                ((1ll<<62)+1)
 
-#define CNZ(x) if (!(x)) { throw mkv_error_exception_unbuffered( "Error in " #x ); };
+#define CNZ(x) if (!(x)) { ThrowMkvExceptionUnbuffered( "Error in " #x ); };
 
 template <class Tv,class Te>
 static inline Tv& GetChild(EbmlMaster *node)
@@ -51,6 +51,11 @@ static inline Tv& GetChild(EbmlMaster &node)
 {
     return GetChild<Tv,Te>(&node);
 }
+
+static void ThrowMkvExceptionUnbuffered(const char* Msg)
+{
+    throw mkv_error_exception_unbuffered(Msg);
+};
 
 static inline int64_t ScaleTimecode(int64_t UnscaledTimecode)
 {
@@ -803,6 +808,7 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
     int64_t max_duration=0;
     uint64_t prg_val=0;
     int64_t frame_end;
+    unsigned int clusterlen = (track_info.size() > 64) ? 5 : 4;
 
     while(true)
     {
@@ -958,7 +964,7 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
             {
                 CNZ(curr_cluster->WriteHead(File, 3));
             } else {
-                CNZ(curr_cluster->WriteHead(File, 4));
+                CNZ(curr_cluster->WriteHead(File, clusterlen));
             }
 
             cluster_timecode = GetClusterTimecode(Input);
