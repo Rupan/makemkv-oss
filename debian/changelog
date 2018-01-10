@@ -1,3 +1,9 @@
+makemkv-oss (1.10.9) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Michael Mohr <akihana@gmail.com>  Tue, 09 Jan 2018 19:46:26 -0800
+
 makemkv-oss (1.10.8) unstable; urgency=medium
 
   * New upstream release.
