@@ -290,7 +290,7 @@ filepos_t KaxInternalBlock::RenderData(IOCallback & output, bool /* bForceRender
         mLacing = LACING_EBML; // supposedly the best of all
       SetSize_(4 + 1); // 1 for the lacing head (number of laced elements)
     }
-    if (TrackNumber > 0x80)
+    if (TrackNumber >= 0x80)
       SetSize_(GetSize() + 1);
 
     // write Block Head
