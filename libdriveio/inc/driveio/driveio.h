@@ -1,7 +1,7 @@
 /*
     libDriveIo - MMC drive interrogation library
 
-    Copyright (C) 2007-2017 GuinpinSoft inc <libdriveio@makemkv.com>
+    Copyright (C) 2007-2018 GuinpinSoft inc <libdriveio@makemkv.com>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -203,7 +203,7 @@ class CDriveInfoList
 private:
     DIO_INFOLIST    m_list;
 public:
-    inline CDriveInfoList(DIO_INFOLIST List) : m_list(NULL)
+    inline CDriveInfoList(DIO_INFOLIST List) : m_list(List)
     {
     }
     inline void Destroy()

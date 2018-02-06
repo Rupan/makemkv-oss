@@ -1,7 +1,7 @@
 /*
     libMMBD - MakeMKV BD decryption API library
 
-    Copyright (C) 2007-2017 GuinpinSoft inc <libmmbd@makemkv.com>
+    Copyright (C) 2007-2018 GuinpinSoft inc <libmmbd@makemkv.com>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
