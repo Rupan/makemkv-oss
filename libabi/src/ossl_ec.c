@@ -24,8 +24,15 @@
 #include <openssl/crypto.h>
 #include <openssl/opensslv.h>
 
-#if defined(OPENSSL_FIPS) && defined(OPENSSL_HAVE_INIT)
+#if defined(OPENSSL_FIPS)
+#include <openssl/rand.h>
+#include <openssl/evp.h>
+
+#if defined(OPENSSL_HAVE_INIT) \
+ || defined(RAND_F_RAND_INIT_FIPS) \
+ || defined(EVP_R_DISABLED_FOR_FIPS)
 #define UGLY_FEDORA // always disables EC with key size < 256 bits
+#endif
 #endif
 
 #if defined(OPENSSL_NO_EC) || defined(FORCE_OPENSSL_NO_EC) || defined(UGLY_FEDORA)
@@ -215,7 +222,7 @@ int OSSL_ECDSA_do_verify_rs(const unsigned char *dgst, int dgst_len,const OSSL_B
 {
     int r = -1;
 
-#if (OPENSSL_VERSION_NUMBER >= 0x10100006L)
+#if (OPENSSL_VERSION_NUMBER >= 0x10100006L) && !defined(PSSL_ECDSA_SIG_DEFINED)
     {
         ECDSA_SIG *sig = ECDSA_SIG_new();
         if (!sig) return -1;
@@ -239,7 +246,7 @@ int OSSL_ECDSA_do_verify_rs(const unsigned char *dgst, int dgst_len,const OSSL_B
 
 const OSSL_BIGNUM* OSSL_ecdsa_sig_get_r(const OSSL_ECDSA_SIG* sig)
 {
-#if (OPENSSL_VERSION_NUMBER >= 0x10100006L)
+#if (OPENSSL_VERSION_NUMBER >= 0x10100006L) && !defined(PSSL_ECDSA_SIG_DEFINED)
     {
         const BIGNUM* r;
         ECDSA_SIG_get0((const ECDSA_SIG*)sig,&r,NULL);
@@ -252,7 +259,7 @@ const OSSL_BIGNUM* OSSL_ecdsa_sig_get_r(const OSSL_ECDSA_SIG* sig)
 
 const OSSL_BIGNUM* OSSL_ecdsa_sig_get_s(const OSSL_ECDSA_SIG* sig)
 {
-#if (OPENSSL_VERSION_NUMBER >= 0x10100006L)
+#if (OPENSSL_VERSION_NUMBER >= 0x10100006L) && !defined(PSSL_ECDSA_SIG_DEFINED)
     {
         const BIGNUM* s;
         ECDSA_SIG_get0((const ECDSA_SIG*)sig,NULL,&s);

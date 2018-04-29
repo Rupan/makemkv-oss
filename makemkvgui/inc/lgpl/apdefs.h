@@ -401,7 +401,7 @@ typedef enum _ApSettingId
   apset_app_DefaultProfileName ,
   apset_app_DefaultSelectionString ,
   apset_app_Java ,
-  apset_app_dtshddec ,
+  apset_app_old00 ,
   apset_app_SiteInfoString ,
   apset_path_OpenFile ,
   apset_path_DestDir ,

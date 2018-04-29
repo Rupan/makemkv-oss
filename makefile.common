@@ -40,13 +40,6 @@ LIBFFABI_INC=libffabi/inc
 LIBFFABI_SRC=libffabi/src/ffabi.c libffabi/src/mlp.c libffabi/src/log.c libffabi/src/audio_convert.c \
     libffabi/src/audio_mix.c libffabi/src/audio_mix_matrix.c
 
-LIBDCADEC_SRC=libffabi/src/dcadec/bitstream.cpp libffabi/src/dcadec/core_decoder.cpp libffabi/src/dcadec/dca_context.cpp \
-    libffabi/src/dcadec/dmix_tables.cpp libffabi/src/dcadec/exss_parser.cpp libffabi/src/dcadec/idct_fixed.cpp \
-    libffabi/src/dcadec/interpolator.cpp libffabi/src/dcadec/interpolator_fixed.cpp libffabi/src/dcadec/interpolator_float.cpp \
-    libffabi/src/dcadec/ta.cpp libffabi/src/dcadec/xll_decoder.cpp libffabi/src/dcadec/idct_float.cpp
-
-LIBDCADEC_DEF=-DDCA_LOG -DDCA_FFMALLOC
-
 LIBMAKEMKV_INC=libmakemkv/inc
 
 LIBMAKEMKV_SRC=libmakemkv/src/ebmlwrite.cpp libmakemkv/src/libmkv.cpp libmakemkv/src/version.cpp libmakemkv/src/world.cpp \

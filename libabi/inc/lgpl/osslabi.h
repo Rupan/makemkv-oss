@@ -31,7 +31,7 @@ extern "C" {
 /* AES */
 typedef struct _OSSL_AES_KEY OSSL_AES_KEY;
 
-unsigned int OSSL_sizeof_AES_KEY();
+unsigned int OSSL_sizeof_AES_KEY(void);
 
 int OSSL_AES_set_encrypt_key(const unsigned char *userKey, const int bits,
 	OSSL_AES_KEY *key);
@@ -53,8 +53,8 @@ typedef struct _OSSL_SHA256_CTX OSSL_SHA256_CTX;
 #define OSSL_SHA_DIGEST_LENGTH      20
 #define OSSL_SHA256_DIGEST_LENGTH   32
 
-unsigned int OSSL_sizeof_SHA_CTX();
-unsigned int OSSL_sizeof_SHA256_CTX();
+unsigned int OSSL_sizeof_SHA_CTX(void);
+unsigned int OSSL_sizeof_SHA256_CTX(void);
 
 int OSSL_SHA1_Init(OSSL_SHA_CTX *c);
 int OSSL_SHA1_Update(OSSL_SHA_CTX *c, const void *data, size_t len);

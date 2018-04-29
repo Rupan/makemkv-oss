@@ -30,8 +30,9 @@
 int HTTP_Download(const char* Url,const char* Agent,void* Buffer,uint32_t* Size)
 {
     int     pipe_fd[2],err;
-    char*   argv[10];
-    char    argv0[16],argv1[4],argv2[4],argv3[4],argv4[4],argv5[4],argv6[4];
+    char*   argv[12];
+    char    argv0[16],argv1[4],argv2[4],argv3[4],argv4[4],argv5[8],argv6[4];
+    char    argv8[4],argv9[12];
     char    *lagent,*lurl;
     ssize_t rd;
 
@@ -54,8 +55,10 @@ int HTTP_Download(const char* Url,const char* Agent,void* Buffer,uint32_t* Size)
     strcpy(argv5,"20"); argv[5]=argv5;
     strcpy(argv6,"-U"); argv[6]=argv6;
     argv[7]=lagent;
-    argv[8]=lurl;
-    argv[9]=NULL;
+    strcpy(argv8,"-o"); argv[8]=argv8;
+    strcpy(argv9,"/dev/null"); argv[9]=argv9;
+    argv[10]=lurl;
+    argv[11]=NULL;
 
     err = SYS_posix_launch(argv,0,pipe_fd[1],0,SYS_posix_envp());
 

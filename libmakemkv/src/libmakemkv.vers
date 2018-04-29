@@ -87,7 +87,7 @@
   XPAT_ExpatVersion;
   LIBM_pow;
   ffm_init;
-  ffm_avcodec_version2;
+  ffm_avcodec_version3;
   ffm_audio_decode_init;
   ffm_audio_decode_close;
   ffm_audio_decode_put_data;
@@ -109,9 +109,5 @@
   ffm_mlp_checksum16;
   ffm_mpa_decode_header;
   ffm_get_channel_layout_string;
-  ffm_dcadec_context_create;
-  ffm_dcadec_context_destroy;
-  ffm_dcadec_put_data;
-  ffm_dcadec_get_frame;
   local: *;
 };

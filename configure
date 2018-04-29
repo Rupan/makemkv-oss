@@ -751,6 +751,7 @@ enable_gui
 enable_qt5
 enable_qt4
 enable_noec
+enable_allcodecs
 enable_debug
 '
       ac_precious_vars='build_alias
@@ -1400,6 +1401,8 @@ Optional Features:
   --disable-qt4           do not use Qt4
   --enable-noec           use private ECDSA code (default - use openssl ECDSA
                           if available)
+  --enable-allcodecs      enable all codecs from ffmpeg library (default - use
+                          only necessary subset)
   --enable-debug          keep debug symbols in binarfies (default - strip
                           debug symbols)
 
@@ -11216,6 +11219,14 @@ else
 fi
 
 
+# Check whether --enable-allcodecs was given.
+if test "${enable_allcodecs+set}" = set; then :
+  enableval=$enable_allcodecs;
+else
+  enable_allcodecs=no
+fi
+
+
 # Check whether --enable-debug was given.
 if test "${enable_debug+set}" = set; then :
   enableval=$enable_debug;
@@ -15931,47 +15942,70 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $LIBAVCODEC_VERSION_MAJOR" >&5
 $as_echo "$LIBAVCODEC_VERSION_MAJOR" >&6; }
 
-# check for ancient frame format
-ac_fn_c_check_member "$LINENO" "AVFrame" "nb_samples" "ac_cv_member_AVFrame_nb_samples" "#include <libavcodec/avcodec.h>
+
+# avcodec_send_frame (new API)
+ac_fn_c_check_decl "$LINENO" "avcodec_send_frame" "ac_cv_have_decl_avcodec_send_frame" "#include <libavcodec/avcodec.h>
+"
+if test "x$ac_cv_have_decl_avcodec_send_frame" = xyes; then :
+
+
+$as_echo "#define FFABI_HAVE_AVCODEC_SEND_FRAME 1" >>confdefs.h
+
+
+  # channels missing in libav
+  ac_fn_c_check_member "$LINENO" "AVFrame" "channels" "ac_cv_member_AVFrame_channels" "#include <libavcodec/avcodec.h>
+"
+if test "x$ac_cv_member_AVFrame_channels" = xyes; then :
+
+
+$as_echo "#define FFABI_HAVE_AV_FRAME_CHANNELS 1" >>confdefs.h
+
+
+fi
+
+
+
+else
+
+
+  # avcodec_encode_audio2 (old API)
+  ac_fn_c_check_func "$LINENO" "avcodec_encode_audio2" "ac_cv_func_avcodec_encode_audio2"
+if test "x$ac_cv_func_avcodec_encode_audio2" = xyes; then :
+
+else
+
+    LIBAVCODEC_VERSION_MAJOR=0;
+
+fi
+
+
+  # check for ancient frame format
+  ac_fn_c_check_member "$LINENO" "AVFrame" "nb_samples" "ac_cv_member_AVFrame_nb_samples" "#include <libavcodec/avcodec.h>
 "
 if test "x$ac_cv_member_AVFrame_nb_samples" = xyes; then :
 
 else
 
-  LIBAVCODEC_VERSION_MAJOR=0;
+    LIBAVCODEC_VERSION_MAJOR=0;
 
 fi
 
 
-# we need planar audio
-ac_fn_c_check_decl "$LINENO" "AV_SAMPLE_FMT_U8P" "ac_cv_have_decl_AV_SAMPLE_FMT_U8P" "#include <libavutil/samplefmt.h>
+  # we need planar audio
+  ac_fn_c_check_decl "$LINENO" "AV_SAMPLE_FMT_U8P" "ac_cv_have_decl_AV_SAMPLE_FMT_U8P" "#include <libavutil/samplefmt.h>
 "
 if test "x$ac_cv_have_decl_AV_SAMPLE_FMT_U8P" = xyes; then :
 
 else
 
-  LIBAVCODEC_VERSION_MAJOR=0;
+    LIBAVCODEC_VERSION_MAJOR=0;
 
 fi
 
 
-# avcodec_encode_audio2
-ac_fn_c_check_func "$LINENO" "avcodec_encode_audio2" "ac_cv_func_avcodec_encode_audio2"
-if test "x$ac_cv_func_avcodec_encode_audio2" = xyes; then :
+  # check ffmpeg features for old API
 
-else
-
-  LIBAVCODEC_VERSION_MAJOR=0;
-
-fi
-
-
-if test $LIBAVCODEC_VERSION_MAJOR -lt 53; then
-  as_fn_error $? "The libavcodec library is too old. Please get a recent one from http://www.ffmpeg.org" "$LINENO" 5
-fi
-
-# check various ffmpeg features
-ac_fn_c_check_member "$LINENO" "AVCodecContext" "refcounted_frames" "ac_cv_member_AVCodecContext_refcounted_frames" "#include <libavcodec/avcodec.h>
+  ac_fn_c_check_member "$LINENO" "AVCodecContext" "refcounted_frames" "ac_cv_member_AVCodecContext_refcounted_frames" "#include <libavcodec/avcodec.h>
 "
 if test "x$ac_cv_member_AVCodecContext_refcounted_frames" = xyes; then :
 
@@ -15982,7 +16016,7 @@ $as_echo "#define FFABI_HAVE_REFCOUNTED_FRAMES 1" >>confdefs.h
 fi
 
 
-ac_fn_c_check_decl "$LINENO" "avcodec_free_frame" "ac_cv_have_decl_avcodec_free_frame" "#include <libavcodec/avcodec.h>
+  ac_fn_c_check_decl "$LINENO" "avcodec_free_frame" "ac_cv_have_decl_avcodec_free_frame" "#include <libavcodec/avcodec.h>
 "
 if test "x$ac_cv_have_decl_avcodec_free_frame" = xyes; then :
 
@@ -15993,7 +16027,7 @@ $as_echo "#define FFABI_HAVE_AVCODEC_FREE_FRAME 1" >>confdefs.h
 fi
 
 
-ac_fn_c_check_decl "$LINENO" "av_frame_free" "ac_cv_have_decl_av_frame_free" "#include <libavutil/frame.h>
+  ac_fn_c_check_decl "$LINENO" "av_frame_free" "ac_cv_have_decl_av_frame_free" "#include <libavutil/frame.h>
 "
 if test "x$ac_cv_have_decl_av_frame_free" = xyes; then :
 
@@ -16003,6 +16037,49 @@ $as_echo "#define FFABI_HAVE_AV_FRAME_FREE 1" >>confdefs.h
 
 fi
 
+
+  ac_fn_c_check_decl "$LINENO" "av_frame_get_channels" "ac_cv_have_decl_av_frame_get_channels" "#include <libavcodec/avcodec.h>
+"
+if test "x$ac_cv_have_decl_av_frame_get_channels" = xyes; then :
+
+
+$as_echo "#define FFABI_HAVE_AV_FRAME_CHANNELS 1" >>confdefs.h
+
+
+fi
+
+
+  ac_fn_c_check_decl "$LINENO" "av_frame_get_sample_rate" "ac_cv_have_decl_av_frame_get_sample_rate" "#include <libavcodec/avcodec.h>
+"
+if test "x$ac_cv_have_decl_av_frame_get_sample_rate" = xyes; then :
+
+
+$as_echo "#define FFABI_HAVE_AV_FRAME_SAMPLE_RATE 1" >>confdefs.h
+
+
+fi
+
+
+  ac_fn_c_check_decl "$LINENO" "av_frame_set_channel_layout" "ac_cv_have_decl_av_frame_set_channel_layout" "#include <libavcodec/avcodec.h>
+"
+if test "x$ac_cv_have_decl_av_frame_set_channel_layout" = xyes; then :
+
+
+$as_echo "#define FFABI_HAVE_AV_FRAME_CHANNEL_LAYOUT 1" >>confdefs.h
+
+
+fi
+
+
+
+fi
+
+
+if test $LIBAVCODEC_VERSION_MAJOR -lt 53; then
+  as_fn_error $? "The libavcodec library is too old. Please get a recent one from http://www.ffmpeg.org" "$LINENO" 5
+fi
+
+# check various ffmpeg features
 
 ac_fn_c_check_func "$LINENO" "av_log_format_line" "ac_cv_func_av_log_format_line"
 if test "x$ac_cv_func_av_log_format_line" = xyes; then :
@@ -16062,39 +16139,6 @@ fi
 fi
 
 
-ac_fn_c_check_decl "$LINENO" "av_frame_get_channels" "ac_cv_have_decl_av_frame_get_channels" "#include <libavcodec/avcodec.h>
-"
-if test "x$ac_cv_have_decl_av_frame_get_channels" = xyes; then :
-
-
-$as_echo "#define FFABI_HAVE_AV_FRAME_CHANNELS 1" >>confdefs.h
-
-
-fi
-
-
-ac_fn_c_check_decl "$LINENO" "av_frame_get_sample_rate" "ac_cv_have_decl_av_frame_get_sample_rate" "#include <libavcodec/avcodec.h>
-"
-if test "x$ac_cv_have_decl_av_frame_get_sample_rate" = xyes; then :
-
-
-$as_echo "#define FFABI_HAVE_AV_FRAME_SAMPLE_RATE 1" >>confdefs.h
-
-
-fi
-
-
-ac_fn_c_check_decl "$LINENO" "av_frame_set_channel_layout" "ac_cv_have_decl_av_frame_set_channel_layout" "#include <libavcodec/avcodec.h>
-"
-if test "x$ac_cv_have_decl_av_frame_set_channel_layout" = xyes; then :
-
-
-$as_echo "#define FFABI_HAVE_AV_FRAME_CHANNEL_LAYOUT 1" >>confdefs.h
-
-
-fi
-
-
 ac_fn_c_check_member "$LINENO" "AVCodecParserContext" "duration" "ac_cv_member_AVCodecParserContext_duration" "#include <libavcodec/avcodec.h>
 "
 if test "x$ac_cv_member_AVCodecParserContext_duration" = xyes; then :
@@ -16112,6 +16156,175 @@ if test "x$ac_cv_have_decl_AV_CH_TOP_BACK_CENTER" = xyes; then :
 
 
 $as_echo "#define FFABI_HAVE_AVUTIL_CHANNEL_LAYOUT_H 1" >>confdefs.h
+
+
+fi
+
+
+if test "x$enable_allcodecs" != "xno"; then :
+
+
+$as_echo "#define FFABI_HAVE_ALL_CODECS 1" >>confdefs.h
+
+
+fi
+
+ac_fn_c_check_func "$LINENO" "ff_ac3_decoder" "ac_cv_func_ff_ac3_decoder"
+if test "x$ac_cv_func_ff_ac3_decoder" = xyes; then :
+
+
+$as_echo "#define FFABI_HAVE_DECODER_AC3 1" >>confdefs.h
+
+
+  ac_fn_c_check_func "$LINENO" "ff_eac3_decoder" "ac_cv_func_ff_eac3_decoder"
+if test "x$ac_cv_func_ff_eac3_decoder" = xyes; then :
+
+
+$as_echo "#define FFABI_HAVE_DECODER_EAC3 1" >>confdefs.h
+
+
+fi
+
+
+  ac_fn_c_check_func "$LINENO" "ff_aac_latm_decoder" "ac_cv_func_ff_aac_latm_decoder"
+if test "x$ac_cv_func_ff_aac_latm_decoder" = xyes; then :
+
+
+$as_echo "#define FFABI_HAVE_DECODER_AAC_LATM 1" >>confdefs.h
+
+
+fi
+
+
+  ac_fn_c_check_func "$LINENO" "ff_aac_fixed_decoder" "ac_cv_func_ff_aac_fixed_decoder"
+if test "x$ac_cv_func_ff_aac_fixed_decoder" = xyes; then :
+
+
+$as_echo "#define FFABI_HAVE_DECODER_AAC_FIXED 1" >>confdefs.h
+
+
+fi
+
+
+  ac_fn_c_check_func "$LINENO" "ff_dca_decoder" "ac_cv_func_ff_dca_decoder"
+if test "x$ac_cv_func_ff_dca_decoder" = xyes; then :
+
+
+$as_echo "#define FFABI_HAVE_DECODER_DCA 1" >>confdefs.h
+
+
+fi
+
+
+  ac_fn_c_check_func "$LINENO" "ff_mlp_decoder" "ac_cv_func_ff_mlp_decoder"
+if test "x$ac_cv_func_ff_mlp_decoder" = xyes; then :
+
+
+$as_echo "#define FFABI_HAVE_DECODER_MLP 1" >>confdefs.h
+
+
+fi
+
+
+  ac_fn_c_check_func "$LINENO" "ff_truehd_decoder" "ac_cv_func_ff_truehd_decoder"
+if test "x$ac_cv_func_ff_truehd_decoder" = xyes; then :
+
+
+$as_echo "#define FFABI_HAVE_DECODER_TRUEHD 1" >>confdefs.h
+
+
+fi
+
+
+  ac_fn_c_check_func "$LINENO" "ff_mp1_decoder" "ac_cv_func_ff_mp1_decoder"
+if test "x$ac_cv_func_ff_mp1_decoder" = xyes; then :
+
+
+$as_echo "#define FFABI_HAVE_DECODER_MP1 1" >>confdefs.h
+
+
+fi
+
+
+  ac_fn_c_check_func "$LINENO" "ff_mp2_decoder" "ac_cv_func_ff_mp2_decoder"
+if test "x$ac_cv_func_ff_mp2_decoder" = xyes; then :
+
+
+$as_echo "#define FFABI_HAVE_DECODER_MP2 1" >>confdefs.h
+
+
+fi
+
+
+  ac_fn_c_check_func "$LINENO" "ff_mp3_decoder" "ac_cv_func_ff_mp3_decoder"
+if test "x$ac_cv_func_ff_mp3_decoder" = xyes; then :
+
+
+$as_echo "#define FFABI_HAVE_DECODER_MP3 1" >>confdefs.h
+
+
+fi
+
+
+  ac_fn_c_check_func "$LINENO" "ff_flac_decoder" "ac_cv_func_ff_flac_decoder"
+if test "x$ac_cv_func_ff_flac_decoder" = xyes; then :
+
+
+$as_echo "#define FFABI_HAVE_DECODER_FLAC 1" >>confdefs.h
+
+
+fi
+
+
+  ac_fn_c_check_func "$LINENO" "ff_ac3_encoder" "ac_cv_func_ff_ac3_encoder"
+if test "x$ac_cv_func_ff_ac3_encoder" = xyes; then :
+
+
+$as_echo "#define FFABI_HAVE_ENCODER_AC3 1" >>confdefs.h
+
+
+fi
+
+
+  ac_fn_c_check_func "$LINENO" "ff_ac3_fixed_encoder" "ac_cv_func_ff_ac3_fixed_encoder"
+if test "x$ac_cv_func_ff_ac3_fixed_encoder" = xyes; then :
+
+
+$as_echo "#define FFABI_HAVE_ENCODER_AC3_FIXED 1" >>confdefs.h
+
+
+fi
+
+
+  ac_fn_c_check_func "$LINENO" "ff_aac_encoder" "ac_cv_func_ff_aac_encoder"
+if test "x$ac_cv_func_ff_aac_encoder" = xyes; then :
+
+
+$as_echo "#define FFABI_HAVE_ENCODER_AAC 1" >>confdefs.h
+
+
+fi
+
+
+  ac_fn_c_check_func "$LINENO" "ff_libfdk_aac_encoder" "ac_cv_func_ff_libfdk_aac_encoder"
+if test "x$ac_cv_func_ff_libfdk_aac_encoder" = xyes; then :
+
+
+$as_echo "#define FFABI_HAVE_ENCODER_LIBFDK_AAC 1" >>confdefs.h
+
+
+fi
+
+
+  ac_fn_c_check_func "$LINENO" "ff_flac_encoder" "ac_cv_func_ff_flac_encoder"
+if test "x$ac_cv_func_ff_flac_encoder" = xyes; then :
+
+
+$as_echo "#define FFABI_HAVE_ENCODER_FLAC 1" >>confdefs.h
+
+
+fi
+
 
 
 fi

@@ -74,8 +74,8 @@ out/libmakemkv.so.1.full: tmp/gen_buildinfo.h
 	mkdir -p out
 	$(GCC) $(CFLAGS) $(LDFLAGS) $(NO_EC_DEF) -D_GNU_SOURCE -D_REENTRANT -shared -Wl,-z,defs -o$@ $(INCF)$(LIBEBML_INC) $(LIBEBML_DEF) \
 	$(INCF)$(LIBMATROSKA_INC) $(INCF)$(LIBMAKEMKV_INC) $(INCF)$(SSTRING_INC) $(INCF)$(MAKEMKVGUI_INC) $(INCF)$(LIBABI_INC) \
-	$(INCF)$(LIBFFABI_INC) $(LIBDCADEC_DEF) $(LIBEBML_SRC) $(LIBMATROSKA_SRC) $(LIBMAKEMKV_SRC) $(GLIBC_SRC) $(SSTRING_SRC) \
-	$(LIBABI_SRC) $(LIBABI_SRC_LINUX) $(LIBFFABI_SRC) $(LIBDCADEC_SRC) \
+	$(INCF)$(LIBFFABI_INC) $(LIBEBML_SRC) $(LIBMATROSKA_SRC) $(LIBMAKEMKV_SRC) $(GLIBC_SRC) $(SSTRING_SRC) \
+	$(LIBABI_SRC) $(LIBABI_SRC_LINUX) $(LIBFFABI_SRC) \
 	-DHAVE_BUILDINFO_H -Itmp $(FFMPEG_CFLAGS) \
 	-fPIC -Xlinker -dy -Xlinker --version-script=libmakemkv/src/libmakemkv.vers \
 	-Xlinker -soname=libmakemkv.so.1 -lc -lstdc++ -lcrypto -lz -lexpat $(FFMPEG_LIBS) -lm -lrt

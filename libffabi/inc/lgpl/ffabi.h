@@ -67,7 +67,8 @@ typedef enum _FFM_MatrixEncoding {
 typedef struct _FFM_AudioInfo {
     uint32_t    sample_rate;
     uint32_t    channels;
-    uint32_t    bits_per_sample;
+    uint16_t    sample_fmt;
+    uint16_t    bits_per_sample;
     uint32_t    frame_size;
     uint64_t    channel_layout;
     uint32_t    profile;
@@ -123,18 +124,18 @@ extern "C" {
 #endif
 
 int __cdecl ffm_init(ffm_log_callback_t log_proc,void* log_context,ffm_memalign_t memalign_proc,ffm_realloc_t realloc_proc,ffm_free_t free_proc);
-uint32_t __cdecl ffm_avcodec_version2(void);
+uint32_t __cdecl ffm_avcodec_version3(void);
 
 FFM_AudioDecodeContext* __cdecl ffm_audio_decode_init(void* logctx,const char* name,FFM_AudioFormat fmt,const char* argp[],const uint8_t* CodecData,unsigned int CodecDataSize,unsigned int time_base,unsigned int CodecFlags);
 int __cdecl ffm_audio_decode_close(FFM_AudioDecodeContext* ctx);
 int __cdecl ffm_audio_decode_put_data(FFM_AudioDecodeContext* ctx,const uint8_t* data,unsigned int size,int64_t pts);
-unsigned int __cdecl ffm_audio_decode_get_frame(FFM_AudioDecodeContext* ctx,int64_t* pts,const uint8_t* data[]);
+int __cdecl ffm_audio_decode_get_frame(FFM_AudioDecodeContext* ctx,int64_t* pts,const uint8_t* data[]);
 int __cdecl ffm_audio_decode_get_info(FFM_AudioDecodeContext* ctx,FFM_AudioInfo* info);
 
 FFM_AudioEncodeContext* __cdecl ffm_audio_encode_init(void* logctx,const char* name,FFM_AudioFormat fmt,FFM_AudioInfo* info,const char* argp[],unsigned int time_base,unsigned int CodecFlags);
 int __cdecl ffm_audio_encode_close(FFM_AudioEncodeContext* ctx);
 int __cdecl ffm_audio_encode_put_frame(FFM_AudioEncodeContext* ctx,const uint8_t* frame_data[],unsigned int frame_size,unsigned int nb_samples,uint64_t pts);
-const uint8_t* __cdecl ffm_audio_encode_get_data(FFM_AudioEncodeContext* ctx,unsigned int *size,int64_t *pts);
+int __cdecl ffm_audio_encode_get_data(FFM_AudioEncodeContext* ctx,unsigned int *size,int64_t *pts,const uint8_t** data);
 int __cdecl ffm_audio_encode_get_info(FFM_AudioEncodeContext* ctx,FFM_AudioEncodeInfo* info);
 
 int __cdecl ffm_audio_get_codec_information(FFM_CodecInfo* info,const char* name,int encode);
@@ -153,12 +154,6 @@ uint16_t __cdecl ffm_mlp_checksum16(const uint8_t *buf, unsigned int buf_size);
 int __cdecl ffm_mpa_decode_header(uint32_t hdr,FFM_AudioInfo* info,uint32_t* layer,uint32_t* frame_size,uint32_t* bitrate);
 
 int __cdecl ffm_get_channel_layout_string(char *buf,int buf_size,uint64_t channel_layout);
-
-FFM_DcaDec* __cdecl ffm_dcadec_context_create(void* logctx,int native_layout);
-void __cdecl ffm_dcadec_context_destroy(FFM_DcaDec* dca);
-int __cdecl ffm_dcadec_put_data(FFM_DcaDec* dca, const uint8_t *data, size_t size);
-int __cdecl ffm_dcadec_get_frame(FFM_DcaDec* dca, int ***data, FFM_AudioInfo* info);
-
 
 #ifdef __cplusplus
 };

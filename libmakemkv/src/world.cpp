@@ -120,7 +120,7 @@ bool __cdecl set_world(IWorld* new_world,int world_name)
         i+=SYS_posix_getmyname(NULL,0);
         i+=SYS_posix_launch(NULL,0,0,0,NULL);
         i+=SYS_nstat(NULL,NULL);
-        i+=ffm_avcodec_version2();
+        i+=ffm_avcodec_version3();
         i+=(int)LIBM_pow(i,41);
 #endif
     }

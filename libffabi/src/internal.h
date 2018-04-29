@@ -55,14 +55,16 @@ void *ffabi_memalign(size_t align, size_t size);
 void *ffabi_realloc(void *ptr, size_t size);
 void ffabi_free(void *ptr);
 
-void dca_log(void* ctx,const char* msg,unsigned int lineno);
-
 
 #if (LIBAVCODEC_VERSION_MAJOR < 53)
 #error "Can't use an ancient ffmpeg or libav"
 #endif
 
 #include "ffabicfg.h"
+
+#ifndef FFABI_HAVE_AVCODEC_SEND_FRAME
+
+#define FFABI_AVCODEC_OLD_API 1
 
 #ifndef FFABI_HAVE_AVCODECID
 #define AVCodecID CodecID
@@ -79,6 +81,8 @@ static inline void av_frame_unref(AVFrame *frame)
 {
 }
 #endif
+
+#endif // FFABI_AVCODEC_OLD_API
 
 #ifndef FFABI_HAVE_AV_LOG_FORMAT_LINE
 void av_log_format_line(void *ptr, int level, const char *fmt, va_list vl,

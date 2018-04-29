@@ -117,7 +117,6 @@ class CAdvancedTab : public QWidget
 public:
     QComboBox*      comboProfile;
     QLineEdit*      lineEditSelection;
-    CDirSelectBox*  dtshddecDir;
 
 public:
     CAdvancedTab(CGUIApClient* ap_client,QWidget *parent = 0);

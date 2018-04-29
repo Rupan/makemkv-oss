@@ -209,8 +209,6 @@ void CSettingDialog::ReadSettings()
     }
     advancedTab->lineEditSelection->setText(QStringFromUtf16(defaultSelection));
 
-    advancedTab->dtshddecDir->setText(QStringFromUtf16( client->GetSettingString(apset_app_dtshddec)));
-
     toggleAdvanced(expert_mode!=0);
 }
 
@@ -277,7 +275,6 @@ bool CSettingDialog::WriteSettings(bool& restartRequired)
     } else {
         client->SetSettingString(apset_app_DefaultSelectionString,Utf16FromQString(advancedTab->lineEditSelection->text()));
     }
-    client->SetSettingString(apset_app_dtshddec,Utf16FromQString(advancedTab->dtshddecDir->text()));
 
     restartRequired = (NULL!=client->GetAppString(AP_vastr_RestartRequired));
 
@@ -630,12 +627,9 @@ CAdvancedTab::CAdvancedTab(CGUIApClient* ap_client,QWidget *parent) : QWidget(pa
     b_lay->addWidget(lineEditSelection,1,1);
     box->setLayout(b_lay);
 
-    dtshddecDir = new CDirSelectBox(NULL,CDirSelectBox::DirBoxFile,UI_QSTRING(APP_IFACE_SETTINGS_ADV_DTSHDDEC_PATH));
-
     QBoxLayout *lay = new QVBoxLayout();
 
     lay->addWidget(box);
-    lay->addWidget(dtshddecDir);
 
     lay->addStretch(2);
     this->setLayout(lay);
