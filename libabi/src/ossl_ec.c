@@ -42,6 +42,11 @@
 #include <openssl/ecdsa.h>
 #endif
 
+#if (OPENSSL_VERSION_NUMBER >= 0x10100006L) && !defined(PSSL_ECDSA_SIG_DEFINED) && !defined(LIBRESSL_VERSION_NUMBER)
+#define USE_ECDSA_SIG_ACCESS_API
+#endif
+
+
 /* BN */
 
 OSSL_BIGNUM *OSSL_BN_new(void)
@@ -222,7 +227,7 @@ int OSSL_ECDSA_do_verify_rs(const unsigned char *dgst, int dgst_len,const OSSL_B
 {
     int r = -1;
 
-#if (OPENSSL_VERSION_NUMBER >= 0x10100006L) && !defined(PSSL_ECDSA_SIG_DEFINED)
+#ifdef USE_ECDSA_SIG_ACCESS_API
     {
         ECDSA_SIG *sig = ECDSA_SIG_new();
         if (!sig) return -1;
@@ -246,7 +251,7 @@ int OSSL_ECDSA_do_verify_rs(const unsigned char *dgst, int dgst_len,const OSSL_B
 
 const OSSL_BIGNUM* OSSL_ecdsa_sig_get_r(const OSSL_ECDSA_SIG* sig)
 {
-#if (OPENSSL_VERSION_NUMBER >= 0x10100006L) && !defined(PSSL_ECDSA_SIG_DEFINED)
+#ifdef USE_ECDSA_SIG_ACCESS_API
     {
         const BIGNUM* r;
         ECDSA_SIG_get0((const ECDSA_SIG*)sig,&r,NULL);
@@ -259,7 +264,7 @@ const OSSL_BIGNUM* OSSL_ecdsa_sig_get_r(const OSSL_ECDSA_SIG* sig)
 
 const OSSL_BIGNUM* OSSL_ecdsa_sig_get_s(const OSSL_ECDSA_SIG* sig)
 {
-#if (OPENSSL_VERSION_NUMBER >= 0x10100006L) && !defined(PSSL_ECDSA_SIG_DEFINED)
+#ifdef USE_ECDSA_SIG_ACCESS_API
     {
         const BIGNUM* s;
         ECDSA_SIG_get0((const ECDSA_SIG*)sig,NULL,&s);

@@ -74,7 +74,8 @@ static void static_log_callback(void* ptr, int level, const char* fmt, va_list v
     }
 }
 
-#if !defined(FFABI_HAVE_ALL_CODECS) && defined(FFABI_HAVE_DECODER_AC3)
+#if !defined(FFABI_HAVE_ALL_CODECS) && defined(FFABI_HAVE_DECODER_AC3) && (LIBAVCODEC_VERSION_MAJOR < 58)
+#define FFABI_REGISTER_ALL
 extern AVCodec ff_ac3_decoder,ff_eac3_decoder,ff_aac_latm_decoder,ff_aac_fixed_decoder;
 extern AVCodec ff_dca_decoder,ff_mlp_decoder,ff_truehd_decoder;
 extern AVCodec ff_mp1_decoder,ff_mp2_decoder,ff_mp3_decoder;
@@ -146,7 +147,7 @@ int __cdecl ffm_init(ffm_log_callback_t log_proc,void* log_ctx,ffm_memalign_t me
 
     av_log_set_callback(static_log_callback);
 
-#if !defined(FFABI_HAVE_ALL_CODECS) && defined(FFABI_HAVE_DECODER_AC3)
+#ifdef FFABI_REGISTER_ALL
     ffabi_register_all();
 #else
     avcodec_register_all();
@@ -517,7 +518,7 @@ FFM_AudioEncodeContext* __cdecl ffm_audio_encode_init(void* logctx,const char* n
         info->profile : FF_PROFILE_UNKNOWN;
 
     if ((CodecFlags&FFM_CODEC_FLAG_GLOBAL_HEADER)!=0)
-        ctx->avctx->flags |= CODEC_FLAG_GLOBAL_HEADER;
+        ctx->avctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
     if (argp) {
         for (i=0;argp[i];i+=2) {
@@ -718,7 +719,7 @@ int __cdecl ffm_audio_encode_get_info(FFM_AudioEncodeContext* ctx,FFM_AudioEncod
     info->delay = (int32_t)ctx->avctx->delay;
     info->flags = 0;
 
-    if ((ctx->avctx->flags&CODEC_FLAG_GLOBAL_HEADER)!=0)
+    if ((ctx->avctx->flags&AV_CODEC_FLAG_GLOBAL_HEADER)!=0)
         info->flags |= FFM_CODEC_FLAG_GLOBAL_HEADER;
 
     return 0;

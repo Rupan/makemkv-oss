@@ -48,7 +48,8 @@ typedef enum _DriveInfoCategory {
 // 31......24 23..16 16.0
 // [Category] [Type] [Id]
 //
-typedef enum _DriveInfoId
+typedef uint32_t DriveInfoId;
+typedef enum _DriveInfoId_enum
 {
     // dicat_Invalid
     diid_InvalidValue=0,
@@ -90,9 +91,10 @@ typedef enum _DriveInfoId
     diid_Aacs_BindingNonce=(dicat_DiscSpecific<<24)+(0<<16)+0x7e,
 
     diidMaxValue
-} DriveInfoId;
+} DriveInfoId_enum;
 
-typedef enum _DriveIoQueryType
+typedef unsigned int DriveIoQueryType;
+typedef enum _DriveIoQueryType_enum
 {
     // query
     diq_QueryAllInfo=0,
@@ -104,7 +106,7 @@ typedef enum _DriveIoQueryType
     dia_UnlockMediaAccess=100,
 
     diq_MaxValue
-} DriveIoQueryType;
+} DriveIoQueryType_enum;
 
 //
 // Structs

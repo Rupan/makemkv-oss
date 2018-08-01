@@ -62,6 +62,10 @@ void ffabi_free(void *ptr);
 
 #include "ffabicfg.h"
 
+#ifndef AV_CODEC_FLAG_GLOBAL_HEADER
+#define AV_CODEC_FLAG_GLOBAL_HEADER CODEC_FLAG_GLOBAL_HEADER
+#endif
+
 #ifndef FFABI_HAVE_AVCODEC_SEND_FRAME
 
 #define FFABI_AVCODEC_OLD_API 1
