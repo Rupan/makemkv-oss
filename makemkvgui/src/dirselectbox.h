@@ -62,7 +62,7 @@ public:
 
 private:
     void EmitValidChanged();
-    void addMRU(const QString &Text,bool Top);
+    void addMRU(const QString &Text,bool Persistent,bool Top);
     static QString append(const QString& Text,const QString* AppendName);
 
 private slots:

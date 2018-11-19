@@ -82,8 +82,9 @@ out/libmakemkv.so.1.full: tmp/gen_buildinfo.h
 
 out/libmmbd.so.0.full:
 	mkdir -p out
-	$(GCC) $(CFLAGS) $(LDFLAGS) -D_REENTRANT -shared -Wl,-z,defs -o$@ $(INCF)$(MAKEMKVGUI_INC) $(INCF)$(LIBMMBD_INC) \
+	$(GCC) $(CFLAGS) $(LDFLAGS) -D_REENTRANT -shared -Wl,-z,defs -o$@ $(INCF)$(MAKEMKVGUI_INC) $(INCF)$(LIBMMBD_INC) $(INCF)$(LIBDRIVEIO_INC) \
 	$(INCF)$(LIBMAKEMKV_INC) $(INCF)$(SSTRING_INC) $(INCF)$(LIBABI_INC) $(LIBMMBD_SRC) $(LIBMMBD_SRC_LINUX) $(SSTRING_SRC) \
+	$(LIBDRIVEIO_SRC_PUB) \
 	-fPIC -Xlinker -dy -Xlinker --version-script=libmmbd/src/libmmbd.vers \
 	-Xlinker -soname=libmmbd.so.0 -lc -lstdc++ -lrt -lpthread -lcrypto
 

@@ -121,9 +121,8 @@ struct ec_group_st {
 
 	int a_is_minus3; /* enable optimized point arithmetics for special case */
 
-	void *field_data1; /* method-specific (e.g., Montgomery structure) */
-	void *field_data2; /* method-specific */
-	int (*field_mod_func)(BIGNUM *, const BIGNUM *, const BIGNUM *,	BN_CTX *); /* method-specific */
+	BN_MONT_CTX *field_data1; /* method-specific (e.g., Montgomery structure) */
+	BIGNUM	    *field_data2; /* method-specific */
 } /* EC_GROUP */;
 
 struct ec_key_st {

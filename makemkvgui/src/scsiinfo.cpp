@@ -211,7 +211,7 @@ bool FormatDriveDiskInfo(QString& ProtectionString,QString& FullInfoString,const
     struct _items{
         DriveInfoItem   inquiry,drive_serial,firmware_date,firmware_string,current_profile;
         DriveInfoItem   copyright_info,dvd_physical_info,capacity,bd_disc_info,mkb_small;
-        DriveInfoItem   svm_small,aacs,ccert_small,aacs_high,timestamp;
+        DriveInfoItem   svm_small,aacs,ccert_small,aacs_high,timestamp,custom;
     } items;
 
     // extract all interesting items
@@ -266,6 +266,9 @@ bool FormatDriveDiskInfo(QString& ProtectionString,QString& FullInfoString,const
             break;
         case 0x05102205:
             items.timestamp=item;
+            break;
+        case 0x05102210:
+            items.custom=item;
             break;
         default:
             break;
@@ -369,6 +372,23 @@ bool FormatDriveDiskInfo(QString& ProtectionString,QString& FullInfoString,const
         append_const(str,AP_UI_STRING(APP_SI_HIGHEST_AACS));
         append_const(str,vstr);
         append_const(str,"<br>");
+    }
+
+    if ((items.custom.Size>1) && (items.custom.Data[items.custom.Size-1]==0))
+    {
+        QString customStr = QString::fromUtf8((const char*)items.custom.Data,items.custom.Size-1);
+        QStringList customList = customStr.split(QLatin1Char('\n'),QString::SkipEmptyParts);
+        if (customList.size()>=1)
+        {
+            append_const(str,"<br><b>");
+            str.append(customList.at(0));
+            append_const(str,"</b><br>");
+        }
+        for (int i=1; i<customList.size();i++)
+        {
+            str.append(customList.at(i));
+            append_const(str,"<br>");
+        }
     }
 
     //

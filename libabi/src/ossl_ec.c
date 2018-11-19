@@ -152,9 +152,19 @@ OSSL_EC_GROUP *OSSL_EC_GROUP_new_curve_GFp(const OSSL_BIGNUM *p, const OSSL_BIGN
     return (OSSL_EC_GROUP *)grp;
 }
 
+void OSSL_EC_GROUP_free(OSSL_EC_GROUP *grp)
+{
+    EC_GROUP_free((EC_GROUP *)grp);
+}
+
 OSSL_EC_POINT *OSSL_EC_POINT_new(const OSSL_EC_GROUP *grp)
 {
     return (OSSL_EC_POINT *) EC_POINT_new((const EC_GROUP *)grp);
+}
+
+OSSL_EC_POINT *OSSL_EC_POINT_dup(const OSSL_EC_POINT *a,const OSSL_EC_GROUP *group)
+{
+    return (OSSL_EC_POINT *)EC_POINT_dup((const EC_POINT *)a,(const EC_GROUP *)group);
 }
 
 void OSSL_EC_POINT_free(OSSL_EC_POINT *point)

@@ -21,6 +21,8 @@ QString FormatDiskFreeSpace(const utf16_t* FolderName)
 {
     uint64_t free_sp = get_free_space(FolderName);
 
+    if (0==free_sp) return QString();
+
     char suf;
 
     free_sp >>=(10-8);

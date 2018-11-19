@@ -28,6 +28,9 @@
 #define __cdecl
 #endif
 
+#define FFABI_VERSION_FLAG_PATCHLEVEL_MASK  0x0f
+#define FFABI_VERSION_FLAG_PATCHLEVEL_VALUE 1
+
 #define FFM_INPUT_BUFFER_PADDING_SIZE 16
 #define FFM_PROFILE_UNKNOWN 0xffffffff
 #define FFM_CODEC_FLAG_GLOBAL_HEADER 1
@@ -124,7 +127,7 @@ extern "C" {
 #endif
 
 int __cdecl ffm_init(ffm_log_callback_t log_proc,void* log_context,ffm_memalign_t memalign_proc,ffm_realloc_t realloc_proc,ffm_free_t free_proc);
-uint32_t __cdecl ffm_avcodec_version3(void);
+uint64_t __cdecl ffm_avcodec_version3(void);
 
 FFM_AudioDecodeContext* __cdecl ffm_audio_decode_init(void* logctx,const char* name,FFM_AudioFormat fmt,const char* argp[],const uint8_t* CodecData,unsigned int CodecDataSize,unsigned int time_base,unsigned int CodecFlags);
 int __cdecl ffm_audio_decode_close(FFM_AudioDecodeContext* ctx);

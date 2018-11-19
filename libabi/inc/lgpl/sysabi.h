@@ -73,6 +73,7 @@ int     SYS_fstatfs(int fd, SYS_statfs *buf);
 char**  SYS_posix_envp();
 int     SYS_posix_getmyname(char* buffer,int length);
 int     SYS_posix_launch(char** argv,int fdstdin,int fdstdout,int fdstderr,char ** envp);
+int     SYS_posix_launch2(uintptr_t* pid,char** argv,int fdstdin,int fdstdout,int fdstderr,char ** envp);
 void*   SYS_memcpy(void *dest, const void *src,size_t n);
 
 #ifdef __cplusplus

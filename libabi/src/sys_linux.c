@@ -27,6 +27,16 @@
 #include <sys/vfs.h>
 #include <linux/msdos_fs.h>
 
+#if defined(__GLIBC__) && defined(__GLIBC_MINOR__)
+#if (__GLIBC__>=2) && (__GLIBC_MINOR__>=24)
+#define SYSABI_USE_READDIR
+#endif
+#endif
+
+#if !defined(SYSABI_USE_READDIR) && !defined(SYSABI_USE_READDIR_R)
+#define SYSABI_USE_READDIR_R
+#endif
+
 static void statcvt(SYS_stat *buf,struct stat64 *st)
 {
     buf->st_mode = st->st_mode;
@@ -67,27 +77,32 @@ int SYS_fstat(int filedes, SYS_stat *buf)
 
 int SYS_readdir(void* dirp,SYS_dirent *entry)
 {
-    int err;
     size_t slen;
     struct dirent64 *pent;
+#ifdef SYSABI_USE_READDIR_R
+    int err;
     struct _data {
         struct dirent64 ent;
         char pad[8];
     } data;
+#endif
 
+#ifdef SYSABI_USE_READDIR_R
     pent = NULL;
-
     err = readdir64_r(dirp,&data.ent,&pent);
-
     if (err) return err;
+    data.ent.d_name[sizeof(data.ent.d_name)-1]=0;
+#else
+    pent = readdir64(dirp);
+#endif
+
     if (pent==NULL) return -1;
 
     entry->d_type = pent->d_type;
-    data.ent.d_name[sizeof(data.ent.d_name)-1]=0;
-    slen = strlen(data.ent.d_name);
+    slen = strlen(pent->d_name);
     if (slen>258) slen=258;
 
-    memcpy(entry->d_name,data.ent.d_name,slen);
+    memcpy(entry->d_name,pent->d_name,slen);
     entry->d_name[slen]=0;
 
     return 0;

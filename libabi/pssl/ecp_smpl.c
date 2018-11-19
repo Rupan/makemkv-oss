@@ -660,6 +660,93 @@ static int ec_GFp_simple_is_at_infinity(const EC_GROUP *group, const EC_POINT *p
 	}
 
 
+static int ec_GFp_simple_is_on_curve(const EC_GROUP *group, const EC_POINT *point, BN_CTX *ctx)
+	{
+	const BIGNUM *p;
+	BN_CTX *new_ctx = NULL;
+	BIGNUM *rh, *tmp, *Z4, *Z6;
+	int ret = -1;
+
+	if (EC_POINT_is_at_infinity(group, point))
+		return 1;
+	
+	p = group->field;
+
+	if (ctx == NULL)
+		{
+		ctx = new_ctx = BN_CTX_new();
+		if (ctx == NULL)
+			return -1;
+		}
+
+	BN_CTX_start(ctx);
+	rh = BN_CTX_get(ctx);
+	tmp = BN_CTX_get(ctx);
+	Z4 = BN_CTX_get(ctx);
+	Z6 = BN_CTX_get(ctx);
+	if (Z6 == NULL) goto err;
+
+	/* We have a curve defined by a Weierstrass equation
+	 *      y^2 = x^3 + a*x + b.
+	 * The point to consider is given in Jacobian projective coordinates
+	 * where  (X, Y, Z)  represents  (x, y) = (X/Z^2, Y/Z^3).
+	 * Substituting this and multiplying by  Z^6  transforms the above equation into
+	 *      Y^2 = X^3 + a*X*Z^4 + b*Z^6.
+	 * To test this, we add up the right-hand side in 'rh'.
+	 */
+
+	/* rh := X^2 */
+    if (!ec_GFp_mont_field_sqr(group,rh,point->X,ctx)) goto err;
+
+	if (!point->Z_is_one)
+		{
+		if (!ec_GFp_mont_field_sqr(group, tmp, point->Z, ctx)) goto err;
+		if (!ec_GFp_mont_field_sqr(group, Z4, tmp, ctx)) goto err;
+		if (!ec_GFp_mont_field_mul(group, Z6, Z4, tmp, ctx)) goto err;
+
+		/* rh := (rh + a*Z^4)*X */
+		if (group->a_is_minus3)
+			{
+			if (!BN_mod_lshift1_quick(tmp, Z4, p)) goto err;
+			if (!BN_mod_add_quick(tmp, tmp, Z4, p)) goto err;
+			if (!BN_mod_sub_quick(rh, rh, tmp, p)) goto err;
+            if (!ec_GFp_mont_field_mul(group,rh,rh,point->X,ctx)) goto err;
+			}
+		else
+			{
+			if (!ec_GFp_mont_field_mul(group, tmp, Z4, group->a, ctx)) goto err;
+			if (!BN_mod_add_quick(rh, rh, tmp, p)) goto err;
+			if (!ec_GFp_mont_field_mul(group, rh, rh, point->X, ctx)) goto err;
+			}
+
+		/* rh := rh + b*Z^6 */
+		if (!ec_GFp_mont_field_mul(group, tmp, group->b, Z6, ctx)) goto err;
+		if (!BN_mod_add_quick(rh, rh, tmp, p)) goto err;
+		}
+	else
+		{
+		/* point->Z_is_one */
+
+		/* rh := (rh + a)*X */
+		if (!BN_mod_add_quick(rh, rh, group->a, p)) goto err;
+		if (!ec_GFp_mont_field_mul(group, rh, rh, point->X, ctx)) goto err;
+		/* rh := rh + b */
+		if (!BN_mod_add_quick(rh, rh, group->b, p)) goto err;
+		}
+
+	/* 'lh' := Y^2 */
+	if (!ec_GFp_mont_field_sqr(group, tmp, point->Y, ctx)) goto err;
+
+	ret = (0 == BN_ucmp(tmp, rh));
+
+ err:
+	BN_CTX_end(ctx);
+	if (new_ctx != NULL)
+		BN_CTX_free(new_ctx);
+	return ret;
+	}
+
+
 static int ec_GFp_simple_cmp(const EC_GROUP *group, const EC_POINT *a, const EC_POINT *b, BN_CTX *ctx)
 	{
 	/* return values:

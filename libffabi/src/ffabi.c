@@ -158,9 +158,11 @@ int __cdecl ffm_init(ffm_log_callback_t log_proc,void* log_ctx,ffm_memalign_t me
     return 0;
 }
 
-uint32_t __cdecl ffm_avcodec_version3(void)
+uint64_t __cdecl ffm_avcodec_version3(void)
 {
-    return avcodec_version();
+    const uint32_t flags = FFABI_VERSION_FLAG_PATCHLEVEL_VALUE;
+    uint32_t version = avcodec_version()&0x7fffffff;
+    return (((uint64_t)flags)<<32) | version | 0x80000000;
 }
 
 #ifdef FFABI_AVCODEC_OLD_API
@@ -643,12 +645,19 @@ int __cdecl ffm_audio_encode_get_data(FFM_AudioEncodeContext* ctx,unsigned int *
 
 #else
 
+static void ffm_frame_clean(AVFrame* frame)
+{
+    frame->extended_data = NULL;
+    frame->data[0] = (uint8_t*)(((uintptr_t)0)-3);
+    frame->linesize[0] = 0x7ffffff1;
+    frame->nb_samples = 0x7ffffff2;
+}
+
 int __cdecl ffm_audio_encode_put_frame(FFM_AudioEncodeContext* ctx,const uint8_t* frame_data[],unsigned int frame_size,unsigned int nb_samples,uint64_t pts)
 {
     int r;
 
     if (frame_data) {
-        av_frame_unref(ctx->frame);
 
         ctx->frame->format = ctx->avctx->sample_fmt;
 #ifdef FFABI_HAVE_AV_FRAME_CHANNELS
@@ -676,6 +685,9 @@ int __cdecl ffm_audio_encode_put_frame(FFM_AudioEncodeContext* ctx,const uint8_t
         }
 
         r = avcodec_send_frame(ctx->avctx,ctx->frame);
+
+        ffm_frame_clean(ctx->frame);
+
     } else {
         if (!ctx->eos)
         {

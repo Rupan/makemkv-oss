@@ -323,12 +323,10 @@ void MainWnd::Update_TitleInfo_from_app()
         saveFolderBox->selectDialogAction()->setEnabled(false);
         closeDiskAct->setEnabled(false);
         saveAllMkvAct->setEnabled(false);
-        startStreamingAct->setEnabled(false);
         RefreshEmptyFrame();
     } else {
         saveFolderBox->selectDialogAction()->setEnabled(true);
         closeDiskAct->setEnabled(true);
-        startStreamingAct->setEnabled(true);
         backupAct->setEnabled(false);
 
         Update_SaveFolderStatus();

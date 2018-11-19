@@ -28,7 +28,9 @@
   OSSL_EC_GROUP_set_generator;
   OSSL_EC_GROUP_get_order;
   OSSL_EC_GROUP_new_curve_GFp;
+  OSSL_EC_GROUP_free;
   OSSL_EC_POINT_new;
+  OSSL_EC_POINT_dup;
   OSSL_EC_POINT_free;
   OSSL_EC_POINT_mul;
   OSSL_EC_POINT_set_affine_coordinates_GFp;
@@ -69,6 +71,7 @@
   SYS_posix_getmyname;
   SYS_posix_envp;
   SYS_posix_launch;
+  SYS_posix_launch2;
   XPAT_ParserCreate;
   XPAT_ParserFree;
   XPAT_SetUserData;

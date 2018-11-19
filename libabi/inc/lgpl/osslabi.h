@@ -92,8 +92,10 @@ const OSSL_EC_POINT *OSSL_EC_GROUP_get0_generator(const OSSL_EC_GROUP *);
 int OSSL_EC_GROUP_set_generator(OSSL_EC_GROUP *, const OSSL_EC_POINT *generator, const OSSL_BIGNUM *order, const OSSL_BIGNUM *cofactor);
 int OSSL_EC_GROUP_get_order(const OSSL_EC_GROUP *, OSSL_BIGNUM *order, OSSL_BN_CTX *);
 OSSL_EC_GROUP *OSSL_EC_GROUP_new_curve_GFp(const OSSL_BIGNUM *p, const OSSL_BIGNUM *a, const OSSL_BIGNUM *b, OSSL_BN_CTX *);
+void OSSL_EC_GROUP_free(OSSL_EC_GROUP *grp);
 
 OSSL_EC_POINT *OSSL_EC_POINT_new(const OSSL_EC_GROUP *);
+OSSL_EC_POINT *OSSL_EC_POINT_dup(const OSSL_EC_POINT *a,const OSSL_EC_GROUP *group);
 void OSSL_EC_POINT_free(OSSL_EC_POINT *);
 int OSSL_EC_POINT_mul(const OSSL_EC_GROUP *, OSSL_EC_POINT *r, const OSSL_BIGNUM *, const OSSL_EC_POINT *, const OSSL_BIGNUM *, OSSL_BN_CTX *);
 int OSSL_EC_POINT_set_affine_coordinates_GFp(const OSSL_EC_GROUP *, OSSL_EC_POINT *,

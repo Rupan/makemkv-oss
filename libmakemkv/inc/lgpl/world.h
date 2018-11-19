@@ -52,7 +52,7 @@ public:
     virtual void  __cdecl iso6392T(char* lang)=0;
 };
 
-#define WORLD_VER 23 // increment on changes
+#define WORLD_VER 24 // increment on changes
 #define WORLD_NAME ( (WORLD_VER<<8) | sizeof(IWorld) | 1 )
 
 #ifdef LGPL_WORLD_LOCAL

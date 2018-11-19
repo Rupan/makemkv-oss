@@ -19,11 +19,6 @@
 
 */
 #include <libmkv/libmkv.h>
-#include <libmkv/internal.h>
-#include <libmkv/ebmlwrite.h>
-#include <lgpl/stl.h>
-#include <lgpl/cassert>
-#include <lgpl/sstring.h>
 #include <lgpl/world.h>
 #include <lgpl/apdefs.h>
 
@@ -31,6 +26,12 @@
 #define __STDC_FORMAT_MACROS 1
 #endif
 #include <inttypes.h>
+
+#include <lgpl/stl.h>
+#include <libmkv/internal.h>
+#include <libmkv/ebmlwrite.h>
+#include <lgpl/cassert>
+#include <lgpl/sstring.h>
 
 #define TIMECODE_SCALE              1000000
 #define MAX_TIMECODE_SIZE_BYTES     6

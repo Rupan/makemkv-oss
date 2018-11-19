@@ -377,11 +377,6 @@ static QString NBabsoluteFilePath(QFileInfo& info)
     return info.absoluteFilePath();
 }
 
-void MainWnd::SlotStartStreaming()
-{
-    m_app->StartStreaming();
-}
-
 void MainWnd::SlotBackup()
 {
     CBackupDialog dlg(m_app,mainIcon,this);
@@ -460,7 +455,6 @@ void MainWnd::createIcons()
     settingsIcon = createIconPixmaps(AP_IMG_CONFIGURE,AP_IMG_CONFIGURE_COUNT);
     ejectIcon = createIconPixmaps(AP_IMG_EJECT,AP_IMG_EJECT_COUNT);
     cancelIcon = createIconPixmaps(AP_IMG_STOP,AP_IMG_STOP_COUNT);
-    startStreamingIcon = createIconPixmaps(AP_IMG_STREAM,AP_IMG_STREAM_COUNT);
     backupIcon = createIconPixmaps(AP_IMG_BACKUP,AP_IMG_BACKUP_COUNT);
     revertIcon = createIconPixmaps(AP_IMG_REVERT,AP_IMG_REVERT_COUNT);
     clearLogIcon = createIconPixmaps(AP_IMG_CLEARLOG,AP_IMG_CLEARLOG_COUNT);
@@ -506,11 +500,6 @@ void MainWnd::createActions()
     saveAllMkvAct->setStatusTip(UI_QSTRING(APP_IFACE_ACT_SAVEALLMKV_STIP));
     setPlainMenuRole(saveAllMkvAct);
     connect(saveAllMkvAct, SIGNAL(triggered()), this, SLOT(SlotSaveAllMkv()));
-
-    startStreamingAct = new QAction( *startStreamingIcon, UI_QSTRING(APP_IFACE_ACT_STREAMING_NAME), this);
-    startStreamingAct->setStatusTip(UI_QSTRING(APP_IFACE_ACT_STREAMING_STIP));
-    setPlainMenuRole(startStreamingAct);
-    connect(startStreamingAct, SIGNAL(triggered()), this, SLOT(SlotStartStreaming()));
 
     backupAct = new QAction( *backupIcon , UI_QSTRING(APP_IFACE_ACT_BACKUP_NAME), this);
     backupAct->setStatusTip(UI_QSTRING(APP_IFACE_ACT_BACKUP_STIP));
@@ -621,7 +610,6 @@ void MainWnd::createMenus()
     fileMenu->addAction(ejectAct);
     fileMenu->addAction(saveFolderBox->selectDialogAction());
     fileMenu->addAction(saveAllMkvAct);
-    fileMenu->addAction(startStreamingAct);
     fileMenu->addAction(backupAct);
     fileMenu->addSeparator();
     fileMenu->addAction(quitAct);
@@ -656,7 +644,6 @@ void MainWnd::createToolBars()
     mainToolBar->addAction(openFilesAct);
     mainToolBar->addAction(backupAct);
     mainToolBar->addAction(saveAllMkvAct);
-    mainToolBar->addAction(startStreamingAct);
     mainToolBar->addAction(settingsAct);
     mainToolBar->addAction(ejectAct);
     //mainToolBar->addAction(quitAct);
@@ -866,7 +853,6 @@ void MainWnd::EnterJobMode(unsigned int Flags)
         openTestFileAct->setEnabled(false);
     }
     saveAllMkvAct->setEnabled(false);
-    startStreamingAct->setEnabled(false);
     saveFolderBox->selectDialogAction()->setEnabled(false);
     backupAct->setEnabled(false);
     closeDiskAct->setEnabled(false);
@@ -1190,9 +1176,9 @@ void MainWnd::SlotSettings()
 
     dlg.exec();
 
-    bool oldExpertMode = iface_ExpertMode;
     ReReadSettings();
-    if (iface_ExpertMode!=oldExpertMode)
+
+    if (dlg.redrawRequired())
     {
         Refresh_TitleTree();
     }

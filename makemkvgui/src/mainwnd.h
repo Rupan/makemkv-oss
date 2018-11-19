@@ -99,7 +99,6 @@ private slots:
     void SlotCloseDisk();
     void SlotEjectDisk();
     void SlotSaveAllMkv();
-    void SlotStartStreaming();
     void SlotBackup();
     void SlotCancelJob();
     void SlotOpenDrive();
@@ -264,7 +263,6 @@ private:
     QIcon*  ejectIcon;
     QIcon*  cancelIcon;
     QIcon*  infoIcon;
-    QIcon*  startStreamingIcon;
     QIcon*  backupIcon;
     QIcon*  revertIcon;
     QIcon*  clearLogIcon;
@@ -281,7 +279,6 @@ private:
 //    QAction *setOutputFolderAct;
     QAction *closeDiskAct;
     QAction *saveAllMkvAct;
-    QAction *startStreamingAct;
     QAction *backupAct;
     QAction *helppageAct;
     QAction *itemInfoRevertAct;

@@ -55,8 +55,13 @@ static inline void QStringFixLen(QString &str)
 
 static inline QString QStringFromConstUtf16(const utf16_t *str)
 {
-    int size = (int) utf16len(str);
-    return QString::fromRawData( (QChar*) str , size );
+    if (NULL==str)
+    {
+        return QString::fromLatin1("!bug!");
+    } else {
+        int size = (int)utf16len(str);
+        return QString::fromRawData((QChar*)str,size);
+    }
 }
 
 static inline QString QStringFromConstUtf16(const utf16_t *str,size_t size)

@@ -34,7 +34,7 @@ uint64_t get_free_space(const utf16_t* Folder)
 
     if (statfs((const char*)folder_str.toUtf8(),&st))
     {
-        return fspace;
+        return 0;
     }
 
     fspace = st.f_bavail;
