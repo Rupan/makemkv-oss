@@ -202,7 +202,12 @@ static void AppendTimestamp(QString& str,const uint8_t* Data)
     {
         append_const(str,fstr,10);
     } else {
-        append_const(str,fstr,19);
+        if ((fstr[17]!=0) && (fstr[17]!=0x20))
+        {
+            append_const(str,fstr,19);
+        } else {
+            append_const(str,fstr,16);
+        }
     }
 }
 
