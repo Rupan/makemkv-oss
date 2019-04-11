@@ -60,18 +60,20 @@ typedef enum _DiskType
 class CDriveInfo
 {
 public:
-    AP_DriveState   state;
-    AP_DiskFsFlags  fs_flags;
-    QString         name;
-    DiskType        disk_type;
-    QString         type;
-    QString         label;
-    QString         prot;
-    QString         right_info;
+    AP_DriveState   driveState;
+    AP_DiskFsFlags  diskFsFlags;
+    QString         driveName;
+    QString         driveSdfName;
+    DiskType        diskType;
+    QString         strType;
+    QString         strLabel;
+    QString         strProt;
+    QString         strInfo;
     bool            load;
 public:
     CDriveInfo();
     void Update(AP_DriveState DriveState,const utf16_t* DriveName,const utf16_t* DiskName,const utf16_t* DeviceName,AP_DiskFsFlags DiskFlags,const void* DiskData,unsigned int DiskDataSize);
+    bool FormatDriveDiskInfo(const utf16_t* DeviceNameString,const void* DiskData,unsigned int DiskDataSize);
     bool showOpen();
 };
 

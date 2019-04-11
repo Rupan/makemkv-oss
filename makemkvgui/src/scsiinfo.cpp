@@ -13,6 +13,7 @@
 
 */
 #include "qtapp.h"
+#include "mainwnd.h"
 #include <driveio/driveio.h>
 #include <lgpl/smem.h>
 
@@ -211,7 +212,7 @@ static void AppendTimestamp(QString& str,const uint8_t* Data)
     }
 }
 
-bool FormatDriveDiskInfo(QString& ProtectionString,QString& FullInfoString,const utf16_t* DeviceNameString,const utf16_t* DiscNameString,const void* DiskData,unsigned int DiskDataSize,AP_DiskFsFlags FsFlags,AP_DriveState DriveState)
+bool CDriveInfo::FormatDriveDiskInfo(const utf16_t* DeviceNameString,const void* DiskData,unsigned int DiskDataSize)
 {
     struct _items{
         DriveInfoItem   inquiry,drive_serial,firmware_date,firmware_string,current_profile;
@@ -283,7 +284,7 @@ bool FormatDriveDiskInfo(QString& ProtectionString,QString& FullInfoString,const
     //
     // Firstly, protection info
     //
-    ProtectionString=FormatProtectionString(FsFlags,
+    this->strProt=FormatProtectionString(diskFsFlags,
         (items.copyright_info.Size>=8)?items.copyright_info.Data:NULL,
         (items.mkb_small.Size>=12)?items.mkb_small.Data:NULL,
         (items.ccert_small.Size>=4)?items.ccert_small.Data:NULL,
@@ -399,7 +400,7 @@ bool FormatDriveDiskInfo(QString& ProtectionString,QString& FullInfoString,const
     //
     // Disk info
     //
-    switch(DriveState)
+    switch(driveState)
     {
     case AP_DriveStateEmptyClosed:
     case AP_DriveStateEmptyOpen:
@@ -413,23 +414,20 @@ bool FormatDriveDiskInfo(QString& ProtectionString,QString& FullInfoString,const
     case AP_DriveStateInserted:
         append_const(str,AP_UI_STRING(APP_SI_DISCINFO));
 
-        if (DiscNameString!=NULL)
+        if (!strLabel.isEmpty())
         {
-            if (DiscNameString[0])
+            const utf16_t* label = AP_UI_STRING(APP_IFACE_EMPTY_FRAME_LABEL);
+            size_t label_size = utf16len(label);
+            if ((label_size>2) && (label[label_size-2]==' ') && (label[label_size-1]==':'))
             {
-                const utf16_t* label = AP_UI_STRING(APP_IFACE_EMPTY_FRAME_LABEL);
-                size_t label_size = utf16len(label);
-                if ( (label_size>2) && (label[label_size-2]==' ') && (label[label_size-1]==':') )
-                {
-                    append_const(str,label,label_size-2);
-                    append_const(str,":");
-                } else {
-                    append_const(str,label);
-                }
-                append_const(str," ");
-                append_const(str,DiscNameString);
-                append_const(str,"<br>");
+                append_const(str,label,label_size-2);
+                append_const(str,":");
+            } else {
+                append_const(str,label);
             }
+            append_const(str," ");
+            str.append(strLabel);
+            append_const(str,"<br>");
         }
 
         if (items.timestamp.Size==20)
@@ -602,7 +600,7 @@ bool FormatDriveDiskInfo(QString& ProtectionString,QString& FullInfoString,const
     {
         qDebug("info string reallocated, size=%u",((unsigned int)str.size()));
     }
-    FullInfoString = str;
+    this->strInfo = str;
     return true;
 }
 

@@ -127,7 +127,7 @@ typedef enum _AP_CMD
     apCallSetSettingString,
     apCallSaveSettings,
     apCallAppGetString,
-    apCallStartStreaming,
+    apdeprecated_CallStartStreaming,
     apCallBackupDisc,
     apCallGetInterfaceLanguage,
     apCallGetInterfaceLanguageData,
@@ -351,7 +351,6 @@ public:
     bool OpenTitleCollection(const utf16_t* Source,uint32_t Flags);
     bool EjectDisk(unsigned int Id);
     bool SaveAllSelectedTitlesToMkv();
-    bool StartStreaming();
     bool BackupDisc(unsigned int Id,const utf16_t* Folder,uint32_t Flags);
     bool GetInterfaceLanguage(unsigned int Id,utf16_t** Name,uint64_t** Param);
     const void* GetInterfaceLanguageData(unsigned int Id,unsigned int* Size1,unsigned int* Size2);

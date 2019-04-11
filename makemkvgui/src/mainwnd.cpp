@@ -384,7 +384,7 @@ void MainWnd::SlotBackup()
     int ndx = GetEmptyBoxDriveId();
     if (ndx<0) return;
 
-    QString name = DriveInfo[ndx].label;
+    QString name = DriveInfo[ndx].strLabel;
 
     dlg.backupDir->setAppendName(&name);
     dlg.backupDir->setText(QStringFromUtf16(m_app->GetAppString(AP_vastr_OutputBaseName)) + QLatin1String("/backup/") + name,true);
@@ -944,7 +944,7 @@ void MainWnd::UpdateDrive(unsigned int Index,const utf16_t *DriveName,AP_DriveSt
 {
     if (DriveState==AP_DriveStateNoDrive)
     {
-        DriveInfo[Index].state = AP_DriveStateNoDrive;
+        DriveInfo[Index].driveState = AP_DriveStateNoDrive;
         OpenDriveAction[Index]->setVisible(false);
         RefreshEmptyFrame();
         UpdateDrivesCount();

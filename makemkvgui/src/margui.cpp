@@ -58,12 +58,6 @@ bool CGUIApClient::SaveAllSelectedTitlesToMkv()
     return (m_mem->args[0]!=0);
 }
 
-bool CGUIApClient::StartStreaming()
-{
-    ExecCmd(apCallStartStreaming);
-    return (m_mem->args[0]!=0);
-}
-
 bool CGUIApClient::BackupDisc(unsigned int Id,const utf16_t* Folder,uint32_t Flags)
 {
     m_mem->args[0]=Id;

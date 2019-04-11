@@ -395,9 +395,9 @@ typedef enum _ApSettingId
   apset_io_SingleDrive ,
   apset_app_ShowAVSyncMessages ,
   apset_bdplus_DumpAlways ,
-  apset_stream_EnableUPNP ,
-  apset_stream_BindIp ,
-  apset_stream_BindPort ,
+  apset_deprecated_s_EnableUPNP ,
+  apset_deprecated_s_BindIp ,
+  apset_deprecated_s_BindPort ,
   apset_screen_geometry ,
   apset_screen_state ,
   apset_app_DefaultProfileName ,
@@ -410,6 +410,7 @@ typedef enum _ApSettingId
   apset_path_BackupDirMRU ,
   apset_path_DestDirMRU ,
   apset_app_DefaultOutputFileName ,
+  apset_sdf_Stop ,
   apset_MaxValue
 } ApSettingId;
 
