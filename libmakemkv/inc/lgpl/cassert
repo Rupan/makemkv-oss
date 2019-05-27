@@ -72,7 +72,7 @@ int MkvAssertHelper(const char* Message);
     (void)( (!!(_Expression_)) || (MkvAssertHelper("MKV_ASSERT: " #_Expression_ )) );
 
 #ifdef assert
-#error assert
+#undef assert
 #endif
 
 #define assert MKV_ASSERT

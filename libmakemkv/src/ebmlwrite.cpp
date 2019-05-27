@@ -22,11 +22,11 @@
 #include <libmkv/internal.h>
 #include <libmkv/ebmlwrite.h>
 #include <lgpl/stl.h>
+#include <lgpl/cassert>
 
 uint32 CEbmlWrite::read(void*Buffer,size_t Size)
 {
     throw mkv_error_exception("CEbmlWrite::read");
-    return 0;
 }
 
 void CEbmlWrite::close()
@@ -37,9 +37,9 @@ void CEbmlWrite::close()
 
 void CEbmlWrite::setFilePointer(int64 Offset,seek_mode Mode)
 {
-    MKV_ASSERT(Mode==seek_beginning);
+    MKV_ASSERT(Mode==seek_beginning)
 
-    if (false==m_OvrOffsetSet)
+    if (!m_OvrOffsetSet)
     {
         m_OvrOffsetSet=true;
         m_OvrOffset=Offset;
@@ -57,13 +57,13 @@ size_t CEbmlWrite::write(const void*Buffer,size_t Size)
 {
     if (0==Size) return 0;
 
-    if (false==m_OvrOffsetSet)
+    if (!m_OvrOffsetSet)
     {
         m_Offset += Size;
         return (m_Writer->Write(Buffer,(unsigned int)Size)) ? Size : 0;
     } else {
         int64_t toff = m_OvrOffset;
-        MKV_ASSERT(true==m_OvrOffsetSet);
+        MKV_ASSERT(m_OvrOffsetSet)
         m_OvrOffset += Size;
         return (m_Writer->Overwrite(toff,Buffer,(unsigned int)Size)) ? Size : 0;
     }
@@ -71,11 +71,10 @@ size_t CEbmlWrite::write(const void*Buffer,size_t Size)
 
 uint64 CEbmlWrite::getFilePointer()
 {
-    if (false==m_OvrOffsetSet)
+    if (!m_OvrOffsetSet)
     {
         return m_Offset;
     } else {
         return m_OvrOffset;
     }
 }
-

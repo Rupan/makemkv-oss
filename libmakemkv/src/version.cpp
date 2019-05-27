@@ -41,9 +41,9 @@ UTFstring GetLibraryVersionString()
     strcat(ver," ");
     strcat(ver,MAKEMKV_VERSION_NUMBER);
     strcat(ver," (");
-    strcat(ver,EbmlCodeVersion);
+    strcat(ver,EbmlCodeVersion.c_str());
     strcat(ver,"/");
-    strcat(ver,KaxCodeVersion);
+    strcat(ver,KaxCodeVersion.c_str());
     strcat(ver,")");
 #if defined(ARCH_NAME)
     strcat(ver," " ARCH_NAME);
