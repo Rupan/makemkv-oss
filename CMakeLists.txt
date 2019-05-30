@@ -58,10 +58,8 @@ add_library(mmbd SHARED
 	makemkvgui/src/sem_posix.cpp
 	makemkvgui/src/spawn_posix.cpp
 	sstring/src/sstring.cpp
-	libdriveio/src/srlist.cpp
 	makemkvgui/inc/lgpl/aproxy.h
 	libmmbd/inc/libmmbd/mmbd.h
-	libdriveio/inc/driveio/driveio.h
 )
 target_include_directories(mmbd PRIVATE
 	makemkvgui/inc
@@ -76,7 +74,7 @@ set_target_properties(mmbd PROPERTIES VERSION "${PROJECT_VERSION}" SOVERSION 0)
 
 # TODO: --enable-noec  use private ECDSA code
 # TODO: add --version-script=libmmbd/src/libmmbd.vers
-target_link_libraries(mmbd ${RT_LIBRARY} Threads::Threads OpenSSL::Crypto)
+target_link_libraries(mmbd ${RT_LIBRARY} Threads::Threads OpenSSL::Crypto driveio)
 target_link_options(mmbd PRIVATE LINKER:-z,defs)
 
 
