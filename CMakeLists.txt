@@ -13,7 +13,7 @@ find_package(Matroska REQUIRED)
 find_library(RT_LIBRARY rt)
 
 
-add_library(driveio SHARED
+set(libdriveio_SOURCES
 	libdriveio/src/infolist.cpp
 	libdriveio/src/scsihlp.cpp
 	libdriveio/src/srlist.cpp
@@ -25,11 +25,19 @@ add_library(driveio SHARED
 	libdriveio/src/drives/xboxhddvd.cpp
 )
 
-target_include_directories(driveio PRIVATE
-	libdriveio/inc
+set(libdriveio_PUBLIC_HEADERS
+	libdriveio/inc/driveio/driveio.h
+	libdriveio/inc/driveio/scsicmd.h
+	libdriveio/inc/driveio/scsihlp.h
 )
 
-set_target_properties(driveio PROPERTIES VERSION "1.14.3" SOVERSION 0)
+set(libdriveio_PRIVATE_HEADERS
+	libdriveio/inc/lgpl/tcpip.h
+)
+
+add_library(driveio SHARED ${libdriveio_SOURCES} ${libdriveio_PUBLIC_HEADERS} ${libdriveio_PRIVATE_HEADERS})
+target_include_directories(driveio PUBLIC libdriveio/inc)
+set_target_properties(driveio PROPERTIES VERSION "${PROJECT_VERSION}" SOVERSION 0)
 target_link_options(driveio PRIVATE LINKER:-z,defs)
 
 
@@ -64,7 +72,7 @@ target_include_directories(mmbd PRIVATE
 	libabi/inc
 )
 
-set_target_properties(mmbd PROPERTIES VERSION "1.14.3" SOVERSION 0)
+set_target_properties(mmbd PROPERTIES VERSION "${PROJECT_VERSION}" SOVERSION 0)
 
 # TODO: --enable-noec  use private ECDSA code
 # TODO: add --version-script=libmmbd/src/libmmbd.vers
@@ -107,7 +115,7 @@ target_include_directories(makemkv PRIVATE
 	libffabi/inc
 )
 
-set_target_properties(makemkv PROPERTIES VERSION "1.14.3" SOVERSION 1)
+set_target_properties(makemkv PROPERTIES VERSION "${PROJECT_VERSION}" SOVERSION 1)
 target_link_libraries(makemkv OpenSSL::Crypto ZLIB::ZLIB EXPAT::EXPAT EBML::ebml Matroska::matroska avcodec avutil)
 target_link_options(makemkv PRIVATE LINKER:-z,defs)
 target_compile_definitions(makemkv PRIVATE -D_linux_ -D_GNU_SOURCE -D_REENTRANT)
