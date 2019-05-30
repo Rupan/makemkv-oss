@@ -33,6 +33,8 @@ set(libdriveio_PUBLIC_HEADERS
 
 set(libdriveio_PRIVATE_HEADERS
 	libdriveio/inc/lgpl/tcpip.h
+	libdriveio/src/drives/drive.h
+	libdriveio/src/tipcommon.h
 )
 
 add_library(driveio SHARED ${libdriveio_SOURCES} ${libdriveio_PUBLIC_HEADERS} ${libdriveio_PRIVATE_HEADERS})
