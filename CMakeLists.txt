@@ -41,16 +41,37 @@ set_target_properties(driveio PROPERTIES VERSION "${PROJECT_VERSION}" SOVERSION 
 target_link_options(driveio PRIVATE LINKER:-z,defs)
 
 
-add_library(mmbd SHARED
-	libmmbd/src/marmmbd.cpp
-	libmmbd/src/nstring.cpp
-	libmmbd/src/mmbd.cpp
-	libmmbd/src/mmconn.cpp
-	libmmbd/src/mmbdipc.cpp
-	libmmbd/src/utf8.cpp
+set(libmmbd_SOURCES
 	libmmbd/src/aacs.cpp
 	libmmbd/src/bdplus.cpp
 	libmmbd/src/crypto_ossl.cpp
+	libmmbd/src/marmmbd.cpp
+	libmmbd/src/mmbd.cpp
+	libmmbd/src/mmbdipc.cpp
+	libmmbd/src/mmconn.cpp
+	libmmbd/src/nstring.cpp
+	libmmbd/src/utf8.cpp
+)
+
+set(libmmbd_PUBLIC_HEADERS
+	libmmbd/inc/libmmbd/mmbd.h
+)
+
+set(libmmbd_PRIVATE_HEADERS
+	libmmbd/src/aacs.h
+	libmmbd/src/bdplus.h
+	libmmbd/src/ConvertUTF.h
+	libmmbd/src/crypto.h
+	libmmbd/src/filesystem.h
+	libmmbd/src/mmbdipc.h
+	libmmbd/src/mmconn.h
+	libmmbd/src/utf8.h
+)
+
+add_library(mmbd SHARED
+	${libmmbd_SOURCES}
+	${libmmbd_PUBLIC_HEADERS}
+	${libmmbd_PRIVATE_HEADERS}
 	makemkvgui/src/client.cpp
 	makemkvgui/src/marshall.cpp
 	makemkvgui/src/api_posix.cpp
@@ -59,7 +80,6 @@ add_library(mmbd SHARED
 	makemkvgui/src/spawn_posix.cpp
 	sstring/src/sstring.cpp
 	makemkvgui/inc/lgpl/aproxy.h
-	libmmbd/inc/libmmbd/mmbd.h
 )
 target_include_directories(mmbd PRIVATE
 	makemkvgui/inc
