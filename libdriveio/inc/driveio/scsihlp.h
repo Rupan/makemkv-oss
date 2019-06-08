@@ -1,7 +1,7 @@
 /*
     libDriveIo - MMC drive interrogation library
 
-    Copyright (C) 2007-2018 GuinpinSoft inc <libdriveio@makemkv.com>
+    Copyright (C) 2007-2019 GuinpinSoft inc <libdriveio@makemkv.com>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -64,5 +64,19 @@ static inline uint16_t uint16_get_be(const void *Buf)
     v |= (((uint16_t)(((uint8_t*)Buf)[1]))<<(0*8));
 
     return v;
+}
+
+static inline void uint32_put_be(void* Buf,uint32_t Value)
+{
+    ((uint8_t*)Buf)[0] = (uint8_t)(Value>>(3*8));
+    ((uint8_t*)Buf)[1] = (uint8_t)(Value>>(2*8));
+    ((uint8_t*)Buf)[2] = (uint8_t)(Value>>(1*8));
+    ((uint8_t*)Buf)[3] = (uint8_t)(Value>>(0*8));
+}
+
+static inline void uint16_put_be(void* Buf,uint16_t Value)
+{
+    ((uint8_t*)Buf)[0] = (uint8_t)(Value>>(1*8));
+    ((uint8_t*)Buf)[1] = (uint8_t)(Value>>(0*8));
 }
 

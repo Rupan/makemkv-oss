@@ -1,7 +1,7 @@
 /*
     libMakeMKV - MKV multiplexer library
 
-    Copyright (C) 2007-2018 GuinpinSoft inc <libmkv@makemkv.com>
+    Copyright (C) 2007-2019 GuinpinSoft inc <libmkv@makemkv.com>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -682,6 +682,8 @@ int __cdecl ffm_audio_encode_put_frame(FFM_AudioEncodeContext* ctx,const uint8_t
                     ctx->frame->data[i] = ctx->frame->extended_data[i];
                 }
             }
+        } else {
+            ctx->frame->extended_data = ctx->frame->data;
         }
 
         r = avcodec_send_frame(ctx->avctx,ctx->frame);

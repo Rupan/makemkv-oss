@@ -55,12 +55,14 @@
   ZLIB_compress;
   ZLIB_uncompress;
   ZLIB_uncompress2;
+  ZLIB_uncompress3;
   ZLIB_sizeof_Z_STREAM;
   ZLIB_get_stream;
   ZLIB_set_stream;
   ZLIB_deflateInitBest;
   ZLIB_deflateAsync;
   ZLIB_deflateEnd;
+  ZLIB_deflateSetDictionary;
   ZLIB_get_uncompressed_size;
   ZLIB_get_uncompressed_size2;
   SYS_fstat;
