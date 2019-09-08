@@ -21,17 +21,9 @@
 #include <driveio/scsicmd.h>
 #include <driveio/driveio.h>
 
-typedef struct _ScsiDriveInfo
-{
-    ScsiInquiryData inq;
-    char            firmware_date[15];
-    char            serial_number[33];
-} ScsiDriveInfo;
-
-typedef int (*QuerySpecificDriveInfoProc)(const ScsiDriveInfo* DriveInfo,ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,DriveIoQueryType QueryType);
-
 namespace LibDriveIo
 {
+
 int ExecuteReadScsiCommand(ISimpleScsiTarget* ScsiTarget,const uint8_t* Cdb,unsigned int CdbLen,void *Buffer,unsigned int BufferSize,ScsiCmdResponse* Response);
 int ExecuteReadScsiCommand(ISimpleScsiTarget* ScsiTarget,const uint8_t* Cdb,unsigned int CdbLen,void *Buffer,unsigned int* BufferSize);
 int ExecuteWriteScsiCommand(ISimpleScsiTarget* ScsiTarget,const uint8_t* Cdb,unsigned int CdbLen,const void *Buffer,unsigned int BufferSize,ScsiCmdResponse* Response);
@@ -40,9 +32,7 @@ int TestUnitReady(ISimpleScsiTarget* ScsiTarget, bool* Ready);
 int BuildInquiryData(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,ScsiInquiryData *InquiryData);
 int BuildDriveInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,ScsiDriveInfo *DriveInfo);
 int QueryInquiryInfo(ISimpleScsiTarget* ScsiTarget,uint8_t Evpd,uint8_t *Buffer,unsigned int *BufferSize);
-}
-using namespace LibDriveIo;
-
+void BuildDriveId(ScsiDriveId* DriveId,const ScsiDriveInfo *DriveInfo);
 
 static inline uint32_t uint32_get_be(const void *Buf)
 {
@@ -80,3 +70,5 @@ static inline void uint16_put_be(void* Buf,uint16_t Value)
     ((uint8_t*)Buf)[1] = (uint8_t)(Value>>(0*8));
 }
 
+}
+using namespace LibDriveIo;

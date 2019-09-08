@@ -36,6 +36,7 @@ AACS_PUBLIC int __cdecl bdplus_free(BDPLUS_CTX* ctx);
 AACS_PUBLIC int __cdecl bdplus_set_title(BDPLUS_CTX* ctx,uint32_t clip_id);
 AACS_PUBLIC int __cdecl bdplus_seek(BDPLUS_CTX* ctx,uint64_t offset);
 AACS_PUBLIC int __cdecl bdplus_fixup(BDPLUS_CTX* ctx,size_t len,uint8_t* buffer);
+AACS_PUBLIC int __cdecl bdplus_set_fopen(BDPLUS_CTX* ctx,void *handle,void* p);
 
 // new API
 AACS_PUBLIC int __cdecl bdplus_mmap(BDPLUS_CTX* ctx,uint32_t region_id,void *mem);

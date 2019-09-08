@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include "scsicmd.h"
 
-#define LIBDRIVEIO_VERSION "1.03"
+#define LIBDRIVEIO_VERSION "2.01"
 
 //
 // All values in enums below are fixed, new values may be added
@@ -100,11 +100,7 @@ typedef enum _DriveIoQueryType_enum
     diq_QueryAllInfo=0,
     diq_QueryDriveInfo=1,
     diq_QueryDiscInfo=2,
-    diq_QueryTotalDriveInfo=3,
-
-    // perform action
-    dia_UnlockMediaAccess=100,
-
+    diq_obsolette_3=3,
     diq_MaxValue
 } DriveIoQueryType_enum;
 
@@ -117,6 +113,27 @@ typedef struct _DriveInfoItem
     const uint8_t*  Data;
     size_t          Size;
 } DriveInfoItem;
+
+typedef struct _ScsiInquiryData
+{
+    uint8_t     DeviceType;
+    char        Vendor[9];
+    char        Product[17];
+    char        Revision[5];
+    uint8_t     VendorSpecificInfo[20];
+} ScsiInquiryData;
+
+typedef struct _ScsiDriveInfo
+{
+    ScsiInquiryData InquiryData;
+    char            FirmwareDate[15];
+    char            SerialNumber[33];
+} ScsiDriveInfo;
+
+typedef struct _ScsiDriveId
+{
+    char        IdString[128];
+} ScsiDriveId;
 
 //
 // Opaque types
@@ -166,6 +183,12 @@ void            DIO_CDECL   DriveInfoList_GetSerializedChunkInfo(const void* Buf
 //
 int             DIO_CDECL   DriveIoQuery(DriveIoExecScsiCmdFunc ScsiProc,void* ScsiContext,DriveIoQueryType QueryType,DIO_INFOLIST* InfoList);
 
+//
+// Utility
+//
+int             DIO_CDECL   DriveIoGetInquiryData(ScsiInquiryData *InquiryData,DriveIoExecScsiCmdFunc ScsiProc,void* ScsiContext,DIO_INFOLIST InfoList);
+int             DIO_CDECL   DriveIoGetDriveInfo(ScsiDriveInfo *DriveInfo,DriveIoExecScsiCmdFunc ScsiProc,void* ScsiContext,DIO_INFOLIST InfoList);
+int             DIO_CDECL   DriveIoGetDriveId(ScsiDriveId *DriveId,DriveIoExecScsiCmdFunc ScsiProc,void* ScsiContext,DIO_INFOLIST InfoList);
 
 //
 // TIPS - Trivial IP SCSI tunneling.

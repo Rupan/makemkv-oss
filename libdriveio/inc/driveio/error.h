@@ -29,6 +29,7 @@
 #define DRIVEIO_ERR_SCSI_STATUS(status)         DRIVEIO_ERROR(1,(status))
 #define DRIVEIO_ERR_SCSI_SENSE(sense)           DRIVEIO_ERROR(2,(sense))
 #define DRIVEIO_ERR_NO_MEMORY                   DRIVEIO_ERROR(3,0)
+#define DRIVEIO_ERR_FILE_NOT_FOUND              DRIVEIO_ERROR(3,1)
 
 // sdfw errors (comparable)
 #define SDFRUN_INVALID_OUT_LENGTH(length)       DRIVEIO_ERROR(11,(length))
@@ -47,5 +48,8 @@
 #define SDFRUN_VM_ERROR                         DRIVEIO_ERROR_INTERNAL(14,0)
 #define DRIVEIO_TCPIP_ERROR(code)               DRIVEIO_ERROR_INTERNAL(20,code)
 #define DRIVEIO_TIPS_ERROR(code)                DRIVEIO_ERROR_INTERNAL(21,code)
+#define DRIVEIO_IO_ERROR(code)                  DRIVEIO_ERROR_INTERNAL(23,code)
+#define DRIVEIO_ERROR_BAD_DATA                  DRIVEIO_ERROR_INTERNAL(24,1)
+#define DRIVEIO_ERROR_INVALID_ARG               DRIVEIO_ERROR_INTERNAL(24,2)
 
 #endif // DRIVEIO_ERROR_H_INCLUDED

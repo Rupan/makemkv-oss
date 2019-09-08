@@ -5,5 +5,6 @@ EXPORTS
   HTTP_Download
   getopt_long=getopt_long
   getopt_get_optind=getopt_get_optind
+  getopt_set_optind=getopt_set_optind
   getopt_get_optarg=getopt_get_optarg
 

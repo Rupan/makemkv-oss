@@ -47,5 +47,6 @@
   bdplus_set_mk;
   bdplus_get_code_gen;
   bdplus_get_code_date;
+  bdplus_set_fopen;
   local: *;
 };

@@ -157,3 +157,9 @@ AACS_PUBLIC int __cdecl bdplus_get_code_date(BDPLUS_CTX* ctx)
 {
     return 0;
 }
+
+AACS_PUBLIC int __cdecl bdplus_set_fopen(BDPLUS_CTX* ctx,void *handle,void* p)
+{
+    return 0;
+}
+

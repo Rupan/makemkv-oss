@@ -43,15 +43,6 @@ typedef struct _ScsiCmdResponse
     unsigned char   SenseData[64];
 } ScsiCmdResponse;
 
-typedef struct _ScsiInquiryData
-{
-    uint8_t     DeviceType;
-    char        Vendor[9];
-    char        Product[17];
-    char        Revision[5];
-    uint8_t     VendorSpecificInfo[20];
-} ScsiInquiryData;
-
 #ifdef __cplusplus
 
 class ISimpleScsiTarget

@@ -16,6 +16,7 @@ extern "C" {
 #endif
 
 extern int __cdecl getopt_get_optind();
+extern void __cdecl getopt_set_optind(int value);
 extern const char* __cdecl getopt_get_optarg();
 
 #ifdef __cplusplus
@@ -28,6 +29,7 @@ extern const char* __cdecl getopt_get_optarg();
 
 #define getopt_get_optind() (optind)
 #define getopt_get_optarg() (optarg)
+#define getopt_set_optind(v) {optind=(v);}
 
 #endif
 

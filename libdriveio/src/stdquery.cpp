@@ -23,46 +23,14 @@
 #include <driveio/scsicmd.h>
 #include <driveio/driveio.h>
 #include <driveio/scsihlp.h>
+#include <driveio/error.h>
 #include <errno.h>
 #include <string.h>
 
 //
-// This table lists all specific query routines
-//
-int SpecInfo_PIONEER(const ScsiDriveInfo* DriveInfo,ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,DriveIoQueryType QueryType);
-int SpecInfo_XBOXHDDVD(const ScsiDriveInfo* DriveInfo,ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,DriveIoQueryType QueryType);
-int SpecInfo_MOGUL1(const ScsiDriveInfo* DriveInfo,ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,DriveIoQueryType QueryType);
-
-static const QuerySpecificDriveInfoProc AllDrivesQuery[]=
-{
-    SpecInfo_PIONEER,       // all Pioneer drives
-    SpecInfo_XBOXHDDVD,     // x-box hd-dvd drive
-#ifdef DRIVEIO_ENABLE_SPECIFIC_MOGUL1
-    SpecInfo_MOGUL1,         // our secret "mogul1" drive (can read VID, KCD and PMSN)
-#endif
-    NULL
-};
-
-static int QuerySpecificInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,DriveIoQueryType QueryType)
-{
-    ScsiDriveInfo   drive_info;
-    int err;
-
-    if (0!=(err=BuildDriveInfo(ScsiTarget,List,&drive_info))) return err;
-
-    for (unsigned int i=0;AllDrivesQuery[i]!=NULL;i++)
-    {
-        err = (AllDrivesQuery[i])(&drive_info,ScsiTarget,List,QueryType);
-        if (err) return err;
-    }
-
-    return 0;
-}
-
-//
 // Queries all standard drive info
 //
-static int QueryStandardDriveInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,bool Total)
+static int QueryDriveInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,bool Total)
 {
     int err;
     unsigned int len,slen;
@@ -73,8 +41,8 @@ static int QueryStandardDriveInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST Lis
     //
     err=QueryInquiryInfo(ScsiTarget,0,data_buffer,&slen);
     if (err) return err;
-    if (DriveInfoList_AddItem(List,diid_InquiryData,data_buffer,slen)) return ENOMEM;
-    if ((data_buffer[0]&0x1f)!=5) return EBADF; // not a MMC drive
+    if (DriveInfoList_AddItem(List,diid_InquiryData,data_buffer,slen)) return DRIVEIO_ERR_NO_MEMORY;
+    if ((data_buffer[0]&0x1f)!=5) return DRIVEIO_ERROR_BAD_DATA; // not a MMC drive
 
     if (Total)
     {
@@ -90,7 +58,7 @@ static int QueryStandardDriveInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST Lis
                 if (0==memcmp(inqdata,data_buffer,34)) slen=0;
             }
             if (slen==0) continue;
-            if (DriveInfoList_AddItem(List,(DriveInfoId)(diid_InquiryData+evpd),data_buffer,slen)) return ENOMEM;
+            if (DriveInfoList_AddItem(List,(DriveInfoId)(diid_InquiryData+evpd),data_buffer,slen)) return DRIVEIO_ERR_NO_MEMORY;
         }
     }
 
@@ -123,7 +91,7 @@ static int QueryStandardDriveInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST Lis
 
         if (slen==8) break; // empty feature header
 
-        if (slen < 12) return ERANGE;
+        if (slen < 12) return DRIVEIO_ERROR_BAD_DATA;
 
         first_feature = true;
 
@@ -164,7 +132,7 @@ static int QueryStandardDriveInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST Lis
                 }
             }
 
-            if (DriveInfoList_AddItem(List,(DriveInfoId)(diid_FeatureDescriptor + feature_code),dptr,feature_len)) return ENOMEM;
+            if (DriveInfoList_AddItem(List,(DriveInfoId)(diid_FeatureDescriptor + feature_code),dptr,feature_len)) return DRIVEIO_ERR_NO_MEMORY;
 
             first_feature = false;
             current_feature = feature_code+1;
@@ -278,8 +246,8 @@ static int QueryStandardDiscInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List
             slen = uint32_get_be(data_buffer);
             slen +=4;
             if (slen > len) slen = len;
-            if (slen<8) return ERANGE;
-            if (DriveInfoList_AddItem(List,diid_CurrentProfile,data_buffer+6,2)) return ENOMEM;
+            if (slen<8) return DRIVEIO_ERROR_BAD_DATA;
+            if (DriveInfoList_AddItem(List,diid_CurrentProfile,data_buffer+6,2)) return DRIVEIO_ERR_NO_MEMORY;
         }
     }
 
@@ -328,7 +296,7 @@ static int QueryStandardDiscInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List
 
         if (slen>maxlen) slen=maxlen;
 
-        if (DriveInfoList_AddItem(List, (DriveInfoId) (((unsigned int)diid_DiscStructure) + code),data_buffer,slen)) return ENOMEM;
+        if (DriveInfoList_AddItem(List, (DriveInfoId) (((unsigned int)diid_DiscStructure) + code),data_buffer,slen)) return DRIVEIO_ERR_NO_MEMORY;
     }
 
     //
@@ -350,7 +318,7 @@ static int QueryStandardDiscInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List
             len = res.Transferred;
             slen = uint16_get_be(data_buffer)+2;
             if (slen>len) continue;
-            if (DriveInfoList_AddItem(List, (DriveInfoId) (((unsigned int)diid_TOC) + layer_id),data_buffer,slen)) return ENOMEM;
+            if (DriveInfoList_AddItem(List, (DriveInfoId) (((unsigned int)diid_TOC) + layer_id),data_buffer,slen)) return DRIVEIO_ERR_NO_MEMORY;
         }
     }
 
@@ -389,7 +357,7 @@ static int QueryStandardDiscInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List
             }
 
             if (slen>len) continue;
-            if (DriveInfoList_AddItem(List, (DriveInfoId) (((unsigned int)diid_DiscInformation) + layer_id),data_buffer,slen)) return ENOMEM;
+            if (DriveInfoList_AddItem(List, (DriveInfoId) (((unsigned int)diid_DiscInformation) + layer_id),data_buffer,slen)) return DRIVEIO_ERR_NO_MEMORY;
         }
     }
 
@@ -418,19 +386,8 @@ static int QueryStandardDiscInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List
         {
              return ERANGE;
         }
-        if (DriveInfoList_AddItem(List, diid_DiscCapacity,data_buffer,8)) return ENOMEM;
+        if (DriveInfoList_AddItem(List, diid_DiscCapacity,data_buffer,8)) return DRIVEIO_ERR_NO_MEMORY;
     }
-
-    return 0;
-}
-
-static int QueryDriveInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,bool Total)
-{
-    int err;
-
-    if (0!=(err=QueryStandardDriveInfo(ScsiTarget,List,Total))) return err;
-
-    if (0!=(err=QuerySpecificInfo(ScsiTarget,List,diq_QueryDriveInfo))) return err;
 
     return 0;
 }
@@ -448,8 +405,6 @@ static int QueryDiscInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,bool Fa
 
     if (0!=(err=QueryStandardDiscInfo(ScsiTarget,List))) return err;
 
-    if (0!=(err=QuerySpecificInfo(ScsiTarget,List,diq_QueryDiscInfo))) return err;
-
     return 0;
 }
 
@@ -464,7 +419,7 @@ static int DriveIoQuery(ISimpleScsiTarget* ScsiTarget,DriveIoQueryType QueryType
     list = DriveInfoList_Create();
     if (NULL==list)
     {
-        return ENOMEM;
+        return DRIVEIO_ERR_NO_MEMORY;
     }
 
     switch(QueryType)
@@ -478,10 +433,6 @@ static int DriveIoQuery(ISimpleScsiTarget* ScsiTarget,DriveIoQueryType QueryType
         break;
     case diq_QueryDiscInfo:
         err = QueryDiscInfo(ScsiTarget,list,true);
-        break;
-    case diq_QueryTotalDriveInfo:
-        if (0!=(err = QueryDriveInfo(ScsiTarget,list,true))) break;
-        err = QuerySpecificInfo(ScsiTarget,list,diq_QueryTotalDriveInfo);
         break;
     default:
         break;
@@ -513,8 +464,11 @@ public:
 
 int CFwdScsiTarget::Exec(const ScsiCmd* Cmd,ScsiCmdResponse *CmdResult)
 {
-    return m_Func(m_Context,Cmd,CmdResult);
+    if (NULL==m_Func) return -1;
+    return (*m_Func)(m_Context,Cmd,CmdResult);
 }
+
+}; // namespace LibDriveIo
 
 //
 // API
@@ -526,4 +480,29 @@ extern "C" int DIO_CDECL DriveIoQuery(DriveIoExecScsiCmdFunc ScsiProc,void* Scsi
     return LibDriveIo::DriveIoQuery(&t,QueryType,InfoList);
 }
 
-}; // namespace LibDriveIo
+extern "C" int DIO_CDECL DriveIoGetInquiryData(ScsiInquiryData *InquiryData,DriveIoExecScsiCmdFunc ScsiProc,void* ScsiContext,DIO_INFOLIST InfoList)
+{
+    CFwdScsiTarget t(ScsiProc,ScsiContext);
+    return LibDriveIo::BuildInquiryData(&t,InfoList,InquiryData);
+}
+
+extern "C" int DIO_CDECL DriveIoGetDriveInfo(ScsiDriveInfo *DriveInfo,DriveIoExecScsiCmdFunc ScsiProc,void* ScsiContext,DIO_INFOLIST InfoList)
+{
+    CFwdScsiTarget t(ScsiProc,ScsiContext);
+    return LibDriveIo::BuildDriveInfo(&t,InfoList,DriveInfo);
+}
+
+extern "C" int DIO_CDECL DriveIoGetDriveId(ScsiDriveId *DriveId,DriveIoExecScsiCmdFunc ScsiProc,void* ScsiContext,DIO_INFOLIST InfoList)
+{
+    int err;
+    ScsiDriveInfo info;
+    CFwdScsiTarget t(ScsiProc,ScsiContext);
+
+    err = LibDriveIo::BuildDriveInfo(&t,InfoList,&info);
+    if (0!=err) return err;
+
+    LibDriveIo::BuildDriveId(DriveId,&info);
+
+    return 0;
+}
+

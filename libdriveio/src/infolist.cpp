@@ -22,6 +22,7 @@
 #include <stdint.h>
 #include <driveio/scsicmd.h>
 #include <driveio/driveio.h>
+#include <driveio/error.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -314,14 +315,14 @@ extern "C" int DIO_CDECL DriveInfoList_AddItem(DIO_INFOLIST List,DriveInfoId Id,
 {
     LibDriveIo::CDriveInfoList* plist = (LibDriveIo::CDriveInfoList*) List;
 
-    return plist->AddItem(Id,Data,Size) ? 0 : -1;
+    return plist->AddItem(Id,Data,Size) ? 0 : DRIVEIO_ERR_NO_MEMORY;
 }
 
 extern "C" int DIO_CDECL DriveInfoList_AddOrUpdateItem(DIO_INFOLIST List, DriveInfoId Id, const void* Data, size_t Size)
 {
     LibDriveIo::CDriveInfoList* plist = (LibDriveIo::CDriveInfoList*) List;
 
-    return plist->AddOrUpdateItem(Id, Data, Size) ? 0 : -1;
+    return plist->AddOrUpdateItem(Id, Data, Size) ? 0 : DRIVEIO_ERR_NO_MEMORY;
 }
 
 extern "C" size_t DIO_CDECL DriveInfoList_GetCount(DIO_INFOLIST List)

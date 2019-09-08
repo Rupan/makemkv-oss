@@ -21,7 +21,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <driveio/scsihlp.h>
-#include <errno.h>
+#include <driveio/error.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -33,7 +33,7 @@ static int ExecuteReadWriteScsiCommand(bool Read,ISimpleScsiTarget* ScsiTarget,c
 
     if (CdbLen>16)
     {
-        return -EINVAL;
+        return DRIVEIO_ERROR_INVALID_ARG;
     }
 
     memset(&cmd,0,sizeof(cmd));
@@ -69,7 +69,7 @@ static int ExecuteReadWriteScsiCommand(bool Read,ISimpleScsiTarget* ScsiTarget,c
         cmd.Cdb[11] = 0;
         break;
     default:
-        return -EINVAL;
+        return DRIVEIO_ERROR_INVALID_ARG;
     }
 
     if (Read)
@@ -103,7 +103,7 @@ int LibDriveIo::ExecuteReadScsiCommand(ISimpleScsiTarget* ScsiTarget,const uint8
 
     if (res.Status!=0)
     {
-        return -EIO;
+        return DRIVEIO_ERR_SCSI_STATUS(res.Status);
     }
 
     *BufferSize = res.Transferred;
@@ -125,12 +125,12 @@ int LibDriveIo::ExecuteWriteScsiCommand(ISimpleScsiTarget* ScsiTarget,const uint
 
     if (res.Status!=0)
     {
-        return -EIO;
+        return DRIVEIO_ERR_SCSI_STATUS(res.Status);
     }
 
     if (res.Transferred!=BufferSize)
     {
-        return -EIO;
+        return DRIVEIO_ERROR_BAD_DATA;
     }
 
     return 0;
@@ -212,7 +212,6 @@ static void CopyPaddedString(char *dst,unsigned int len,const void *src)
     dst[i]=0;
 }
 
-
 static void AddInquiryData(ScsiInquiryData *InquiryData,const uint8_t* Data)
 {
     InquiryData->DeviceType = Data[0] & 0x1f;
@@ -233,14 +232,14 @@ static void AddInquiryData(ScsiInquiryData *InquiryData,const uint8_t* Data)
 
 static void AddFirmwareDate(ScsiDriveInfo *DriveInfo,const uint8_t* Data)
 {
-    CopyPaddedString(DriveInfo->firmware_date,14,Data+4);
+    CopyPaddedString(DriveInfo->FirmwareDate,14,Data+4);
 }
 
 static void AddSerialNumber(ScsiDriveInfo *DriveInfo,const uint8_t* Data)
 {
     unsigned int len = Data[3];
     if (len>32) len = 32;
-    CopyPaddedString(DriveInfo->serial_number,len,Data+4);
+    CopyPaddedString(DriveInfo->SerialNumber,len,Data+4);
 }
 
 static int ReadSingleFeatureDescriptor(ISimpleScsiTarget* ScsiTarget,uint16_t Id,uint8_t *Buffer,unsigned int BufferLen,bool* Have)
@@ -299,7 +298,7 @@ int LibDriveIo::QueryInquiryInfo(ISimpleScsiTarget* ScsiTarget,uint8_t Evpd,uint
 
     if (Evpd==0)
     {
-        if (res.Status!=0) return EIO;
+        if (res.Status!=0) return DRIVEIO_ERR_SCSI_STATUS(res.Status);
         slen = ((unsigned int)Buffer[4])+5;
         if (slen>len)
         {
@@ -311,7 +310,7 @@ int LibDriveIo::QueryInquiryInfo(ISimpleScsiTarget* ScsiTarget,uint8_t Evpd,uint
                 //
                 memset(Buffer+len,0,slen-len);
             } else {
-                return -ERANGE;
+                return DRIVEIO_ERROR_BAD_DATA;
             }
         }
     } else {
@@ -344,7 +343,7 @@ int LibDriveIo::BuildInquiryData(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List
         if (0!=(err=QueryInquiryInfo(ScsiTarget,0,buf,&len))) return err;
         AddInquiryData(InquiryData,buf);
 
-        if ((buf[0]&0x1f)!=5) return -EBADF; // not a MMC drive
+        if ((buf[0]&0x1f)!=5) return DRIVEIO_ERROR_BAD_DATA; // not a MMC drive
     }
 
     return 0;
@@ -357,7 +356,7 @@ int LibDriveIo::BuildDriveInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,S
     DriveInfoItem   item;
     bool have;
 
-    err=BuildInquiryData(ScsiTarget,List,&DriveInfo->inq);
+    err=BuildInquiryData(ScsiTarget,List,&DriveInfo->InquiryData);
     if (err) return err;
 
     if (0==DriveInfoList_GetItemById(List,diid_FeatureDescriptor_FirmwareInformation,&item))
@@ -369,7 +368,7 @@ int LibDriveIo::BuildDriveInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,S
         {
             AddFirmwareDate(DriveInfo,buf+8);
         } else {
-            DriveInfo->firmware_date[0]=0;
+            DriveInfo->FirmwareDate[0]=0;
         }
     }
 
@@ -382,9 +381,52 @@ int LibDriveIo::BuildDriveInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,S
         {
             AddSerialNumber(DriveInfo,buf+8);
         } else {
-            DriveInfo->serial_number[0]=0;
+            DriveInfo->SerialNumber[0]=0;
         }
     }
 
     return 0;
 }
+
+static char* AppendStr(char* dst,const char* src)
+{
+    const uint8_t* p = (const uint8_t*)src;
+    while (*p!=0)
+    {
+        uint8_t c;
+
+        c = *p; p++;
+
+        if ((c>0x7e) || (c<0x20)) continue;
+
+        if (c==0x20) c='_';
+
+        *dst = c; dst++;
+    }
+
+    return dst;
+}
+
+void LibDriveIo::BuildDriveId(ScsiDriveId* DriveId,const ScsiDriveInfo *DriveInfo)
+{
+    char* dst = DriveId->IdString;
+
+    dst = AppendStr(dst,DriveInfo->InquiryData.Vendor);
+    *dst='_'; dst++;
+    dst = AppendStr(dst,DriveInfo->InquiryData.Product);
+    *dst='_'; dst++;
+    dst = AppendStr(dst,DriveInfo->InquiryData.Revision);
+    if (DriveInfo->FirmwareDate[0]!=0)
+    {
+        *dst='_'; dst++;
+        dst = AppendStr(dst,DriveInfo->FirmwareDate);
+    }
+    if (DriveInfo->SerialNumber[0]!=0)
+    {
+        *dst='_'; dst++;
+        dst = AppendStr(dst,DriveInfo->SerialNumber);
+    }
+
+    *dst = 0;
+}
+
