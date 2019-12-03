@@ -884,6 +884,7 @@ void MainWnd::EnterJobMode(unsigned int Flags)
         topStackedWidget->setCurrentIndex(1);
         break;
     }
+    ClearProgress();
 }
 
 void MainWnd::LeaveJobMode()

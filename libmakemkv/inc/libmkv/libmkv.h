@@ -67,7 +67,7 @@ public:
 
 typedef enum _MkvTrackType
 {
-    mttUnknown,
+    mttUnknown=0,
     mttVideo,
     mttAudio,
     mttSubtitle

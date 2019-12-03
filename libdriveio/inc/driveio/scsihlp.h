@@ -33,6 +33,8 @@ int BuildInquiryData(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,ScsiInquiry
 int BuildDriveInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,ScsiDriveInfo *DriveInfo);
 int QueryInquiryInfo(ISimpleScsiTarget* ScsiTarget,uint8_t Evpd,uint8_t *Buffer,unsigned int *BufferSize);
 void BuildDriveId(ScsiDriveId* DriveId,const ScsiDriveInfo *DriveInfo);
+int ScsiErrorFromResult(const ScsiCmdResponse *CmdResult);
+
 
 static inline uint32_t uint32_get_be(const void *Buf)
 {

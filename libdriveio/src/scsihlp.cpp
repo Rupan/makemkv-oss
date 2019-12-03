@@ -430,3 +430,41 @@ void LibDriveIo::BuildDriveId(ScsiDriveId* DriveId,const ScsiDriveInfo *DriveInf
     *dst = 0;
 }
 
+int LibDriveIo::ScsiErrorFromResult(const ScsiCmdResponse *CmdResult)
+{
+    if ((CmdResult->Status == 2) && (CmdResult->SenseLen >= 2))
+    {
+        uint8_t key, asc, ascq;
+        uint32_t code;
+        uint8_t rcode = CmdResult->SenseData[0] & 0x7f;
+
+        if ((rcode == 0x70) || (rcode == 0x71))
+        {
+            if (CmdResult->SenseLen >= 17)
+            {
+                key = CmdResult->SenseData[2] & 0x0f;
+                asc = CmdResult->SenseData[12];
+                ascq = CmdResult->SenseData[13];
+
+                code = (((uint32_t)key) << 16) | (((uint32_t)asc) << 8) | ascq;
+                return DRIVEIO_ERR_SCSI_SENSE(code);
+            }
+        }
+
+        if ((rcode == 0x72) || (rcode == 0x73))
+        {
+            if (CmdResult->SenseLen >= 8)
+            {
+                key = CmdResult->SenseData[1] & 0x0f;
+                asc = CmdResult->SenseData[2];
+                ascq = CmdResult->SenseData[3];
+
+                code = (((uint32_t)key) << 16) | (((uint32_t)asc) << 8) | ascq;
+                return DRIVEIO_ERR_SCSI_SENSE(code);
+            }
+        }
+    }
+
+    return DRIVEIO_ERR_SCSI_STATUS(CmdResult->Status);
+}
+

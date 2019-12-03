@@ -327,6 +327,7 @@ public:
     unsigned int    compression_type;
     unsigned int    compression_level;
     EbmlBinary*     codec_private;
+    EbmlUInteger*   flag_default;
     uint64_t        stat_frames;
     uint64_t        stat_bytes;
     uint64_t        stat_bytes_out;
@@ -628,7 +629,8 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
         GetChild<EbmlUInteger,KaxTrackType>(cur_track) = ttype;
 
         GetChild<EbmlUInteger,KaxTrackFlagDefault>(cur_track) = (0!=(ti->mkv_flags&MKV_TRACK_FLAG_DEFAULT))?1:0;
-        GetChild<EbmlUInteger,KaxTrackFlagDefault>(cur_track).ForceNoDefault();
+        track_info[i].flag_default = &GetChild<EbmlUInteger, KaxTrackFlagDefault>(cur_track);
+        track_info[i].flag_default->ForceNoDefault();
 
         if (0!=(ti->mkv_flags&MKV_TRACK_FLAG_FORCED))
         {
@@ -733,6 +735,7 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
 
             GetChild<EbmlFloat,KaxAudioSamplingFreq>(aud_track) = ti->u.audio.sample_rate;
             GetChild<EbmlUInteger,KaxAudioChannels>(aud_track) = ti->u.audio.channels_count;
+            GetChild<EbmlUInteger, KaxAudioChannels>(aud_track).ForceNoDefault();
             if (0!=ti->u.audio.bits_per_sample)
             {
                 if ( (!(FormatInfo->debug.compatFlags&1)) || strcmp(ti->codec_id,"A_DTS") )
@@ -1219,8 +1222,19 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
 
         if (track_info[i].stat_frames==0)
         {
+            if (0!=(track_info[i].info.mkv_flags&MKV_TRACK_FLAG_DEFAULT))
+            {
+                if (track_info[i-1].info.type==track_info[i].info.type)
+                {
+                    MKV_ASSERT(track_info[i-1].flag_default->GetSize()==1);
+                    track_info[i-1].flag_default->SetValue(1);
+                    track_info[i-1].flag_default->OverwriteData(File, true);
+                }
+            }
+
             VoidElement(tracks[i],File);
             my_world()->uc_emptytrack(Input,i,&track_info[i].info);
+            track_info[i].info.type = mttUnknown;
             continue;
         }
 

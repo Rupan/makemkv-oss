@@ -37,7 +37,8 @@ typedef struct _mm_bd_context MMBD;
 #define MMBD_FILE_SSIF          0x80000000 /* SSIF file */
 #define MMBD_FLAG_AACS_ONLY     0x00100000 /* only apply AACS decryption, skip BD+ */
 #define MMBD_FLAG_BDPLUS_ONLY   0x00200000 /* only apply BD+ transform */
-#define MMBD_FLAG_BUS_ONLY      0x00400000 /* only apply BUS decryption, skip BD+ and AACS*/
+#define MMBD_FLAG_BUS_ONLY      0x00400000 /* only apply BUS decryption, skip BD+ and AACS */
+#define MMBD_FLAG_BLOCK_KEY     0x00800000 /* do not decrypt, get an AACS block key instead, must use with MMBD_FLAG_AACS_ONLY */
 #define MMBD_FLAG_AUTO_CPSID    0x10000000 /* for libaacs compatibility */
 
 /* This callback function will receive all diagnostic output

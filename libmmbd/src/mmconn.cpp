@@ -485,20 +485,34 @@ int CMMBDConn::decrypt_unit(uint32_t name_flags,uint64_t file_offset,uint8_t* bu
     }
 
 
+    if (0!=(name_flags&MMBD_FLAG_BLOCK_KEY)) {
+        if (dbuf[0]&1) {
+            memcpy(buf, dbuf+1, 16);
+        } else {
+            memset(buf, 0x00, 16);
+        }
+        return 0;
+    }
+
+
     if ( ((buf[0]&0xC0)!=0x00) && (0==(name_flags&MMBD_FLAG_BDPLUS_ONLY)) ) {
 
 
-        if ((m_disc_flags&AP_MMBD_DISC_FLAG_BUSENC)!=0) {
-            (*m_aes_cbcd)(m_bus_key,iv,buf+16+0*BD_SECTOR_SIZE,BD_SECTOR_SIZE-16);
-            (*m_aes_cbcd)(m_bus_key,iv,buf+16+1*BD_SECTOR_SIZE,BD_SECTOR_SIZE-16);
-            (*m_aes_cbcd)(m_bus_key,iv,buf+16+2*BD_SECTOR_SIZE,BD_SECTOR_SIZE-16);
-        }
-
-
         if (dbuf[0]&1) {
-             (*m_aes_cbcd)(dbuf+1,iv,buf+16,6128);
+
+            if ((m_disc_flags&AP_MMBD_DISC_FLAG_BUSENC)!=0) {
+                (*m_aes_cbcd)(m_bus_key, iv, buf+16+0*BD_SECTOR_SIZE, BD_SECTOR_SIZE-16);
+                (*m_aes_cbcd)(m_bus_key, iv, buf+16+1*BD_SECTOR_SIZE, BD_SECTOR_SIZE-16);
+                (*m_aes_cbcd)(m_bus_key, iv, buf+16+2*BD_SECTOR_SIZE, BD_SECTOR_SIZE-16);
+            }
+
+
+            (*m_aes_cbcd)(dbuf+1, iv, buf+16, 6128);
+            buf[0]&=0x3f;
+        } else {
+
+            memset(buf, 0x00, 6144);
         }
-        buf[0]&=0x3f;
     }
 
 
