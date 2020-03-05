@@ -1,7 +1,7 @@
 /*
     MakeMKV GUI - Graphics user interface application for MakeMKV
 
-    Copyright (C) 2007-2019 GuinpinSoft inc <makemkvgui@makemkv.com>
+    Copyright (C) 2007-2020 GuinpinSoft inc <makemkvgui@makemkv.com>
 
     You may use this file in accordance with the end user license
     agreement provided with the Software. For licensing terms and
@@ -50,9 +50,9 @@ QWidget* MainWnd::CreateProgressFrame()
     btm_layout->addWidget(currProgressBar,1,0,1,4);
     btm_layout->addWidget(totalProgressBar,3,0,1,3);
 
-    QToolButton* progressCancelButton = new QToolButton();
-    progressCancelButton->setIconSize(adjustIconSize(progressCancelButton->iconSize(),32));
+    QToolButtonP* progressCancelButton = new QToolButtonP();
     progressCancelButton->setDefaultAction(cancelAct);
+    progressCancelButton->setButtonSize(currProgressBar->sizeHint(), 128);
     progressCancelButton->setFocusPolicy(Qt::NoFocus);
 
     btm_layout->addWidget(progressCancelButton,2,3,2,1,Qt::AlignBottom | Qt::AlignRight);

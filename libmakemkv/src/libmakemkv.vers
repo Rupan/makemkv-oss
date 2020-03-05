@@ -67,6 +67,7 @@
   ZLIB_get_uncompressed_size2;
   SYS_fstat;
   SYS_nstat;
+  SYS_lstat;
   SYS_readdir;
   SYS_fstatfs;
   SYS_nstatfs;

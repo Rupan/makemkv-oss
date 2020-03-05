@@ -635,8 +635,6 @@ QT_MOC
 QT_LIB
 QT_CFLAGS
 QT_INC
-qt4_LIBS
-qt4_CFLAGS
 qt5_LIBS
 qt5_CFLAGS
 ffmpeg_LIBS
@@ -749,7 +747,6 @@ with_sysroot
 enable_libtool_lock
 enable_gui
 enable_qt5
-enable_qt4
 enable_noec
 enable_allcodecs
 enable_debug
@@ -774,9 +771,7 @@ PKG_CONFIG_LIBDIR
 ffmpeg_CFLAGS
 ffmpeg_LIBS
 qt5_CFLAGS
-qt5_LIBS
-qt4_CFLAGS
-qt4_LIBS'
+qt5_LIBS'
 
 
 # Initialize some variables set by options.
@@ -1398,7 +1393,6 @@ Optional Features:
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --disable-gui           do not build GUI (default is build GUI)
   --disable-qt5           do not use Qt5
-  --disable-qt4           do not use Qt4
   --enable-noec           use private ECDSA code (default - use openssl ECDSA
                           if available)
   --enable-allcodecs      enable all codecs from ffmpeg library (default - use
@@ -1438,8 +1432,6 @@ Some influential environment variables:
   ffmpeg_LIBS linker flags for ffmpeg, overriding pkg-config
   qt5_CFLAGS  C compiler flags for qt5, overriding pkg-config
   qt5_LIBS    linker flags for qt5, overriding pkg-config
-  qt4_CFLAGS  C compiler flags for qt4, overriding pkg-config
-  qt4_LIBS    linker flags for qt4, overriding pkg-config
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -11203,14 +11195,6 @@ else
 fi
 
 
-# Check whether --enable-qt4 was given.
-if test "${enable_qt4+set}" = set; then :
-  enableval=$enable_qt4;
-else
-  enable_qt4=yes
-fi
-
-
 # Check whether --enable-noec was given.
 if test "${enable_noec+set}" = set; then :
   enableval=$enable_noec;
@@ -16422,93 +16406,7 @@ fi
 
   if test "$qt_ok" = "no"; then :
 
-    if test "x$enable_qt4" != "xno"; then :
-
-
-pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for qt4" >&5
-$as_echo_n "checking for qt4... " >&6; }
-
-if test -n "$qt4_CFLAGS"; then
-    pkg_cv_qt4_CFLAGS="$qt4_CFLAGS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"QtCore QtGui QtDBus\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "QtCore QtGui QtDBus") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_qt4_CFLAGS=`$PKG_CONFIG --cflags "QtCore QtGui QtDBus" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-if test -n "$qt4_LIBS"; then
-    pkg_cv_qt4_LIBS="$qt4_LIBS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"QtCore QtGui QtDBus\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "QtCore QtGui QtDBus") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_qt4_LIBS=`$PKG_CONFIG --libs "QtCore QtGui QtDBus" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-
-
-
-if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-
-if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
-        _pkg_short_errors_supported=yes
-else
-        _pkg_short_errors_supported=no
-fi
-        if test $_pkg_short_errors_supported = yes; then
-	        qt4_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "QtCore QtGui QtDBus" 2>&1`
-        else
-	        qt4_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "QtCore QtGui QtDBus" 2>&1`
-        fi
-	# Put the nasty error message in config.log where it belongs
-	echo "$qt4_PKG_ERRORS" >&5
-
-	qt_ok=no
-elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-	qt_ok=no
-else
-	qt4_CFLAGS=$pkg_cv_qt4_CFLAGS
-	qt4_LIBS=$pkg_cv_qt4_LIBS
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-
-        QT_INC="$qt4_CFLAGS";
-        QT_CFLAGS="";
-        QT_LIB="$qt4_LIBS";
-        QT_MOC=`$PKG_CONFIG --variable moc_location "QtCore" 2>/dev/null`;
-        qt_ok=yes
-
-fi
-
-fi
-
-    if test "$qt_ok" = "no"; then :
-
-      as_fn_error $? "Qt library (version 5 or 4) is required to build GUI" "$LINENO" 5
-
-fi
+    as_fn_error $? "Qt library (version 5) is required to build GUI" "$LINENO" 5
 
 fi
 

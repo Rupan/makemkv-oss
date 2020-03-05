@@ -1,7 +1,7 @@
 /*
     MakeMKV GUI - Graphics user interface application for MakeMKV
 
-    Copyright (C) 2007-2019 GuinpinSoft inc <makemkvgui@makemkv.com>
+    Copyright (C) 2007-2020 GuinpinSoft inc <makemkvgui@makemkv.com>
 
     You may use this file in accordance with the end user license
     agreement provided with the Software. For licensing terms and
@@ -19,6 +19,7 @@
 #include <lgpl/aproxy.h>
 
 #define QT_C_ASSERT(e) typedef char __QT_C_ASSERT__[(e)?1:-1]
+#define _qt_countof(a) (sizeof(a)/sizeof(*(a)))
 
 #include "qtstr.h"
 
@@ -34,18 +35,15 @@ public:
 
 class QGrayTextViewer : public QTextEdit
 {
+    QString cachedText;
 public:
     QGrayTextViewer()
     {
-        /*
-        QPalette p=palette();
-        p.setColor(QPalette::Active, QPalette::Base , p.window().color() );
-        setPalette(p);
-        */
         setReadOnly(true);
         setLineWrapMode(QTextEdit::NoWrap);
     }
     void setHtmlBody(const QString& str);
+    void rebuildHtmlBody();
 };
 
 static inline QLabel* createLabel(const QString &txt)
@@ -73,8 +71,11 @@ QImage* getBuiltinImage(unsigned int id);
 QIcon* createIconPixmaps(unsigned int firstId,unsigned int count);
 void createAnimIcons();
 const QIcon* getAnimIcon(unsigned int id,unsigned int id2);
+QSize getImageGoodSize(int height, bool biggerOk);
+QSize getIconSize(unsigned int den);
 
-QSize adjustIconSize(QSize size,unsigned int min);
+
+void check(const QMetaObject::Connection& connection);
 
 
 #endif // APP_QTAPP_H

@@ -1,7 +1,7 @@
 /*
     MakeMKV GUI - Graphics user interface application for MakeMKV
 
-    Copyright (C) 2007-2019 GuinpinSoft inc <makemkvgui@makemkv.com>
+    Copyright (C) 2007-2020 GuinpinSoft inc <makemkvgui@makemkv.com>
 
     You may use this file in accordance with the end user license
     agreement provided with the Software. For licensing terms and
@@ -43,7 +43,6 @@ QString FormatDiskFreeSpace(const utf16_t* FolderName)
     unsigned int dt = ((sz&0xff)*10)>>8;
     sz >>= 8;
 
-    QString str;
-    return str.sprintf("%u.%u %c",sz,dt,suf);
+    return QString::asprintf("%u.%u %c",sz,dt,suf);
 }
 

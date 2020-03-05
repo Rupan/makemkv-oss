@@ -1,7 +1,7 @@
 /*
     MakeMKV GUI - Graphics user interface application for MakeMKV
 
-    Copyright (C) 2007-2019 GuinpinSoft inc <makemkvgui@makemkv.com>
+    Copyright (C) 2007-2020 GuinpinSoft inc <makemkvgui@makemkv.com>
 
     You may use this file in accordance with the end user license
     agreement provided with the Software. For licensing terms and
@@ -41,6 +41,7 @@ public:
     {
         currentSequenceId = SEQUENCE_ID_NONE;
         nextSequenceSize = 0;
+        setToolButtonStyle(Qt::ToolButtonIconOnly);
     }
     void updateAnimation();
     void addSequence(unsigned int id,unsigned int count,bool loop,bool replace);

@@ -1,7 +1,7 @@
 /*
     MakeMKV GUI - Graphics user interface application for MakeMKV
 
-    Copyright (C) 2007-2019 GuinpinSoft inc <makemkvgui@makemkv.com>
+    Copyright (C) 2007-2020 GuinpinSoft inc <makemkvgui@makemkv.com>
 
     You may use this file in accordance with the end user license
     agreement provided with the Software. For licensing terms and
@@ -17,9 +17,9 @@
 #include "mainwnd.h"
 #include <lgpl/sstring.h>
 
-CSettingDialog::CSettingDialog(CGUIApClient* ap_client,QIcon* icon,QWidget *parent) : QDialog(parent)
+CSettingDialog::CSettingDialog(MainWnd* mainwnd, QIcon* icon, QWidget *parent) : QDialog(parent)
 {
-    client = ap_client;
+    client = mainwnd->app();
 
     setWindowIcon(*icon);
     setWindowTitle(UI_QSTRING(APP_SETTINGDLG_TITLE));
@@ -31,7 +31,7 @@ CSettingDialog::CSettingDialog(CGUIApClient* ap_client,QIcon* icon,QWidget *pare
     // general
     generalTab = new CGeneralTab();
     tabWidget->addTab(generalTab,UI_QSTRING(APP_IFACE_SETTINGS_TAB_GENERAL));
-    connect(generalTab->check_ExpertMode,SIGNAL(stateChanged(int)),this,SLOT(SlotExpertStateChanged(int)));
+    check(connect(generalTab->check_ExpertMode, &QCheckBox::stateChanged, this, &CSettingDialog::SlotExpertStateChanged));
 
     // dvd
     dvdTab = new CDVDTab(client);
@@ -49,20 +49,22 @@ CSettingDialog::CSettingDialog(CGUIApClient* ap_client,QIcon* icon,QWidget *pare
     protTab = new CProtTab();
     tabWidget->addTab(protTab, UI_QSTRING(APP_IFACE_SETTINGS_TAB_PROT));
 
-    advancedTab = new CAdvancedTab(ap_client);
+    decryptTab = new CDecryptTab(mainwnd);
+    tabWidget->addTab(decryptTab, UI_QSTRING(APP_IFACE_SETTINGS_TAB_INTEGRATION));
+
+    advancedTab = new CAdvancedTab(client);
     advancedTabVisible = false;
 
     QBoxLayout *lay = new QVBoxLayout();
     lay->addWidget(tabWidget);
-    lay->addStretch(10);
     lay->addWidget(buttonBox);
     this->setLayout(lay);
 
-    connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
-    connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
-    connect(buttonBox->button(QDialogButtonBox::Apply), SIGNAL(clicked()), this, SLOT(SlotApply()));
+    check(connect(buttonBox, &QDialogButtonBox::accepted, this, &CSettingDialog::accept));
+    check(connect(buttonBox, &QDialogButtonBox::rejected, this, &CSettingDialog::reject));
+    check(connect(buttonBox->button(QDialogButtonBox::Apply), &QPushButton::clicked, this, &CSettingDialog::SlotApply));
 
-    connect(this, SIGNAL(accepted()) , this , SLOT(SlotApply()));
+    check(connect(this, &CSettingDialog::accepted, this, &CSettingDialog::SlotApply));
 
     ReadSettings(true);
 };
@@ -158,6 +160,8 @@ void CSettingDialog::ReadSettings(bool first)
 
     int dump_always = client->GetSettingInt(apset_bdplus_DumpAlways);
     protTab->check_DumpAlways->setCheckState( (dump_always==0) ? Qt::Unchecked : Qt::Checked );
+
+    decryptTab->LoadSettings(client);
 
     // advanced
     const utf16_t *defaultProfile = client->GetSettingString(apset_app_DefaultProfileName);
@@ -269,7 +273,10 @@ bool CSettingDialog::WriteSettings(bool& restartRequired)
     newOutputFileName = advancedTab->lineEditOutputFileName->text();
 
     // flush
-    return client->SaveSettings();
+    if (false==client->SaveSettings()) return false;
+    if (false==decryptTab->SaveSettings(client)) return false;
+
+    return true;
 }
 
 bool CSettingDialog::redrawRequired()
@@ -346,7 +353,7 @@ CDVDTab::CDVDTab(CApClient* client,QWidget *parent) : QWidget(parent)
 
     destinationDir = new CDirSelectBox(client,CDirSelectBox::DirBoxOutDirMKV,UI_QSTRING(APP_IFACE_SETTINGS_DESTDIR),lst);
 
-    connect(destinationDir, SIGNAL(SignalIndexChanged()) , this , SLOT(SlotIndexChanged()) );
+    check(connect(destinationDir, &CDirSelectBox::SignalIndexChanged, this, &CDVDTab::SlotIndexChanged));
 
     QGroupBox* box = new QGroupBox(UI_QSTRING(APP_IFACE_SETTINGS_IO_OPTIONS));
 
@@ -611,5 +618,89 @@ CAdvancedTab::CAdvancedTab(CGUIApClient* ap_client,QWidget *parent) : QWidget(pa
 
     lay->addStretch(2);
     this->setLayout(lay);
+}
+
+CDecryptTab::CDecryptTab(MainWnd* mainwnd, QWidget *parent) : QWidget(parent)
+{
+    QGroupBox* box = new QGroupBox(UI_QSTRING(APP_IFACE_BACKUPDLG_TEXT_CAPTION));
+
+    QLabel* labelText = new QLabel();
+    labelText->setTextFormat(Qt::RichText);
+    labelText->setWordWrap(true);
+    labelText->setText(UI_QSTRING(APP_IFACE_SETTINGS_INT_TEXT).arg(mainwnd->formatURL("libmmbd")));
+    check(connect(labelText, &QLabel::linkActivated, mainwnd, &MainWnd::SlotLaunchUrl));
+
+    QBoxLayout *blay = new QVBoxLayout();
+    blay->addWidget(labelText);
+    box->setLayout(blay);
+
+    viewItems = new QTreeWidget();
+    viewItems->setRootIsDecorated(false);
+    viewItems->setSelectionMode(QAbstractItemView::NoSelection);
+
+    {
+        QStringList hdr_labels;
+        hdr_labels += UI_QSTRING(VITEM_NAME);
+        hdr_labels += UI_QSTRING(APP_IFACE_SETTINGS_INT_HDR_PATH);
+        viewItems->setHeaderLabels(hdr_labels);
+    }
+
+    QBoxLayout *lay = new QVBoxLayout();
+
+    lay->addWidget(box);
+    lay->addWidget(viewItems);
+
+    //lay->addStretch(2);
+    this->setLayout(lay);
+}
+
+void CDecryptTab::LoadSettings(CGUIApClient* client)
+{
+    viewItems->clear();
+    for (unsigned int i=0; i<128; i++)
+    {
+        QTreeWidgetItem* item;
+        const utf16_t *itemStr;
+        unsigned int itemStatus;
+
+        itemStr = client->GetAppString(AP_vastr_ExternalAppItem, i, 0);
+        if (NULL==itemStr) break;
+        if (itemStr[0]==':') break;
+        if ((itemStr[0]=='x') && (itemStr[1]==0)) break;
+
+        itemStatus = itemStr[0]-'a';
+
+        item = new QTreeWidgetItem();
+        item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | (((itemStatus&1)!=0)?Qt::ItemIsEnabled:Qt::NoItemFlags));
+        item->setCheckState(0, (((itemStatus&2)!=0)?Qt::Checked:Qt::Unchecked));
+
+        itemStr = client->GetAppString(AP_vastr_ExternalAppItem, i, 1);
+        item->setText(0, QStringFromUtf16(itemStr));
+
+        itemStr = client->GetAppString(AP_vastr_ExternalAppItem, i, 2);
+        item->setText(1, QStringFromUtf16(itemStr));
+
+        viewItems->addTopLevelItem(item);
+    }
+    viewItems->resizeColumnToContents(0);
+    viewItems->resizeColumnToContents(1);
+}
+
+bool CDecryptTab::SaveSettings(CGUIApClient* client)
+{
+    unsigned int count = viewItems->topLevelItemCount();
+    if (0==count) return true;
+    if (count>128) count=128;
+
+    uint64_t bits[2]={0, 0};
+
+    for (unsigned int i=0; i<count; i++)
+    {
+        if (Qt::Checked==viewItems->topLevelItem(i)->checkState(0))
+        {
+            bits[i>>6] |= (((uint64_t)1) << (i&63));
+        }
+    }
+    return (0==client->SetExternAppFlags(bits));
 }
 

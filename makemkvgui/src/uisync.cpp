@@ -1,7 +1,7 @@
 /*
     MakeMKV GUI - Graphics user interface application for MakeMKV
 
-    Copyright (C) 2007-2019 GuinpinSoft inc <makemkvgui@makemkv.com>
+    Copyright (C) 2007-2020 GuinpinSoft inc <makemkvgui@makemkv.com>
 
     You may use this file in accordance with the end user license
     agreement provided with the Software. For licensing terms and
@@ -896,6 +896,12 @@ void MainWnd::UpdateTitleCollection(bool setFolder)
     }
 }
 
+void MainWnd::UpdateGlobalPalette()
+{
+    itemInfoEdit->rebuildHtmlBody();
+    empty_right_info->rebuildHtmlBody();
+}
+
 CDriveInfo::CDriveInfo()
 {
     driveState = AP_DriveStateNoDrive;
@@ -988,6 +994,8 @@ void QGrayTextViewer::setHtmlBody(const QString& str)
     QString txt;
     char tclr[10];
 
+    cachedText = str;
+
     // #AARRGGBB
     unsigned int clr = palette().window().color().rgb();
     sprintf(tclr,"#%02X%02X%02X",(clr>>16)&0xff,(clr>>8)&0xff,(clr>>0)&0xff);
@@ -1003,3 +1011,7 @@ void QGrayTextViewer::setHtmlBody(const QString& str)
     setHtml(txt);
 }
 
+void QGrayTextViewer::rebuildHtmlBody()
+{
+    setHtmlBody(cachedText);
+}

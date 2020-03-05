@@ -1,7 +1,7 @@
 /*
     MakeMKV GUI - Graphics user interface application for MakeMKV
 
-    Copyright (C) 2007-2019 GuinpinSoft inc <makemkvgui@makemkv.com>
+    Copyright (C) 2007-2020 GuinpinSoft inc <makemkvgui@makemkv.com>
 
     You may use this file in accordance with the end user license
     agreement provided with the Software. For licensing terms and
@@ -27,7 +27,7 @@ CDirSelectBox::CDirSelectBox(CApClient* ap_client,CDirSelectBox::Style BoxStyle,
     lineEditDir = comboBoxDir->lineEdit();
     appendName = NULL;
 
-    connect(lineEditDir,SIGNAL(textChanged(const QString &)),this,SLOT(SlotTextChanged(const QString &)));
+    check(connect(lineEditDir, &QLineEdit::textChanged, this, &CDirSelectBox::SlotTextChanged));
     QGridLayout *lay = new QGridLayout();
 
     memset(radioButtons,0,sizeof(radioButtons));
@@ -40,7 +40,7 @@ CDirSelectBox::CDirSelectBox(CApClient* ap_client,CDirSelectBox::Style BoxStyle,
         radioButtons[row] = btn;
         lay->addWidget(btn,row,0);
         row++;
-        connect(btn, SIGNAL(toggled(bool)) , this , SLOT(SlotRadioToggled()) );
+        check(connect(btn, &QAbstractButton::toggled, this, &CDirSelectBox::SlotRadioToggled));
     }
 
     lay->addWidget(comboBoxDir,row,0);
@@ -73,11 +73,12 @@ CDirSelectBox::CDirSelectBox(CApClient* ap_client,CDirSelectBox::Style BoxStyle,
         toolButtonAction  = new QAction(*set_file_icon, Name, this);
         break;
     }
-    connect(toolButtonAction, SIGNAL(triggered()), this, SLOT(SlotButtonPressed()));
+    check(connect(toolButtonAction, &QAction::triggered, this, &CDirSelectBox::SlotButtonPressed));
 
-    toolButtonSelect = new QToolButton();
-    toolButtonSelect->setIconSize(adjustIconSize(toolButtonSelect->iconSize(),16));
+    toolButtonSelect = new QToolButtonP();
+
     toolButtonSelect->setDefaultAction(toolButtonAction);
+    toolButtonSelect->setButtonSize(lineEditDir->sizeHint(), 128);
     lay->addWidget(toolButtonSelect,row,1);
 
     this->setLayout(lay);

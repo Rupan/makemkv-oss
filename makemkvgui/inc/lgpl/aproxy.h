@@ -138,6 +138,7 @@ typedef enum _AP_CMD
     apCallOpenMMBD,
     apCallDiscInfoMMBD,
     apCallDecryptUnitMMBD,
+    apCallSetExternAppFlags,
 
     apBackEnterJobMode=192,
     apBackLeaveJobMode,
@@ -323,7 +324,7 @@ public:
     void SetSettingInt(ApSettingId id,int Value);
     void SetSettingString(ApSettingId id,const utf16_t* Value);
     bool SaveSettings();
-    const utf16_t* GetAppString(unsigned int Id);
+    const utf16_t* GetAppString(unsigned int Id,unsigned int Index1=0,unsigned int Index2=0);
 private:
     virtual void SetTitleCollInfo(uint64_t handle,unsigned int Count)=0;
     virtual void SetTitleInfo(unsigned int id,uint64_t handle,unsigned int TrackCount,unsigned int ChapterCount,uint64_t chap_handle)=0;
@@ -356,6 +357,7 @@ public:
     const void* GetInterfaceLanguageData(unsigned int Id,unsigned int* Size1,unsigned int* Size2);
     const utf16_t* GetProfileString(unsigned int Index,unsigned int Id);
     int SetProfile(unsigned int Index);
+    int SetExternAppFlags(const uint64_t* Flags);
 };
 
 class CMMBDApClient : public CApClient

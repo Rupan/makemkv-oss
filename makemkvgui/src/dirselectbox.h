@@ -1,7 +1,7 @@
 /*
     MakeMKV GUI - Graphics user interface application for MakeMKV
 
-    Copyright (C) 2007-2019 GuinpinSoft inc <makemkvgui@makemkv.com>
+    Copyright (C) 2007-2020 GuinpinSoft inc <makemkvgui@makemkv.com>
 
     You may use this file in accordance with the end user license
     agreement provided with the Software. For licensing terms and
@@ -17,6 +17,7 @@
 
 #include "qtgui.h"
 #include "qtapp.h"
+#include "toolbuttonp.h"
 
 class CDirSelectBox : public QGroupBox
 {
@@ -36,7 +37,7 @@ private:
     QLineEdit*   lineEditDir;
     QComboBox*   comboBoxDir;
     QStringList  mru;
-    QToolButton* toolButtonSelect;
+    QToolButtonP* toolButtonSelect;
     QAction*     toolButtonAction;
     bool         validState;
     Style        style;
@@ -59,6 +60,8 @@ public:
     QString getMRU();
     void setAppendName(const QString* AppendName);
     void clear();
+public:
+    inline QSize buttonSize() { return toolButtonSelect->size(); }
 
 private:
     void EmitValidChanged();

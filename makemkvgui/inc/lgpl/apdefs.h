@@ -50,6 +50,7 @@ static const unsigned int AP_vastr_WebSiteURL=18;
 static const unsigned int AP_vastr_OpenDVDFileFilter=19;
 static const unsigned int AP_vastr_DefaultSelectionString=20;
 static const unsigned int AP_vastr_DefaultOutputFileName=21;
+static const unsigned int AP_vastr_ExternalAppItem=22;
 //
 typedef enum _AP_ItemAttributeId
 {
@@ -154,6 +155,7 @@ static const unsigned long APP_BACKUP_FAILED=5069;
 static const unsigned long APP_BACKUP_COMPLETED=5070;
 static const unsigned long APP_BACKUP_COMPLETED_HASHFAIL=5079;
 static const unsigned long PROFILE_NAME_DEFAULT=5086;
+static const unsigned long VITEM_NAME=5202;
 static const unsigned long VITEM_TIMESTAMP=5223;
 static const unsigned long APP_IFACE_TITLE=6000;
 static const unsigned long APP_CAPTION_MSG=6001;
@@ -259,9 +261,6 @@ static const unsigned long APP_IFACE_SETTINGS_IO_SINGLE_DRIVE=6168;
 static const unsigned long APP_IFACE_SETTINGS_DVD_AUTO=6085;
 static const unsigned long APP_IFACE_SETTINGS_DVD_MIN_LENGTH=6086;
 static const unsigned long APP_IFACE_SETTINGS_DVD_SP_REMOVE=6087;
-static const unsigned long APP_IFACE_SETTINGS_STREAM_ENABLE_UPNP=6161;
-static const unsigned long APP_IFACE_SETTINGS_STREAM_BIND_IP=6162;
-static const unsigned long APP_IFACE_SETTINGS_STREAM_BIND_PORT=6163;
 static const unsigned long APP_IFACE_SETTINGS_AACS_KEY_DIR=6088;
 static const unsigned long APP_IFACE_SETTINGS_BDP_MISC=6129;
 static const unsigned long APP_IFACE_SETTINGS_BDP_DUMP_ALWAYS=6130;
@@ -293,6 +292,9 @@ static const unsigned long APP_IFACE_SETTINGS_ADV_DEFAULT_SELECTION=6174;
 static const unsigned long APP_IFACE_SETTINGS_ADV_EXTERN_EXEC_PATH=6175;
 static const unsigned long APP_IFACE_SETTINGS_PROT_JAVA_PATH=6177;
 static const unsigned long APP_IFACE_SETTINGS_ADV_OUTPUT_FILE_NAME_TEMPLATE=6178;
+static const unsigned long APP_IFACE_SETTINGS_TAB_INTEGRATION=6190;
+static const unsigned long APP_IFACE_SETTINGS_INT_TEXT=6191;
+static const unsigned long APP_IFACE_SETTINGS_INT_HDR_PATH=6192;
 static const unsigned long APP_IFACE_BACKUPDLG_TEXT_CAPTION=6137;
 static const unsigned long APP_IFACE_BACKUPDLG_TEXT=6138;
 static const unsigned long APP_IFACE_BACKUPDLG_FOLDER=6139;

@@ -1,7 +1,7 @@
 /*
     MakeMKV GUI - Graphics user interface application for MakeMKV
 
-    Copyright (C) 2007-2019 GuinpinSoft inc <makemkvgui@makemkv.com>
+    Copyright (C) 2007-2020 GuinpinSoft inc <makemkvgui@makemkv.com>
 
     You may use this file in accordance with the end user license
     agreement provided with the Software. For licensing terms and
@@ -363,6 +363,15 @@ int CGUIApClient::SetProfile(unsigned int Index)
 {
     m_mem->args[0] = Index;
     ExecCmd(apCallSetProfile);
+    return (int)(m_mem->args[0]);
+}
+
+int CGUIApClient::SetExternAppFlags(const uint64_t* Flags)
+{
+    m_mem->args[0] = 2;
+    m_mem->args[1] = Flags[0];
+    m_mem->args[2] = Flags[1];
+    ExecCmd(apCallSetExternAppFlags);
     return (int)(m_mem->args[0]);
 }
 

@@ -1,7 +1,7 @@
 /*
     MakeMKV GUI - Graphics user interface application for MakeMKV
 
-    Copyright (C) 2007-2019 GuinpinSoft inc <makemkvgui@makemkv.com>
+    Copyright (C) 2007-2020 GuinpinSoft inc <makemkvgui@makemkv.com>
 
     You may use this file in accordance with the end user license
     agreement provided with the Software. For licensing terms and
@@ -15,11 +15,11 @@
 #include "aboutbox.h"
 #include "qtapp.h"
 
-CAboutBox::CAboutBox(MainWnd *MainWnd,QIcon* icon,bool registered) : QDialog(MainWnd)
+CAboutBox::CAboutBox(MainWnd *mainWnd,QIcon* icon,bool registered) : QDialog(mainWnd)
 {
     setWindowIcon(*icon);
     setWindowTitle(UI_QSTRING(APP_ABOUTBOX_TITLE));
-    m_MainWnd = MainWnd;
+    m_MainWnd = mainWnd;
 
     // layout
     QGridLayout* lay = new QGridLayout();
@@ -42,7 +42,7 @@ CAboutBox::CAboutBox(MainWnd *MainWnd,QIcon* icon,bool registered) : QDialog(Mai
     QString gui_arch = QString(QLatin1String("for ")) + QString(QLatin1String(BUILDINFO_ARCH_NAME));
 #endif
 
-    if ( (gui_ver==MainWnd->app_ver) && (gui_arch==MainWnd->app_arch) )
+    if ( (gui_ver==mainWnd->app_ver) && (gui_arch==mainWnd->app_arch) )
     {
         show_gui_version=false;
     } else {
@@ -54,7 +54,7 @@ CAboutBox::CAboutBox(MainWnd *MainWnd,QIcon* icon,bool registered) : QDialog(Mai
 #endif
 
     QString str_1 = QString(QLatin1String("%1 %2 [%3]"));
-    str_1=str_1.arg(MainWnd->app_name,MainWnd->app_ver,MainWnd->app_arch);
+    str_1=str_1.arg(mainWnd->app_name,mainWnd->app_ver,mainWnd->app_arch);
 
     QString str_2 = UI_QSTRING(APP_IFACE_GUI_VERSION);
     str_2=str_2.arg(gui_verstr);
@@ -78,27 +78,27 @@ CAboutBox::CAboutBox(MainWnd *MainWnd,QIcon* icon,bool registered) : QDialog(Mai
     m_WebSiteValue->setVisible(false);
     lay->addWidget(m_WebSiteTitle,3,0,Qt::AlignRight);
     lay->addWidget(m_WebSiteValue,3,1,Qt::AlignLeft);
-    connect(m_WebSiteValue, SIGNAL(linkActivated(const QString&)), MainWnd, SLOT(SlotLaunchUrl(const QString &)));
+    check(connect(m_WebSiteValue, &QLabel::linkActivated, mainWnd, &MainWnd::SlotLaunchUrl));
 
     lay->addWidget(createHLine(),4,0,1,2);
 
     lay->addWidget(createLabel(UI_QSTRING(APP_IFACE_LICENSE_TYPE)),5,0,Qt::AlignRight);
-    lay->addWidget(createLabel(MainWnd->app_keytype),5,1,Qt::AlignLeft);
+    lay->addWidget(createLabel(mainWnd->app_keytype),5,1,Qt::AlignLeft);
 
-    if (false==MainWnd->app_evalstate.isEmpty())
+    if (false==mainWnd->app_evalstate.isEmpty())
     {
         lay->addWidget(createLabel(UI_QSTRING(APP_IFACE_EVAL_STATE)),6,0,Qt::AlignRight);
-        lay->addWidget(createLabel(MainWnd->app_evalstate),6,1,Qt::AlignLeft);
+        lay->addWidget(createLabel(mainWnd->app_evalstate),6,1,Qt::AlignLeft);
     }
-    if (false==MainWnd->app_keytime.isEmpty())
+    if (false==mainWnd->app_keytime.isEmpty())
     {
         lay->addWidget(createLabel(UI_QSTRING(APP_IFACE_EVAL_EXPIRATION)),7,0,Qt::AlignRight);
-        lay->addWidget(createLabel(MainWnd->app_keytime),7,1,Qt::AlignLeft);
+        lay->addWidget(createLabel(mainWnd->app_keytime),7,1,Qt::AlignLeft);
     }
     lay->addWidget(createLabel(UI_QSTRING(APP_IFACE_PROG_EXPIRATION)),8,0,Qt::AlignRight);
-    if (false==MainWnd->app_prgtime.isEmpty())
+    if (false==mainWnd->app_prgtime.isEmpty())
     {
-        lay->addWidget(createLabel(MainWnd->app_prgtime),8,1,Qt::AlignLeft);
+        lay->addWidget(createLabel(mainWnd->app_prgtime),8,1,Qt::AlignLeft);
     } else {
         lay->addWidget(createLabel(UI_QSTRING(APP_EVAL_TIME_NEVER)),8,1,Qt::AlignLeft);
     }
@@ -106,13 +106,13 @@ CAboutBox::CAboutBox(MainWnd *MainWnd,QIcon* icon,bool registered) : QDialog(Mai
     lay->addWidget(createHLine(),9,0,1,2);
 
     QDialogButtonBox* btn_box = new QDialogButtonBox(QDialogButtonBox::Close,Qt::Horizontal);
-    if ((registered==false) && (MainWnd->registerAct->isEnabled()==true) )
+    if ((registered==false) && (mainWnd->registerAct->isEnabled()==true) )
     {
         QPushButton* bpurchase = new QPushButton(UI_QSTRING(APP_IFACE_ACT_PURCHASE_NAME),this);
         QPushButton* bregister = new QPushButton(UI_QSTRING(APP_IFACE_ACT_REGISTER_NAME),this);
 
-        connect(bpurchase, SIGNAL(clicked()), this, SLOT(SlotPurchase()));
-        connect(bregister, SIGNAL(clicked()), this, SLOT(SlotRegister()));
+        check(connect(bpurchase, &QPushButton::clicked, this, &CAboutBox::SlotPurchase));
+        check(connect(bregister, &QPushButton::clicked, this, &CAboutBox::SlotRegister));
 
         btn_box->addButton(bpurchase,QDialogButtonBox::ActionRole);
         btn_box->addButton(bregister,QDialogButtonBox::ActionRole);
@@ -121,7 +121,7 @@ CAboutBox::CAboutBox(MainWnd *MainWnd,QIcon* icon,bool registered) : QDialog(Mai
 
     setLayout(lay);
 
-    connect(btn_box, SIGNAL(rejected()), this, SLOT(reject()));
+    check(connect(btn_box, &QDialogButtonBox::rejected, this, &CAboutBox::reject));
 
     OnIdle();
 }

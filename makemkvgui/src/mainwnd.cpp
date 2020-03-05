@@ -1,7 +1,7 @@
 /*
     MakeMKV GUI - Graphics user interface application for MakeMKV
 
-    Copyright (C) 2007-2019 GuinpinSoft inc <makemkvgui@makemkv.com>
+    Copyright (C) 2007-2020 GuinpinSoft inc <makemkvgui@makemkv.com>
 
     You may use this file in accordance with the end user license
     agreement provided with the Software. For licensing terms and
@@ -91,12 +91,12 @@ MainWnd::MainWnd(CGUIApClient* App,const char* AppDir)
     QTimer *timer = new QTimer(this);
     timer->setInterval(30);
     timer->setSingleShot(false);
-    connect(timer, SIGNAL(timeout()), this, SLOT(SlotTimer()));
+    check(connect(timer, &QTimer::timeout, this, &MainWnd::SlotTimer));
     timer->start();
 
     m_myself_static = this;
 
-    connect( QApplication::instance() , SIGNAL(lastWindowClosed()) , this, SLOT(SlotExiting()) );
+    check(connect(qApp, &QApplication::lastWindowClosed, this, &MainWnd::SlotExiting));
 
     App->SetUiNotifier(this);
 
@@ -187,6 +187,13 @@ void MainWnd::SlotTimer()
     {
         timerCounter=0;
         SlotOnIdle();
+
+        unsigned int color = this->palette().window().color().rgb();
+        if (m_color_cache!=color)
+        {
+            m_color_cache=color;
+            UpdateGlobalPalette();
+        }
     }
 }
 
@@ -474,13 +481,13 @@ void MainWnd::createActions()
     openFilesAct->setStatusTip(UI_QSTRING(APP_IFACE_ACT_OPENFILES_STIP));
     openFilesAct->setData((uint)0);
     setPlainMenuRole(openFilesAct);
-    connect(openFilesAct, SIGNAL(triggered()), this, SLOT(SlotOpenFiles()));
+    check(connect(openFilesAct, &QAction::triggered, this, &MainWnd::SlotOpenFiles));
 
 #ifdef _DEBUG
     openTestFileAct = new QAction( QLatin1String("OTF"), this);
     openTestFileAct->setStatusTip(QLatin1String("Open TEST File"));
     setPlainMenuRole(openTestFileAct);
-    connect(openTestFileAct, SIGNAL(triggered()), this, SLOT(SlotOpenTestFile()));
+    check(connect(openTestFileAct, &QAction::triggered, this, &MainWnd::SlotOpenTestFile));
 #else
     openTestFileAct=NULL;
 #endif
@@ -489,68 +496,68 @@ void MainWnd::createActions()
     openDVDFilesAct->setStatusTip(UI_QSTRING(APP_IFACE_ACT_OPENFILES_DVD_STIP));
     openDVDFilesAct->setData((uint)1);
     setPlainMenuRole(openDVDFilesAct);
-    connect(openDVDFilesAct, SIGNAL(triggered()), this, SLOT(SlotOpenFiles()));
+    check(connect(openDVDFilesAct, &QAction::triggered, this, &MainWnd::SlotOpenFiles));
 
     closeDiskAct = new QAction(UI_QSTRING(APP_IFACE_ACT_CLOSEDISK_NAME), this);
     closeDiskAct->setStatusTip(UI_QSTRING(APP_IFACE_ACT_CLOSEDISK_STIP));
     setPlainMenuRole(closeDiskAct);
-    connect(closeDiskAct, SIGNAL(triggered()), this, SLOT(SlotCloseDisk()));
+    check(connect(closeDiskAct, &QAction::triggered, this, &MainWnd::SlotCloseDisk));
 
     saveAllMkvAct = new QAction(*saveAllIcon, UI_QSTRING(APP_IFACE_ACT_SAVEALLMKV_NAME), this);
     saveAllMkvAct->setStatusTip(UI_QSTRING(APP_IFACE_ACT_SAVEALLMKV_STIP));
     setPlainMenuRole(saveAllMkvAct);
-    connect(saveAllMkvAct, SIGNAL(triggered()), this, SLOT(SlotSaveAllMkv()));
+    check(connect(saveAllMkvAct, &QAction::triggered, this, &MainWnd::SlotSaveAllMkv));
 
     backupAct = new QAction( *backupIcon , UI_QSTRING(APP_IFACE_ACT_BACKUP_NAME), this);
     backupAct->setStatusTip(UI_QSTRING(APP_IFACE_ACT_BACKUP_STIP));
     setPlainMenuRole(backupAct);
-    connect(backupAct, SIGNAL(triggered()), this, SLOT(SlotBackup()));
+    check(connect(backupAct, &QAction::triggered, this, &MainWnd::SlotBackup));
 
     quitAct = new QAction(UI_QSTRING(APP_IFACE_ACT_QUIT_NAME), this);
     quitAct->setShortcut(UI_QSTRING(APP_IFACE_ACT_QUIT_SKEY));
     quitAct->setStatusTip(UI_QSTRING(APP_IFACE_ACT_QUIT_STIP));
     quitAct->setMenuRole(QAction::QuitRole);
-    connect(quitAct, SIGNAL(triggered()), this, SLOT(SlotQuit()));
+    check(connect(quitAct, &QAction::triggered, this, &MainWnd::SlotQuit));
 
     cancelAct = new QAction(*cancelIcon,UI_QSTRING(APP_IFACE_ACT_CANCEL_NAME), this);
     cancelAct->setStatusTip(UI_QSTRING(APP_IFACE_ACT_CANCEL_STIP));
     setPlainMenuRole(cancelAct);
-    connect(cancelAct, SIGNAL(triggered()), this, SLOT(SlotCancelJob()) );
+    check(connect(cancelAct, &QAction::triggered, this, &MainWnd::SlotCancelJob));
 
     settingsAct = new QAction(*settingsIcon, UI_QSTRING(APP_IFACE_ACT_SETTINGS_NAME), this);
     settingsAct->setStatusTip(UI_QSTRING(APP_IFACE_ACT_SETTINGS_STIP));
     settingsAct->setMenuRole(QAction::PreferencesRole);
-    connect(settingsAct, SIGNAL(triggered()), this, SLOT(SlotSettings()));
+    check(connect(settingsAct, &QAction::triggered, this, &MainWnd::SlotSettings));
 
     ejectAct = new QAction(*ejectIcon, UI_QSTRING(APP_IFACE_ACT_EJECT_NAME), this);
     ejectAct->setStatusTip(UI_QSTRING(APP_IFACE_ACT_EJECT_STIP));
     setPlainMenuRole(ejectAct);
-    connect(ejectAct, SIGNAL(triggered()), this, SLOT(SlotEjectDisk()));
+    check(connect(ejectAct, &QAction::triggered, this, &MainWnd::SlotEjectDisk));
 
     helppageAct = new QAction(UI_QSTRING(APP_IFACE_ACT_HELPPAGE_NAME), this);
     helppageAct->setStatusTip(UI_QSTRING(APP_IFACE_ACT_HELPPAGE_STIP));
     setPlainMenuRole(helppageAct);
-    connect(helppageAct, SIGNAL(triggered()), this, SLOT(SlotHelppage()));
+    check(connect(helppageAct, &QAction::triggered, this, &MainWnd::SlotHelppage));
 
     registerAct = new QAction(UI_QSTRING(APP_IFACE_ACT_REGISTER_NAME), this);
     registerAct->setStatusTip(UI_QSTRING(APP_IFACE_ACT_REGISTER_STIP));
     setPlainMenuRole(registerAct);
-    connect(registerAct, SIGNAL(triggered()), this, SLOT(SlotRegister()));
+    check(connect(registerAct, &QAction::triggered, this, &MainWnd::SlotRegister));
 
     purchaseAct = new QAction(UI_QSTRING(APP_IFACE_ACT_PURCHASE_NAME), this);
     purchaseAct->setStatusTip(UI_QSTRING(APP_IFACE_ACT_PURCHASE_STIP));
     setPlainMenuRole(purchaseAct);
-    connect(purchaseAct, SIGNAL(triggered()), this, SLOT(SlotPurchase()));
+    check(connect(purchaseAct, &QAction::triggered, this, &MainWnd::SlotPurchase));
 
     clearLogAct = new QAction(*clearLogIcon,UI_QSTRING(APP_IFACE_ACT_CLEARLOG_NAME), this);
     clearLogAct->setStatusTip(UI_QSTRING(APP_IFACE_ACT_CLEARLOG_STIP));
     setPlainMenuRole(clearLogAct);
-    connect(clearLogAct, SIGNAL(triggered()), this, SLOT(SlotClearLog()));
+    check(connect(clearLogAct, &QAction::triggered, this, &MainWnd::SlotClearLog));
 
     aboutAct = new QAction(*infoIcon,UI_QSTRING(APP_IFACE_ACT_ABOUT_NAME), this);
     aboutAct->setStatusTip(UI_QSTRING(APP_IFACE_ACT_ABOUT_STIP));
     aboutAct->setMenuRole(QAction::AboutRole);
-    connect(aboutAct, SIGNAL(triggered()), this, SLOT(SlotAbout()));
+    check(connect(aboutAct, &QAction::triggered, this, &MainWnd::SlotAbout));
     aboutAct->setEnabled(false);
 
     for (unsigned int i=0;i<AP_MaxCdromDevices;i++)
@@ -559,17 +566,17 @@ void MainWnd::createActions()
         OpenDriveAction[i]->setVisible(false);
         OpenDriveAction[i]->setData(i);
         setPlainMenuRole(OpenDriveAction[i]);
-        connect(OpenDriveAction[i], SIGNAL(triggered()),this,SLOT(SlotOpenDrive()));
+        check(connect(OpenDriveAction[i], &QAction::triggered, this, &MainWnd::SlotOpenDrive));
     }
 
     dvdToHdAct = new QAction(UI_QSTRING(APP_IFACE_ACT_OPENDISC_DVD),this);
-    connect(dvdToHdAct, SIGNAL(triggered()), this, SLOT(SlotOpenDriveBigBtn()));
+    check(connect(dvdToHdAct, &QAction::triggered, this, &MainWnd::SlotOpenDriveBigBtn));
 
     hddvdToHdAct = new QAction(UI_QSTRING(APP_IFACE_ACT_OPENDISC_HDDVD),this);
-    connect(hddvdToHdAct, SIGNAL(triggered()), this, SLOT(SlotOpenDriveBigBtn()));
+    check(connect(hddvdToHdAct, &QAction::triggered, this, &MainWnd::SlotOpenDriveBigBtn));
 
     blurayToHdAct = new QAction(UI_QSTRING(APP_IFACE_ACT_OPENDISC_BRAY),this);
-    connect(blurayToHdAct, SIGNAL(triggered()), this, SLOT(SlotOpenDriveBigBtn()));
+    check(connect(blurayToHdAct, &QAction::triggered, this, &MainWnd::SlotOpenDriveBigBtn));
 
     unknownToHdAct = new QAction(*getAnimIcon(AP_IMG_ANIMATION0606,1),UI_QSTRING(APP_IFACE_ACT_OPENDISC_UNKNOWN),this);
     noneToHdAct = new QAction(*getAnimIcon(AP_IMG_ANIMATION0102,1),UI_QSTRING(APP_IFACE_ACT_OPENDISC_NODISC),this);
@@ -577,12 +584,12 @@ void MainWnd::createActions()
 
     itemInfoRevertAct = new QAction(*revertIcon,UI_QSTRING(APP_IFACE_ACT_REVERT_NAME), this);
     itemInfoRevertAct->setStatusTip(UI_QSTRING(APP_IFACE_ACT_REVERT_STIP));
-    connect(itemInfoRevertAct, SIGNAL(triggered()), this, SLOT(SlotInfoRevert()));
+    check(connect(itemInfoRevertAct, &QAction::triggered, this, &MainWnd::SlotInfoRevert));
 
 #if 0
     aboutQtAct = new QAction("About Qt", this);
     aboutQtAct->setStatusTip("Show the Qt library's About box");
-    connect(aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+    check(connect(aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt())));
 #else
     aboutQtAct = NULL;
 #endif
@@ -592,7 +599,7 @@ void MainWnd::createActions()
     newInstanceAct->setStatusTip(UI_QSTRING(APP_IFACE_ACT_NEWINSTANCE_STIP));
     newInstanceAct->setShortcut(Qt::CTRL + Qt::Key_N);
     newInstanceAct->setMenuRole(QAction::ApplicationSpecificRole);
-    connect(newInstanceAct, SIGNAL(triggered()), this, SLOT(SlotNewInstance()));
+    check(connect(newInstanceAct, &QAction::triggered, this, &MainWnd::SlotNewInstance));
 #endif
 
 }
@@ -639,7 +646,7 @@ void MainWnd::createMenus()
 void MainWnd::createToolBars()
 {
     mainToolBar = addToolBar(UI_QSTRING(APP_IFACE_MENU_TOOLBAR));
-    mainToolBar->setIconSize(adjustIconSize(mainToolBar->iconSize(),32));
+    mainToolBar->setIconSize(getIconSize(45));
     mainToolBar->setObjectName(QLatin1String("MainToolbar"));
     mainToolBar->addAction(openFilesAct);
     mainToolBar->addAction(backupAct);
@@ -663,17 +670,17 @@ QWidget* MainWnd::CreateMainFrame()
     QSplitter* sp_v = new QSplitter(Qt::Horizontal,this);
 
     titleTreeView = new QTreeWidget();
-    connect( titleTreeView , SIGNAL(itemSelectionChanged()) , this , SLOT(SlotTreeSelectionChanged()) );
-    connect( titleTreeView , SIGNAL(itemExpanded(QTreeWidgetItem*)) , this , SLOT(SlotTreeItemExpanded(QTreeWidgetItem*)) );
-    connect( titleTreeView , SIGNAL(itemCollapsed(QTreeWidgetItem*)) , this , SLOT(SlotTreeItemCollapsed(QTreeWidgetItem*)) );
-    connect( titleTreeView , SIGNAL(itemChanged(QTreeWidgetItem *,int)) , this , SLOT(SlotTreeItemChanged(QTreeWidgetItem *,int)) );
+    check(connect(titleTreeView, &QTreeWidget::itemSelectionChanged, this, &MainWnd::SlotTreeSelectionChanged));
+    check(connect(titleTreeView, &QTreeWidget::itemExpanded, this, &MainWnd::SlotTreeItemExpanded));
+    check(connect(titleTreeView, &QTreeWidget::itemCollapsed, this, &MainWnd::SlotTreeItemCollapsed));
+    check(connect(titleTreeView, &QTreeWidget::itemChanged, this, &MainWnd::SlotTreeItemChanged));
 
     m_tree_toggle = new QAction(UI_QSTRING(APP_IFACE_ACT_TTREE_TOGGLE),this);
-    connect(m_tree_toggle, SIGNAL(triggered()), this, SLOT(SlotToggleTreeItem()));
+    check(connect(m_tree_toggle, &QAction::triggered, this, &MainWnd::SlotToggleTreeItem));
     m_tree_select = new QAction(UI_QSTRING(APP_IFACE_ACT_TTREE_SELECT_ALL),this);
-    connect(m_tree_select, SIGNAL(triggered()), this, SLOT(SlotSelectTreeItem()));
+    check(connect(m_tree_select, &QAction::triggered, this, &MainWnd::SlotSelectTreeItem));
     m_tree_unselect = new QAction(UI_QSTRING(APP_IFACE_ACT_TTREE_UNSELECT_ALL),this);
-    connect(m_tree_unselect, SIGNAL(triggered()), this, SLOT(SlotUnselectTreeItem()));
+    check(connect(m_tree_unselect, &QAction::triggered, this, &MainWnd::SlotUnselectTreeItem));
 
     titleTreeView->addAction(m_tree_toggle);
     titleTreeView->addAction(m_tree_select);
@@ -684,7 +691,7 @@ QWidget* MainWnd::CreateMainFrame()
     QFrame* r_frame = new QFrame();
 
     saveFolderBox = new CDirSelectBox(m_app,CDirSelectBox::DirBoxOutDirMKV, UI_QSTRING(APP_IFACE_OPENFOLDER_INFO_TITLE) );
-    connect( saveFolderBox , SIGNAL(SignalDirValidChanged()) , this , SLOT(SlotOutputFolderEdited()) );
+    check(connect(saveFolderBox, &CDirSelectBox::SignalDirValidChanged, this, &MainWnd::SlotOutputFolderEdited));
 
     QGroupBox* info_box = new QGroupBox(UI_QSTRING(APP_IFACE_MAIN_FRAME_INFO));
     itemInfoEdit = new QGrayTextViewer();
@@ -693,9 +700,10 @@ QWidget* MainWnd::CreateMainFrame()
     info_lay->addWidget(itemInfoEdit);
     info_box->setLayout(info_lay);
 
-    QToolButton* pb = new QToolButton();
+    QToolButtonP* pb = new QToolButtonP();
     pb->setDefaultAction(saveAllMkvAct);
-    pb->setIconSize(adjustIconSize(pb->iconSize(),32));
+    pb->setButtonSize(saveFolderBox->buttonSize(), 205);
+
     QGroupBox* pbx = new QGroupBox(UI_QSTRING(APP_IFACE_MAIN_FRAME_MAKE_MKV));
     pbx->setAlignment(Qt::AlignHCenter);
     QBoxLayout* pbx_lay = new QHBoxLayout();
@@ -706,17 +714,18 @@ QWidget* MainWnd::CreateMainFrame()
     itemBox1->setVisible(false);
     itemInfoCbox = new QComboBox();
     itemInfoLine = new QLineEditK();
-    itemInfoButton = new QToolButton();
-    itemInfoButton->setIconSize(adjustIconSize(itemInfoButton->iconSize(),16));
+    itemInfoButton = new QToolButtonP();
     itemInfoButton->setDefaultAction(itemInfoRevertAct);
+    itemInfoButton->setButtonSize(itemInfoLine->sizeHint(), 128);
     QHBoxLayout *item_lay = new QHBoxLayout();
     item_lay->addWidget(itemInfoCbox,2);
     item_lay->addWidget(itemInfoLine,8);
     item_lay->addWidget(itemInfoButton,0);
     itemBox1->setLayout(item_lay);
-    connect( itemInfoCbox , SIGNAL(currentIndexChanged(int)) , this , SLOT(SlotInfoCboxIndexChanged()) );
-    connect( itemInfoLine , SIGNAL(editingFinished()) , this , SLOT(SlotInfoCboxIndexChanged()) );
-    connect( itemInfoLine , SIGNAL(specialKeyPressed(int)) , this , SLOT(SlotInfoLineKeyPressed(int)) );
+
+    check(connect(itemInfoCbox, (void (QComboBox::*)(int)) &QComboBox::currentIndexChanged, this, &MainWnd::SlotInfoCboxIndexChanged));
+    check(connect(itemInfoLine, &QLineEdit::editingFinished, this, &MainWnd::SlotInfoCboxIndexChanged));
+    check(connect(static_cast<QLineEditK*>(itemInfoLine), &QLineEditK::specialKeyPressed, this, &MainWnd::SlotInfoLineKeyPressed));
 
     itemBox2 = new QGroupBox(UI_QSTRING(APP_IFACE_MAIN_FRAME_PROFILE));
     itemBox2->setVisible(false);
@@ -724,7 +733,7 @@ QWidget* MainWnd::CreateMainFrame()
     QHBoxLayout *prf_lay = new QHBoxLayout();
     prf_lay->addWidget(profileCbox);
     itemBox2->setLayout(prf_lay);
-    connect( profileCbox , SIGNAL(currentIndexChanged(int)) , this , SLOT(SlotProfileCboxIndexChanged()) );
+    check(connect(profileCbox, (void (QComboBox::*)(int)) &QComboBox::currentIndexChanged, this, &MainWnd::SlotProfileCboxIndexChanged));
 
     QGridLayout *r_lay = new QGridLayout();
     r_lay->addWidget(saveFolderBox,0,0);
@@ -752,7 +761,7 @@ QWidget* MainWnd::CreateEmptyFrame()
 
     emptyDriveBox = new QComboBox();
     src_lay->addWidget(emptyDriveBox,0,0,1,2);
-    connect(emptyDriveBox, SIGNAL(currentIndexChanged(const QString&)) , this, SLOT(SlotEmptyBoxChanged()) );
+    check(connect(emptyDriveBox, (void (QComboBox::*)(int)) &QComboBox::currentIndexChanged, this, &MainWnd::SlotEmptyBoxChanged));
 
     src_lay->addWidget(createHLine(),1,0,1,2);
 
@@ -785,7 +794,7 @@ QWidget* MainWnd::CreateEmptyFrame()
     empty_big_btn = new QAnimToolButton();
     empty_big_btn->setDefaultAction(dvdToHdAct);
     empty_big_btn->setAutoRaise(true);
-    empty_big_btn->setIconSize(QSize(256,256));
+    empty_big_btn->setIconSize(getIconSize(6));
     empty_big_btn->setSizePolicy(QSizePolicy::MinimumExpanding,QSizePolicy::MinimumExpanding);
 
     btn_layout->addWidget(empty_big_btn,1,1,Qt::AlignCenter);
@@ -1173,7 +1182,7 @@ bool MainWnd::ConfirmCancel()
 
 void MainWnd::SlotSettings()
 {
-    CSettingDialog dlg(m_app,mainIcon);
+    CSettingDialog dlg(this,mainIcon);
 
     dlg.exec();
 
@@ -1368,3 +1377,35 @@ int MainWnd::ReportUiDialog(unsigned long Code,unsigned long Flags,unsigned int 
 
     return -1;
 }
+
+QString MainWnd::formatURL(const char* tail)
+{
+    QString url;
+
+    size_t len = strlen(tail);
+
+    url.reserve(app_website.length()*2+len*2+32);
+
+    url.append(QLatin1String("<a href='"));
+    url.append(app_website);
+    url.append(QLatin1String(tail));
+    url.append(QLatin1String("'>"));
+    url.append(app_website);
+    url.append(QLatin1String(tail));
+    url.append(QLatin1String("</a>"));
+
+    return url;
+}
+
+void check(const QMetaObject::Connection& connection)
+{
+    bool is_connected;
+
+    is_connected = connection;
+
+    if (false==is_connected)
+    {
+        QMessageBox::critical(NULL, UI_QSTRING(APP_CAPTION_MSG), QLatin1String("Internal error #22"));
+    }
+}
+

@@ -1,7 +1,7 @@
 /*
     MakeMKV GUI - Graphics user interface application for MakeMKV
 
-    Copyright (C) 2007-2019 GuinpinSoft inc <makemkvgui@makemkv.com>
+    Copyright (C) 2007-2020 GuinpinSoft inc <makemkvgui@makemkv.com>
 
     You may use this file in accordance with the end user license
     agreement provided with the Software. For licensing terms and
@@ -17,7 +17,7 @@
 
 #include "mainwnd.h"
 
-#define aversion aversion001
+#define aversion aversion002
 extern "C" const unsigned int __cdecl aversion();
 
 #ifdef Q_OS_WIN
@@ -44,6 +44,12 @@ int qMain(int argc, char **argv)
         {
             apc.EnableDebug(argv[2]);
         }
+#ifdef Q_OS_WIN
+        if (strcmp(argv[1], "break")==0)
+        {
+            __debugbreak();
+        }
+#endif
     }
 
 #if (QT_VERSION > 0x050000)

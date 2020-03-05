@@ -1,7 +1,7 @@
 /*
     libMakeMKV - MKV multiplexer library
 
-    Copyright (C) 2007-2019 GuinpinSoft inc <libmkv@makemkv.com>
+    Copyright (C) 2007-2020 GuinpinSoft inc <libmkv@makemkv.com>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -44,6 +44,7 @@ typedef struct _SYS_stat
 } SYS_stat;
 
 int     SYS_nstat(const char* path, SYS_stat *buf);
+int     SYS_lstat(const char* path, SYS_stat *buf);
 int     SYS_fstat(int filedes, SYS_stat *buf);
 
 // dir

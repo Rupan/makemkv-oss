@@ -1,7 +1,7 @@
 /*
     MakeMKV GUI - Graphics user interface application for MakeMKV
 
-    Copyright (C) 2007-2019 GuinpinSoft inc <makemkvgui@makemkv.com>
+    Copyright (C) 2007-2020 GuinpinSoft inc <makemkvgui@makemkv.com>
 
     You may use this file in accordance with the end user license
     agreement provided with the Software. For licensing terms and
@@ -35,7 +35,7 @@ class CProgressItem
     unsigned int    m_value;
     unsigned int    m_lastupdate;
     bool            m_notime;
-    QTime           m_pointtime[2];
+    QElapsedTimer   m_pointtime[2];
     int             m_pointbase[2];
     int             m_pointstart[2];
     int             m_pointindex;
@@ -89,6 +89,7 @@ private:
 public:
     MainWnd(CGUIApClient* App,const char* AppDir);
     ~MainWnd();
+    inline CGUIApClient* app() { return m_app; }
 
 private slots:
     void SlotAbout();
@@ -161,6 +162,7 @@ private:
     void UpdateTitleCollection(bool setFolder);
     void Update_SaveFolderStatus();
     void updateEmptyBox(int cur_ndx,bool boxEnabled);
+    void UpdateGlobalPalette();
 public:
 
 private:
@@ -186,6 +188,7 @@ private:
     CCheckTreeItem* m_item_item;
     int             m_item_id;
     int             m_uisync_disabled;
+    unsigned int    m_color_cache;
 
 private:
     void createActions();
@@ -217,7 +220,7 @@ private:
     QGrayTextViewer* itemInfoEdit;
     QLineEdit* itemInfoLine;
     QComboBox* itemInfoCbox;
-    QToolButton* itemInfoButton;
+    QToolButtonP* itemInfoButton;
     QComboBox* profileCbox;
     QGroupBox* itemBox1;
     QGroupBox* itemBox2;
@@ -324,6 +327,9 @@ public:
     QString app_lastver;
     QString app_website;
     bool    app_expired;
+
+public:
+    QString formatURL(const char* tail);
 };
 
 #endif

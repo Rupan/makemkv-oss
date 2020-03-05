@@ -59,6 +59,7 @@ ifeq ($(ENABLE_GUI),yes)
 	$(INSTALL) -D -m 644 makemkvgui/share/icons/32x32/makemkv.png $(DESTDIR)$(datadir)/icons/hicolor/32x32/apps/makemkv.png
 	$(INSTALL) -D -m 644 makemkvgui/share/icons/64x64/makemkv.png $(DESTDIR)$(datadir)/icons/hicolor/64x64/apps/makemkv.png
 	$(INSTALL) -D -m 644 makemkvgui/share/icons/128x128/makemkv.png $(DESTDIR)$(datadir)/icons/hicolor/128x128/apps/makemkv.png
+	$(INSTALL) -D -m 644 makemkvgui/share/icons/256x256/makemkv.png $(DESTDIR)$(datadir)/icons/hicolor/256x256/apps/makemkv.png
 endif
 
 out/%: out/%.full

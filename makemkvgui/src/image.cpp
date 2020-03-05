@@ -1,7 +1,7 @@
 /*
     MakeMKV GUI - Graphics user interface application for MakeMKV
 
-    Copyright (C) 2007-2019 GuinpinSoft inc <makemkvgui@makemkv.com>
+    Copyright (C) 2007-2020 GuinpinSoft inc <makemkvgui@makemkv.com>
 
     You may use this file in accordance with the end user license
     agreement provided with the Software. For licensing terms and
@@ -91,18 +91,33 @@ const QIcon* getAnimIcon(unsigned int id,unsigned int id2)
     return anim_icons[(id-AP_IMG_ANIMATION0102)*2+id2];
 }
 
-QSize adjustIconSize(QSize size,unsigned int min)
+QSize getImageGoodSize(int height, bool biggerOk)
 {
-    unsigned int s = size.height();
+    static const int sizes[] = { 16,22,32,48,64,96,128,192,256,384,512,768,1024 };
 
-    if ( (s>=14) && (s<29)   ) s = 16;
-    if ( (s>=29) && (s<58)   ) s = 32;
-    if ( (s>=58) && (s<115)  ) s = 64;
-    if ( (s>=115) && (s<230) ) s = 128;
-    if ( (s>=230) && (s<460) ) s = 256;
-    if (s>=460) s = 512;
+    int sz = sizes[0], md = 65535;
+    for (unsigned int i = 0; i < _qt_countof(sizes); i++)
+    {
+        int v;
 
-    if (s<min) s=min;
-
-    return QSize(s,s);
+        v = sizes[i];
+        if (biggerOk || (v <= height))
+        {
+            int d = abs(v - height);
+            if (d < md)
+            {
+                md = d;
+                sz = v;
+            }
+        }
+    }
+    return QSize(sz, sz);
 }
+
+QSize getIconSize(unsigned int den)
+{
+    int h = QGuiApplication::primaryScreen()->size().height();
+
+    return getImageGoodSize(h / den, true);
+}
+

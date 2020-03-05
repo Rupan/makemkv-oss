@@ -1,7 +1,7 @@
 /*
     MakeMKV GUI - Graphics user interface application for MakeMKV
 
-    Copyright (C) 2007-2019 GuinpinSoft inc <makemkvgui@makemkv.com>
+    Copyright (C) 2007-2020 GuinpinSoft inc <makemkvgui@makemkv.com>
 
     You may use this file in accordance with the end user license
     agreement provided with the Software. For licensing terms and
@@ -18,6 +18,8 @@
 #include "qtgui.h"
 #include <lgpl/aproxy.h>
 #include "dirselectbox.h"
+
+class MainWnd;
 
 class CGeneralTab : public QWidget
 {
@@ -97,6 +99,20 @@ public:
     CProtTab(QWidget *parent = 0);
 };
 
+class CDecryptTab : public QWidget
+{
+    Q_OBJECT
+
+public:
+    QTreeWidget*      viewItems;
+
+public:
+    CDecryptTab(MainWnd* mainwnd, QWidget *parent = 0);
+    void LoadSettings(CGUIApClient* ap_client);
+    bool SaveSettings(CGUIApClient* ap_client);
+};
+
+
 class CAdvancedTab : public QWidget
 {
     Q_OBJECT
@@ -116,7 +132,7 @@ class CSettingDialog : public QDialog
     Q_OBJECT
 
 public:
-    CSettingDialog(CGUIApClient* ap_client,QIcon* icon,QWidget *parent = 0);
+    CSettingDialog(MainWnd* mainwnd, QIcon* icon, QWidget *parent = 0);
     ~CSettingDialog();
 
 private:
@@ -130,6 +146,7 @@ public: // tabs
     CIOTab* ioTab;
     CDVDTab* dvdTab;
     CProtTab* protTab;
+    CDecryptTab* decryptTab;
     CAdvancedTab* advancedTab;
     bool advancedTabVisible;
 private:

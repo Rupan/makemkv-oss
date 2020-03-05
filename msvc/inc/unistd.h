@@ -15,14 +15,14 @@
 #include <direct.h>
 #include <io.h>
 #include <string.h>
-#include <windows.h>
-#include <winnt.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#define _SSIZE_T_DEFINED
 typedef intptr_t ssize_t;
+
 typedef uint16_t uid_t;
 typedef uint64_t useconds_t;
 
@@ -30,10 +30,11 @@ typedef uint64_t useconds_t;
 #define getuid() (0)
 
 int usleep(useconds_t usec);
+int msleep(unsigned int msec);
 
 static unsigned int __inline sleep(unsigned int sec)
 {
-    Sleep(sec*1000);
+    msleep(sec*1000);
     return 0;
 }
 

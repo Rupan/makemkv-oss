@@ -1,7 +1,7 @@
 /*
     MakeMKV GUI - Graphics user interface application for MakeMKV
 
-    Copyright (C) 2007-2019 GuinpinSoft inc <makemkvgui@makemkv.com>
+    Copyright (C) 2007-2020 GuinpinSoft inc <makemkvgui@makemkv.com>
 
     You may use this file in accordance with the end user license
     agreement provided with the Software. For licensing terms and
@@ -53,9 +53,9 @@ CBackupDialog::CBackupDialog(CApClient* ap_client,QIcon* icon,QWidget *parent) :
     lay->addWidget(buttonBox);
     this->setLayout(lay);
 
-    connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
-    connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
-    connect(this, SIGNAL(accepted()) , this , SLOT(SlotAccepted()));
+    check(connect(buttonBox, &QDialogButtonBox::accepted, this, &CBackupDialog::accept));
+    check(connect(buttonBox, &QDialogButtonBox::rejected, this, &CBackupDialog::reject));
+    check(connect(this, &CBackupDialog::accepted, this, &CBackupDialog::SlotAccepted));
 };
 
 void CBackupDialog::SlotAccepted()

@@ -1,7 +1,7 @@
 /*
     MakeMKV GUI - Graphics user interface application for MakeMKV
 
-    Copyright (C) 2007-2019 GuinpinSoft inc <makemkvgui@makemkv.com>
+    Copyright (C) 2007-2020 GuinpinSoft inc <makemkvgui@makemkv.com>
 
     You may use this file in accordance with the end user license
     agreement provided with the Software. For licensing terms and
@@ -40,8 +40,8 @@ CDriveBox::CDriveBox(MainWnd *MainWnd,QIcon* icon,unsigned int Count,const utf16
     lay->addWidget(btn_box);
     setLayout(lay);
 
-    connect(btn_box, SIGNAL(rejected()), this, SLOT(reject()));
-    connect(btn_box, SIGNAL(accepted()), this, SLOT(accept()));
+    check(connect(btn_box, &QDialogButtonBox::rejected, this, &CDriveBox::reject));
+    check(connect(btn_box, &QDialogButtonBox::accepted, this, &CDriveBox::accept));
 
     m_Box->addItem(UI_QSTRING(APP_SINGLE_DRIVE_ALL));
     for (unsigned int i=0;i<Count;i++)

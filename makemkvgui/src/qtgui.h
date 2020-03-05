@@ -1,7 +1,7 @@
 /*
     MakeMKV GUI - Graphics user interface application for MakeMKV
 
-    Copyright (C) 2007-2019 GuinpinSoft inc <makemkvgui@makemkv.com>
+    Copyright (C) 2007-2020 GuinpinSoft inc <makemkvgui@makemkv.com>
 
     You may use this file in accordance with the end user license
     agreement provided with the Software. For licensing terms and
@@ -20,6 +20,7 @@
 #include <QtCore/QTime>
 #include <QtCore/QBitArray>
 #include <QtCore/QTimer>
+#include <QtCore/QElapsedTimer>
 #include <QtCore/QUrl>
 
 #include <QtGui/QImage>
@@ -27,46 +28,7 @@
 #include <QtGui/QIcon>
 #include <QtGui/QKeyEvent>
 #include <QtGui/QDesktopServices>
-
-#if (QT_VERSION < 0x050000)
-
-#include <QtGui/QApplication>
-#include <QtGui/QMessageBox>
-#include <QtGui/QDialog>
-#include <QtGui/QInputDialog>
-#include <QtGui/QLabel>
-#include <QtGui/QLineEdit>
-#include <QtGui/QTextEdit>
-#include <QtGui/QGroupBox>
-#include <QtGui/QMainWindow>
-#include <QtGui/QTreeWidgetItem>
-#include <QtGui/QToolButton>
-#include <QtGui/QProgressBar>
-#include <QtGui/QStackedWidget>
-#include <QtGui/QComboBox>
-#include <QtGui/QAction>
-#include <QtGui/QCheckBox>
-#include <QtGui/QGridLayout>
-#include <QtGui/QBoxLayout>
-#include <QtGui/QVBoxLayout>
-#include <QtGui/QDialogButtonBox>
-#include <QtGui/QSpinBox>
-#include <QtGui/QRadioButton>
-#include <QtGui/QPushButton>
-#include <QtGui/QScrollBar>
-#include <QtGui/QMenu>
-#include <QtGui/QMenuBar>
-#include <QtGui/QToolBar>
-#include <QtGui/QStatusBar>
-#include <QtGui/QSplitter>
-#include <QtGui/QFileDialog>
-
-inline static QString qt_html_escape(const QString &plain)
-{
-    return Qt::escape(plain);
-}
-
-#else
+#include <QtGui/QScreen>
 
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>
@@ -103,8 +65,6 @@ inline static QString qt_html_escape(const QString &plain)
 {
     return plain.toHtmlEscaped();
 }
-
-#endif
 
 #endif // APP_QTGUI_H
 
