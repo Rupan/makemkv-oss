@@ -70,9 +70,7 @@ MainWnd::MainWnd(CGUIApClient* App,const char* AppDir)
     m_item_item = NULL;
     m_uisync_disabled = 0;
     logtext_document.setUndoRedoEnabled(false);
-    logtext_buf.reserve(2048);
-    logtext_document_count=0;
-    logtext_buf_count=0;
+    logtext_document.setMaximumBlockCount(1024);
     timerCounter=0;
 
     memset(infoCodes,0,sizeof(infoCodes));
@@ -988,11 +986,13 @@ void MainWnd::UpdateDrive(unsigned int Index,const utf16_t *DriveName,AP_DriveSt
 
 void MainWnd::DoProcessLogMessage(QString Message,unsigned int Flags)
 {
+    QString new_logline;
+
     if (Message.indexOf(QLatin1String("http://"))<0)
     {
-        logtext_buf.append(qt_html_escape(Message));
+        new_logline = qt_html_escape(Message);
     } else {
-        QString logline,new_logline;
+        QString logline;
         int http_index;
 
         logline.reserve(Message.length()+30);
@@ -1021,44 +1021,33 @@ void MainWnd::DoProcessLogMessage(QString Message,unsigned int Flags)
         }
         new_logline.append(QLatin1String("</a>"));
         new_logline.append(logline.mid(end_index));
-        logtext_buf.append(new_logline);
     }
-    logtext_buf.append(QLatin1String("<br>\n"));
-    logtext_buf_count++;
+    logtext_buf.push_back(new_logline);
 
     if ((Flags&0x01000000)==0)
     {
         logtext_progress->UpdateStart();
         logtext_main->UpdateStart();
 
-        logtext_document_count += logtext_buf_count;
         logtext_cursor.movePosition(QTextCursor::End);
-        logtext_cursor.insertHtml(logtext_buf);
-
-        if(logtext_document_count>1010)
+        for (int i=0;i<logtext_buf.size();i++)
         {
-            unsigned int cutLines = logtext_document_count - 1000;
-            logtext_cursor.movePosition(QTextCursor::Start);
-            logtext_cursor.movePosition(QTextCursor::Down,QTextCursor::KeepAnchor,cutLines);
-            logtext_cursor.removeSelectedText();
-            logtext_document_count -= cutLines;
+            logtext_cursor.insertHtml(logtext_buf[i]);
+            logtext_buf[i].clear();
+            logtext_cursor.insertBlock();
         }
 
         logtext_progress->UpdateEnd();
         logtext_main->UpdateEnd();
 
-        logtext_buf.resize(0);
-        logtext_buf_count=0;
+        logtext_buf.clear();
     }
 }
 
 void MainWnd::SlotClearLog()
 {
-    logtext_buf.resize(0);
-    logtext_buf_count=0;
-
+    logtext_buf.clear();
     logtext_document.clear();
-    logtext_document_count=0;
 
     logtext_cursor.movePosition(QTextCursor::Start);
 }

@@ -210,6 +210,8 @@ typedef struct _MkvProfileInfo
 {
     int     version;
     bool    useISO639Type2T;
+    bool    setParentSubtitleTrackAsDefaultIfEmpty;
+    bool    reserved[2];
 } MkvProfileInfo;
 
 typedef struct _MkvFormatInfo

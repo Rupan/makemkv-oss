@@ -1222,7 +1222,8 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
 
         if (track_info[i].stat_frames==0)
         {
-            if (0!=(track_info[i].info.mkv_flags&MKV_TRACK_FLAG_DEFAULT))
+            if ( (true==FormatInfo->profile.setParentSubtitleTrackAsDefaultIfEmpty) &&
+                (0!=(track_info[i].info.mkv_flags&MKV_TRACK_FLAG_DEFAULT)) )
             {
                 if (track_info[i-1].info.type==track_info[i].info.type)
                 {

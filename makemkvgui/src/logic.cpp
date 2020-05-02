@@ -14,6 +14,7 @@
 */
 #include "mainwnd.h"
 #include <lgpl/smem.h>
+#include <lgpl/sstring.h>
 
 uint64_t    get_free_space(const utf16_t* Folder);
 
@@ -43,6 +44,11 @@ QString FormatDiskFreeSpace(const utf16_t* FolderName)
     unsigned int dt = ((sz&0xff)*10)>>8;
     sz >>= 8;
 
-    return QString::asprintf("%u.%u %c",sz,dt,suf);
+    char str[64];
+    size_t slen;
+
+    slen = sprintf_s(str, sizeof(str), "%u.%u %c", sz, dt, suf);
+
+    return QString::fromLatin1(str,(int)slen);
 }
 

@@ -240,9 +240,7 @@ private:
     CLogText*       logtext_progress;
     QTextDocument   logtext_document;
     QTextCursor     logtext_cursor;
-    QString         logtext_buf;
-    unsigned int    logtext_document_count;
-    unsigned int    logtext_buf_count;
+    QVector<QString> logtext_buf;
 
     QLabel*     empty_type;
     QLabel*     empty_label;

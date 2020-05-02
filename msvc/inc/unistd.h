@@ -29,12 +29,12 @@ typedef uint64_t useconds_t;
 #define geteuid() (0)
 #define getuid() (0)
 
+void msleep_native(unsigned int mseconds);
 int usleep(useconds_t usec);
-int msleep(unsigned int msec);
 
 static unsigned int __inline sleep(unsigned int sec)
 {
-    msleep(sec*1000);
+    msleep_native(sec*1000);
     return 0;
 }
 
