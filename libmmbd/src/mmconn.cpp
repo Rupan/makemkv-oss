@@ -350,7 +350,7 @@ void CMMBDConn::UpdateDrive(unsigned int Index,const utf16_t *DriveName,AP_Drive
     }
 }
 
-int CMMBDConn::ReportUiMessage(unsigned long Code,unsigned long Flags,const utf16_t* Text)
+int CMMBDConn::ReportUiMessage(unsigned long Code,unsigned long Flags,const utf16_t* Text,uint64_t)
 {
     if (Flags&(AP_UIMSG_HIDDEN|AP_UIMSG_EVENT)) return 0;
 

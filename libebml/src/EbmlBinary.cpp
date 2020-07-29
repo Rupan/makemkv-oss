@@ -42,22 +42,22 @@
 START_LIBEBML_NAMESPACE
 
 EbmlBinary::EbmlBinary()
-  :EbmlElement(0, false), Data(NULL)
+  :EbmlElement(0, false), Data(nullptr)
 {}
 
 EbmlBinary::EbmlBinary(const EbmlBinary & ElementToClone)
   :EbmlElement(ElementToClone)
 {
-  if (ElementToClone.Data == NULL)
-    Data = NULL;
+  if (ElementToClone.Data == nullptr)
+    Data = nullptr;
   else {
-    Data = (binary *)malloc(GetSize() * sizeof(binary));
-    assert(Data != NULL);
+    Data = static_cast<binary *>(malloc(GetSize() * sizeof(binary)));
+    assert(Data != nullptr);
     memcpy(Data, ElementToClone.Data, GetSize());
   }
 }
 
-EbmlBinary::~EbmlBinary(void) {
+EbmlBinary::~EbmlBinary() {
   if(Data)
     free(Data);
 }
@@ -83,16 +83,22 @@ uint64 EbmlBinary::UpdateSize(bool /* bWithDefault */, bool /* bForceRender */)
 #ifndef EBML_NO_READ
 filepos_t EbmlBinary::ReadData(IOCallback & input, ScopeMode ReadFully)
 {
-  if (Data != NULL)
+  if (Data != nullptr)
     free(Data);
 
-  if (ReadFully == SCOPE_NO_DATA || !GetSize()) {
-    Data = NULL;
+  if (ReadFully == SCOPE_NO_DATA) {
+    Data = nullptr;
     return GetSize();
   }
 
-  Data = (binary *)malloc(GetSize());
-  if (Data == NULL)
+  if (!GetSize()) {
+    SetValueIsSet();
+    Data = nullptr;
+    return 0;
+  }
+
+  Data = static_cast<binary *>(malloc(GetSize()));
+  if (Data == nullptr)
     throw CRTError(std::string("Error allocating data"));
   SetValueIsSet();
   return input.read(Data, GetSize());
@@ -101,7 +107,7 @@ filepos_t EbmlBinary::ReadData(IOCallback & input, ScopeMode ReadFully)
 
 bool EbmlBinary::operator==(const EbmlBinary & ElementToCompare) const
 {
-  return ((GetSize() == ElementToCompare.GetSize()) && !memcmp(Data, ElementToCompare.Data, GetSize()));
+  return ((GetSize() == ElementToCompare.GetSize()) && (GetSize() == 0 || !memcmp(Data, ElementToCompare.Data, GetSize())));
 }
 
 END_LIBEBML_NAMESPACE

@@ -24,6 +24,7 @@ static const unsigned int AP_UIMSG_NO=1;
 static const unsigned int AP_UIMSG_DEBUG=32;
 static const unsigned int AP_UIMSG_HIDDEN=64;
 static const unsigned int AP_UIMSG_EVENT=128;
+static const unsigned int AP_UIMSG_HAVE_URL=131072;
 static const unsigned int AP_UIMSG_VITEM_BASE=5200;
 static const unsigned int AP_MMBD_DISC_FLAG_BUSENC=2;
 static const unsigned int AP_MMBD_MMBD_DISC_FLAG_AACS=4;

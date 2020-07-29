@@ -48,8 +48,8 @@ START_LIBEBML_NAMESPACE
 */
 class EBML_DLL_API EbmlStream {
   public:
-    EbmlStream(IOCallback & output);
-    ~EbmlStream();
+    EbmlStream(IOCallback & DataStream);
+    ~EbmlStream() = default;
 
     /*!
       \brief Find a possible next ID in the data stream

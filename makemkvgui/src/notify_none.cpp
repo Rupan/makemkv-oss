@@ -39,3 +39,7 @@ void notifyCleanup()
 {
 }
 
+void desktopShowFile(const QString &FileName)
+{
+}
+

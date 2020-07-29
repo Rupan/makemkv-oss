@@ -63,13 +63,6 @@ EbmlString::EbmlString(const ccc::string & aDefaultValue)
 /*!
   \todo Cloning should be on the same exact type !
 */
-EbmlString::EbmlString(const EbmlString & ElementToClone)
-  :EbmlElement(ElementToClone)
-  ,Value(ElementToClone.Value)
-  ,DefaultValue(ElementToClone.DefaultValue)
-{
-}
-
 void EbmlString::SetDefaultValue(ccc::string & aValue)
 {
   assert(!DefaultISset());
@@ -95,8 +88,8 @@ filepos_t EbmlString::RenderData(IOCallback & output, bool /* bForceRender */, b
 
   if (Result < GetDefaultSize()) {
     // pad the rest with 0
-    binary *Pad = new (std::nothrow) binary[GetDefaultSize() - Result];
-    if (Pad == NULL) {
+    auto Pad = new (std::nothrow) binary[GetDefaultSize() - Result];
+    if (Pad == nullptr) {
       return Result;
     }
     memset(Pad, 0x00, GetDefaultSize() - Result);
@@ -150,8 +143,8 @@ filepos_t EbmlString::ReadData(IOCallback & input, ScopeMode ReadFully)
       Value = "";
       SetValueIsSet();
     } else {
-      char *Buffer = new (std::nothrow) char[GetSize() + 1];
-      if (Buffer == NULL) {
+      auto Buffer = new (std::nothrow) char[GetSize() + 1];
+      if (Buffer == nullptr) {
         // unable to store the data, skip it
         input.setFilePointer(GetSize(), seek_current);
       } else {

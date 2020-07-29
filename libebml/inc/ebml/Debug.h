@@ -110,7 +110,7 @@ class EBML_DLL_API ADbg
 {
 public:
   ADbg(int /* level */ = 0){}
-  virtual ~ADbg() {}
+  virtual ~ADbg() = default;
 
   inline int OutPut(int /* level */, const char * /* format */,...) const {
     return 0;
@@ -147,7 +147,7 @@ public:
 
 #endif // defined(LIBEBML_DEBUG_TRACE)
 
-extern class EBML_DLL_API ADbg globalDebug;
+extern ADbg globalDebug;
 
 
 #ifdef LIBEBML_DEBUG_TRACE

@@ -70,13 +70,13 @@ FileMatroska::FileMatroska(IOCallback & output)
 #endif // OLD
 }
 
-FileMatroska::~FileMatroska()
+/* FileMatroska::~FileMatroska()
 {
   //  if (myCurrCluster != NULL)
   //    throw 0; // there are some data left to write
   //  if (myCurrReadCluster != NULL || myCurrReadBlock != NULL)
   //    throw 0; // there are some data left to write
-}
+} */
 
 #ifdef OLD
 void FileMatroska::SetMaxClusterSize(const uint32 value)
@@ -285,10 +285,7 @@ inline bool FileMatroska::IsMyTrack(const Track * aTrack) const
       break;
   }
 
-  if (i != myTracks.end())
-    return true;
-  else
-    return false;
+  return i != myTracks.end();
 }
 
 void FileMatroska::SelectReadingTrack(Track * aTrack, bool select)
@@ -316,10 +313,7 @@ inline bool FileMatroska::IsReadingTrack(const uint8 aTrackNumber) const
        trackIdx != mySelectedTracks.end() && *trackIdx < aTrackNumber;
        ++trackIdx) {}
 
-  if (trackIdx == mySelectedTracks.end())
-    return false;
-  else
-    return true;
+  return trackIdx != mySelectedTracks.end();
 }
 
 //

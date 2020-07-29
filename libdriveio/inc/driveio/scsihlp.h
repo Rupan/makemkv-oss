@@ -33,44 +33,8 @@ int BuildInquiryData(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,ScsiInquiry
 int BuildDriveInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,ScsiDriveInfo *DriveInfo);
 int QueryInquiryInfo(ISimpleScsiTarget* ScsiTarget,uint8_t Evpd,uint8_t *Buffer,unsigned int *BufferSize);
 void BuildDriveId(ScsiDriveId* DriveId,const ScsiDriveInfo *DriveInfo);
+int IsScsiMmcDeviceNonBlacklisted(ISimpleScsiTarget* Target);
 int ScsiErrorFromResult(const ScsiCmdResponse *CmdResult);
-
-
-static inline uint32_t uint32_get_be(const void *Buf)
-{
-    uint32_t v=0;
-
-    v |= (((uint32_t)(((uint8_t*)Buf)[0]))<<(3*8));
-    v |= (((uint32_t)(((uint8_t*)Buf)[1]))<<(2*8));
-    v |= (((uint32_t)(((uint8_t*)Buf)[2]))<<(1*8));
-    v |= (((uint32_t)(((uint8_t*)Buf)[3]))<<(0*8));
-
-    return v;
-}
-
-static inline uint16_t uint16_get_be(const void *Buf)
-{
-    uint16_t v=0;
-
-    v |= (((uint16_t)(((uint8_t*)Buf)[0]))<<(1*8));
-    v |= (((uint16_t)(((uint8_t*)Buf)[1]))<<(0*8));
-
-    return v;
-}
-
-static inline void uint32_put_be(void* Buf,uint32_t Value)
-{
-    ((uint8_t*)Buf)[0] = (uint8_t)(Value>>(3*8));
-    ((uint8_t*)Buf)[1] = (uint8_t)(Value>>(2*8));
-    ((uint8_t*)Buf)[2] = (uint8_t)(Value>>(1*8));
-    ((uint8_t*)Buf)[3] = (uint8_t)(Value>>(0*8));
-}
-
-static inline void uint16_put_be(void* Buf,uint16_t Value)
-{
-    ((uint8_t*)Buf)[0] = (uint8_t)(Value>>(1*8));
-    ((uint8_t*)Buf)[1] = (uint8_t)(Value>>(0*8));
-}
 
 }
 using namespace LibDriveIo;

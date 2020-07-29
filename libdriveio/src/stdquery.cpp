@@ -24,6 +24,7 @@
 #include <driveio/driveio.h>
 #include <driveio/scsihlp.h>
 #include <driveio/error.h>
+#include <lgpl/byteorder.h>
 #include <errno.h>
 #include <string.h>
 
@@ -84,7 +85,7 @@ static int QueryDriveInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,bool T
         if (res.Status!=0) break;
         len = res.Transferred;
 
-        slen = uint32_get_be(data_buffer);
+        slen = rd32be(data_buffer);
 
         slen +=4;
         if (slen > len) slen = len;
@@ -102,7 +103,7 @@ static int QueryDriveInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,bool T
         {
             unsigned int feature_code, feature_len;
 
-            feature_code = uint16_get_be(dptr);
+            feature_code = rd16be(dptr);
 
             if (first_feature && (feature_code<current_feature))
             {
@@ -210,9 +211,9 @@ static int QueryDiscStructure(ISimpleScsiTarget* ScsiTarget,uint16_t Code,uint8_
     {
         *StructureLength = 0;
     } else {
-        if (uint16_get_be(Buffer+2)==0)
+        if (rd16be(Buffer+2)==0)
         {
-            *StructureLength = uint16_get_be(Buffer) + 2;
+            *StructureLength = rd16be(Buffer) + 2;
         } else {
             *StructureLength = 0;
         }
@@ -243,7 +244,7 @@ static int QueryStandardDiscInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List
         if (res.Status==0)
         {
             len = res.Transferred;
-            slen = uint32_get_be(data_buffer);
+            slen = rd32be(data_buffer);
             slen +=4;
             if (slen > len) slen = len;
             if (slen<8) return DRIVEIO_ERROR_BAD_DATA;
@@ -316,7 +317,7 @@ static int QueryStandardDiscInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List
         if (res.Status==0)
         {
             len = res.Transferred;
-            slen = uint16_get_be(data_buffer)+2;
+            slen = rd16be(data_buffer)+2;
             if (slen>len) continue;
             if (DriveInfoList_AddItem(List, (DriveInfoId) (((unsigned int)diid_TOC) + layer_id),data_buffer,slen)) return DRIVEIO_ERR_NO_MEMORY;
         }
@@ -349,7 +350,7 @@ static int QueryStandardDiscInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List
         if (res.Status==0)
         {
             len = res.Transferred;
-            slen = uint16_get_be(data_buffer)+2;
+            slen = rd16be(data_buffer)+2;
 
             if ( (layer_id==0) && (slen>34) )
             {
@@ -380,11 +381,11 @@ static int QueryStandardDiscInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List
         if (err) return err;
         if (res.Status!=0)
         {
-            return EIO;
+            return DRIVEIO_ERR_SCSI_STATUS(res.Status);
         }
         if (res.Transferred!=8)
         {
-             return ERANGE;
+            return DRIVEIO_ERROR_BAD_DATA;
         }
         if (DriveInfoList_AddItem(List, diid_DiscCapacity,data_buffer,8)) return DRIVEIO_ERR_NO_MEMORY;
     }
@@ -400,7 +401,7 @@ static int QueryDiscInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,bool Fa
     if (0!=(err=TestUnitReady(ScsiTarget,&ready))) return err;
     if (false==ready)
     {
-        return FailIfNotReady?EBUSY:0;
+        return FailIfNotReady?DRIVEIO_ERR_NOT_READY:0;
     }
 
     if (0!=(err=QueryStandardDiscInfo(ScsiTarget,List))) return err;
@@ -411,16 +412,9 @@ static int QueryDiscInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,bool Fa
 namespace LibDriveIo
 {
 
-static int DriveIoQuery(ISimpleScsiTarget* ScsiTarget,DriveIoQueryType QueryType,DIO_INFOLIST* InfoList)
+static int DriveIoQuery(ISimpleScsiTarget* ScsiTarget,DriveIoQueryType QueryType,DIO_INFOLIST list)
 {
-    DIO_INFOLIST list;
-    int err=0;
-
-    list = DriveInfoList_Create();
-    if (NULL==list)
-    {
-        return DRIVEIO_ERR_NO_MEMORY;
-    }
+    int err;
 
     switch(QueryType)
     {
@@ -437,6 +431,21 @@ static int DriveIoQuery(ISimpleScsiTarget* ScsiTarget,DriveIoQueryType QueryType
     default:
         break;
     }
+    return err;
+}
+
+static int DriveIoQuery(ISimpleScsiTarget* ScsiTarget, DriveIoQueryType QueryType, DIO_INFOLIST* InfoList)
+{
+    DIO_INFOLIST list;
+    int err;
+
+    list = DriveInfoList_Create();
+    if (NULL == list)
+    {
+        return DRIVEIO_ERR_NO_MEMORY;
+    }
+
+    err = DriveIoQuery(ScsiTarget, QueryType, list);
 
     if (err)
     {
@@ -474,7 +483,13 @@ int CFwdScsiTarget::Exec(const ScsiCmd* Cmd,ScsiCmdResponse *CmdResult)
 // API
 //
 
-extern "C" int DIO_CDECL DriveIoQuery(DriveIoExecScsiCmdFunc ScsiProc,void* ScsiContext,DriveIoQueryType QueryType,DIO_INFOLIST* InfoList)
+extern "C" int DIO_CDECL DriveIoQueryCreate(DriveIoExecScsiCmdFunc ScsiProc,void* ScsiContext,DriveIoQueryType QueryType,DIO_INFOLIST* InfoList)
+{
+    CFwdScsiTarget t(ScsiProc,ScsiContext);
+    return LibDriveIo::DriveIoQuery(&t,QueryType,InfoList);
+}
+
+extern "C" int DIO_CDECL DriveIoQueryAdd(DriveIoExecScsiCmdFunc ScsiProc,void* ScsiContext,DriveIoQueryType QueryType,DIO_INFOLIST InfoList)
 {
     CFwdScsiTarget t(ScsiProc,ScsiContext);
     return LibDriveIo::DriveIoQuery(&t,QueryType,InfoList);

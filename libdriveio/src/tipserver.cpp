@@ -25,6 +25,7 @@
 #include <driveio/scsihlp.h>
 #include <driveio/error.h>
 #include <lgpl/tcpip.h>
+#include <lgpl/byteorder.h>
 #include "tipcommon.h"
 #include <stdlib.h>
 #include <string.h>
@@ -198,8 +199,8 @@ static void WrapError(ScsiCmdResponse& CmdResult,uint16_t Type,uint32_t Error)
     CmdResult.Status=0xff;
     CmdResult.SenseLen=1+2+4;
     CmdResult.SenseData[0]=0xfe;
-    uint16_put_be(CmdResult.SenseData+1,Type);
-    uint32_put_be(CmdResult.SenseData+1+2,Error);
+    wr16be(CmdResult.SenseData+1,Type);
+    wr32be(CmdResult.SenseData+1+2,Error);
 }
 
 static int ProcessCommandV1(v1_state_t* state,unsigned int rlen,SOCKET s,DriveIoExecScsiCmdFunc ScsiProc,void* ScsiContext)
@@ -218,7 +219,7 @@ static int ProcessCommandV1(v1_state_t* state,unsigned int rlen,SOCKET s,DriveIo
         rlen = 3;
     }
 
-    len = uint16_get_be(data+1);
+    len = rd16be(data+1);
     if (len>MaxDataBufferSizeOut) return DRIVEIO_TIPS_ERROR(ERANGE);
     if (rlen<len)
     {
@@ -238,8 +239,8 @@ static int ProcessCommandV1(v1_state_t* state,unsigned int rlen,SOCKET s,DriveIo
     memcpy(Cmd.Cdb,data+clen,Cmd.CdbLen); clen += Cmd.CdbLen;
 
     if ((clen+4+4)>len) return DRIVEIO_TIPS_ERROR(ERANGE);
-    Cmd.InputLen = uint32_get_be(data+clen); clen += 4;
-    Cmd.OutputLen = uint32_get_be(data+clen); clen += 4;
+    Cmd.InputLen = rd32be(data+clen); clen += 4;
+    Cmd.OutputLen = rd32be(data+clen); clen += 4;
 
     if ((Cmd.InputLen!=0) && (Cmd.OutputLen!=0))
     {
@@ -295,7 +296,7 @@ static int ProcessCommandV1(v1_state_t* state,unsigned int rlen,SOCKET s,DriveIo
     }
 
     len = 2;
-    uint32_put_be(data+len,CmdResult.Transferred); len+=4;
+    wr32be(data+len,CmdResult.Transferred); len+=4;
     data[len]=CmdResult.Status; len+=1;
     data[len]=(uint8_t)CmdResult.SenseLen; len+=1;
 
@@ -311,7 +312,7 @@ static int ProcessCommandV1(v1_state_t* state,unsigned int rlen,SOCKET s,DriveIo
         len += olen;
     }
 
-    uint16_put_be(data+0,len);
+    wr16be(data+0,len);
 
     err=snd_data(s,data,len);
     if (err<0) return err;

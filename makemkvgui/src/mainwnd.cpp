@@ -984,43 +984,42 @@ void MainWnd::UpdateDrive(unsigned int Index,const utf16_t *DriveName,AP_DriveSt
     OpenDriveAction[Index]->setEnabled(DriveInfo[Index].showOpen());
 }
 
-void MainWnd::DoProcessLogMessage(QString Message,unsigned int Flags)
+void MainWnd::DoProcessLogMessage(QString Message,unsigned int Flags, uint64_t ExtraData)
 {
     QString new_logline;
 
-    if (Message.indexOf(QLatin1String("http://"))<0)
+    if (0 == (Flags & AP_UIMSG_HAVE_URL))
     {
         new_logline = qt_html_escape(Message);
     } else {
-        QString logline;
-        int http_index;
+        QString url;
 
-        logline.reserve(Message.length()+30);
-        logline.append(qt_html_escape(Message));
+        unsigned int url_index = (ExtraData >> 16) & 0xffff;
+        unsigned int url_size = ExtraData & 0xffff;
+        unsigned int url_offset = 0;
 
-        http_index=logline.indexOf(QLatin1String("http://"));
+        url = Message.mid(url_index, url_size);
 
-        int end_index = logline.indexOf(QChar::fromLatin1(' '),http_index+1);
-        if (end_index<0)
+        if (url.startsWith(QLatin1String("file://")))
         {
-            end_index = logline.length();
+            url_offset = 7;
         }
 
-        new_logline.reserve(logline.length()+80+(end_index-http_index));
-        new_logline.append(logline.mid(0,http_index));
+        new_logline.reserve(Message.length()+80+2*url_size);
+        new_logline.append(qt_html_escape(Message.mid(0,url_index)));
         new_logline.append(QLatin1String("<a href='"));
-        new_logline.append(logline.mid(http_index,end_index-http_index));
+        new_logline.append(url);
         new_logline.append(QLatin1String("'>"));
 
-        if ( (end_index-http_index) < 40 )
+        if ((url_size < 40 ) || (url_offset!=0))
         {
-            new_logline.append(logline.mid(http_index,end_index-http_index));
+            new_logline.append(qt_html_escape(url.mid(url_offset,url_size-url_offset)));
         } else {
-            new_logline.append(logline.mid(http_index,40));
+            new_logline.append(qt_html_escape(url.mid(0, 40)));
             new_logline.append(QLatin1String("..."));
         }
         new_logline.append(QLatin1String("</a>"));
-        new_logline.append(logline.mid(end_index));
+        new_logline.append(qt_html_escape(Message.mid(url_index+url_size)));
     }
     logtext_buf.push_back(new_logline);
 
@@ -1056,7 +1055,8 @@ void MainWnd::SlotClearLog()
 int MainWnd::ReportUiMessage(
     unsigned long Code,
     unsigned long Flags,
-    const utf16_t* Text
+    const utf16_t* Text,
+    uint64_t ExtraData
     )
 {
     if (0!=(Flags&AP_UIMSG_HIDDEN))
@@ -1133,7 +1133,7 @@ int MainWnd::ReportUiMessage(
         notifyEvent(this,Code,QStringFromUtf16(Text),m_notify_name);
     }
 
-    DoProcessLogMessage(QStringFromUtf16(Text),Flags);
+    DoProcessLogMessage(QStringFromUtf16(Text),Flags,ExtraData);
     return 0;
 }
 
@@ -1196,14 +1196,18 @@ void MainWnd::SlotPurchase()
 
 void MainWnd::SlotLaunchUrl(const QString &url)
 {
-    QString real_url = url;
-    if (setting_Debug)
-    {
-        real_url = QLatin1String("http://127.0.0.1/?hide?") + url;
-    }
-
     m_disable_onidle++;
-    QDesktopServices::openUrl(QUrl(real_url));
+    if (url.startsWith(QLatin1String("file://", 7)))
+    {
+        desktopShowFile(url.mid(7));
+    } else {
+        QString real_url = url;
+        if (setting_Debug)
+        {
+            real_url = QLatin1String("http://127.0.0.1/?hide?") + url;
+        }
+        QDesktopServices::openUrl(QUrl(real_url));
+    }
     m_disable_onidle--;
 }
 

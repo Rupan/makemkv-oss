@@ -40,6 +40,9 @@
 #include "config.h"
 #endif
 
+//#include "ebml_export.h"
+#define EBML_DLL_API
+
 #if defined(__linux__)
 #include <endian.h>
 #if __BYTE_ORDER == __LITTLE_ENDIAN
@@ -67,30 +70,8 @@
 # define END_LIBEBML_NAMESPACE
 #else // NO_NAMESPACE
 # define START_LIBEBML_NAMESPACE namespace LIBEBML_NAMESPACE {
-# define END_LIBEBML_NAMESPACE   };
+# define END_LIBEBML_NAMESPACE   }
 #endif // NO_NAMESPACE
-
-
-// There are special implementations for certain platforms. For example on Windows
-// we use the Win32 file API. here we set the appropriate macros.
-#if defined(_WIN32)||defined(WIN32)
-
-# if defined(EBML_DLL)
-#  if defined(EBML_DLL_EXPORT)
-#   define EBML_DLL_API __declspec(dllexport)
-#  else // EBML_DLL_EXPORT
-#   define EBML_DLL_API __declspec(dllimport)
-#  endif // EBML_DLL_EXPORT
-# else // EBML_DLL
-#  define EBML_DLL_API
-# endif // EBML_DLL
-
-# ifdef _MSC_VER
-#  pragma warning(disable:4786)  // length of internal identifiers
-# endif // _MSC_VER
-#else
-# define EBML_DLL_API
-#endif // WIN32 || _WIN32
 
 
 #ifndef countof

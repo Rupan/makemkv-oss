@@ -41,8 +41,8 @@ START_LIBMATROSKA_NAMESPACE
 
 KaxCluster::KaxCluster(EBML_EXTRA_DEF)
   :EbmlMaster(EBML_CLASS_SEMCONTEXT(KaxCluster) EBML_DEF_SEP EBML_EXTRA_CALL)
-  ,currentNewBlock(NULL)
-  ,ParentSegment(NULL)
+  ,currentNewBlock(nullptr)
+  ,ParentSegment(nullptr)
   ,bFirstFrameInside(false)
   ,bPreviousTimecodeIsSet(false)
   ,bTimecodeScaleIsSet(false)
@@ -54,16 +54,14 @@ KaxCluster::KaxCluster(const KaxCluster & ElementToClone)
   ,bSilentTracksUsed(ElementToClone.bSilentTracksUsed)
 {
   // update the parent of each children
-  EBML_MASTER_ITERATOR Itr = begin();
+  auto Itr = begin();
   while (Itr != end()) {
     if (EbmlId(**Itr) == EBML_ID(KaxBlockGroup)) {
       static_cast<KaxBlockGroup   *>(*Itr)->SetParent(*this);
     } else if (EbmlId(**Itr) == EBML_ID(KaxBlock)) {
       static_cast<KaxBlock        *>(*Itr)->SetParent(*this);
-#if MATROSKA_VERSION >= 2
     } else if (EbmlId(**Itr) == EBML_ID(KaxBlockVirtual)) {
       static_cast<KaxBlockVirtual *>(*Itr)->SetParent(*this);
-#endif // MATROSKA_VERSION
     }
     ++Itr;
   }
@@ -87,62 +85,60 @@ bool KaxCluster::AddFrameInternal(const KaxTrackEntry & track, uint64 timecode, 
       MaxTimecode = timecode;
   }
 
-  MyNewBlock = NULL;
+  MyNewBlock = nullptr;
 
   if (lacing == LACING_NONE || !track.LacingEnabled()) {
-    currentNewBlock = NULL;
+    currentNewBlock = nullptr;
   }
 
   // force creation of a new block
-  if (currentNewBlock == NULL || uint32(track.TrackNumber()) != uint32(currentNewBlock->TrackNumber()) || PastBlock != NULL || ForwBlock != NULL) {
+  if (currentNewBlock == nullptr || uint32(track.TrackNumber()) != uint32(currentNewBlock->TrackNumber()) || PastBlock != nullptr || ForwBlock != nullptr) {
     KaxBlockGroup & aNewBlock = GetNewBlock();
     MyNewBlock = currentNewBlock = &aNewBlock;
   }
 
-  if (PastBlock != NULL) {
-    if (ForwBlock != NULL) {
+  if (PastBlock != nullptr) {
+    if (ForwBlock != nullptr) {
       if (currentNewBlock->AddFrame(track, timecode, buffer, *PastBlock, *ForwBlock, lacing)) {
         // more data are allowed in this Block
         return true;
-      } else {
-        currentNewBlock = NULL;
-        return false;
       }
-    } else {
-      if (currentNewBlock->AddFrame(track, timecode, buffer, *PastBlock, lacing)) {
-        // more data are allowed in this Block
-        return true;
-      } else {
-        currentNewBlock = NULL;
-        return false;
-      }
-    }
-  } else {
-    if (currentNewBlock->AddFrame(track, timecode, buffer, lacing)) {
-      // more data are allowed in this Block
-      return true;
-    } else {
-      currentNewBlock = NULL;
+
+      currentNewBlock = nullptr;
       return false;
     }
+    if (currentNewBlock->AddFrame(track, timecode, buffer, *PastBlock, lacing)) {
+        // more data are allowed in this Block
+        return true;
+      }
+    currentNewBlock = nullptr;
+    return false;
   }
+
+  if (currentNewBlock->AddFrame(track, timecode, buffer, lacing)) {
+    // more data are allowed in this Block
+    return true;
+  }
+
+  currentNewBlock = nullptr;
+  return false;
 }
 
 bool KaxCluster::AddFrame(const KaxTrackEntry & track, uint64 timecode, DataBuffer & buffer, KaxBlockGroup * & MyNewBlock, LacingType lacing)
 {
-  assert(Blobs.size() == 0); // mutually exclusive for the moment
-  return AddFrameInternal(track, timecode, buffer, MyNewBlock, NULL, NULL, lacing);
+  assert(Blobs.empty()); // mutually exclusive for the moment
+  return AddFrameInternal(track, timecode, buffer, MyNewBlock, nullptr, nullptr, lacing);
 }
 
 bool KaxCluster::AddFrame(const KaxTrackEntry & track, uint64 timecode, DataBuffer & buffer, KaxBlockGroup * & MyNewBlock, const KaxBlockGroup & PastBlock, LacingType lacing)
 {
-  assert(Blobs.size() == 0); // mutually exclusive for the moment
-  return AddFrameInternal(track, timecode, buffer, MyNewBlock, &PastBlock, NULL, lacing);
+  assert(Blobs.empty()); // mutually exclusive for the moment
+  return AddFrameInternal(track, timecode, buffer, MyNewBlock, &PastBlock, nullptr, lacing);
 }
 
 bool KaxCluster::AddFrame(const KaxTrackEntry & track, uint64 timecode, DataBuffer & buffer, KaxBlockGroup * & MyNewBlock, const KaxBlockGroup & PastBlock, const KaxBlockGroup & ForwBlock, LacingType lacing)
 {
-  assert(Blobs.size() == 0); // mutually exclusive for the moment
+  assert(Blobs.empty()); // mutually exclusive for the moment
   return AddFrameInternal(track, timecode, buffer, MyNewBlock, &PastBlock, &ForwBlock, lacing);
 }
 
@@ -156,10 +152,10 @@ filepos_t KaxCluster::Render(IOCallback & output, KaxCues & CueToUpdate, bool bS
   EBML_MASTER_ITERATOR TrkItr, Itr;
 
   // update the Timecode of the Cluster before writing
-  KaxClusterTimecode * Timecode = static_cast<KaxClusterTimecode *>(this->FindElt(EBML_INFO(KaxClusterTimecode)));
+  auto Timecode = static_cast<KaxClusterTimecode *>(this->FindElt(EBML_INFO(KaxClusterTimecode)));
   *static_cast<EbmlUInteger *>(Timecode) = GlobalTimecode() / GlobalTimecodeScale();
 
-  if (Blobs.size() == 0) {
+  if (Blobs.empty()) {
     // old-school direct KaxBlockGroup
 
     // SilentTracks handling
@@ -179,9 +175,9 @@ filepos_t KaxCluster::Render(IOCallback & output, KaxCues & CueToUpdate, bool bS
           }
           // the track wasn't found in this cluster
           if (Itr == end()) {
-            KaxClusterSilentTracks * SilentTracks = static_cast<KaxClusterSilentTracks *>(this->FindFirstElt(EBML_INFO(KaxClusterSilentTracks)));
-            assert(SilentTracks != NULL); // the flag bSilentTracksUsed should be set when creating the Cluster
-            KaxClusterSilentTrackNumber * trackelt = static_cast<KaxClusterSilentTrackNumber *>(SilentTracks->AddNewElt(EBML_INFO(KaxClusterSilentTrackNumber)));
+            auto SilentTracks = static_cast<KaxClusterSilentTracks *>(this->FindFirstElt(EBML_INFO(KaxClusterSilentTracks)));
+            assert(SilentTracks != nullptr); // the flag bSilentTracksUsed should be set when creating the Cluster
+            auto trackelt = static_cast<KaxClusterSilentTrackNumber *>(SilentTracks->AddNewElt(EBML_INFO(KaxClusterSilentTrackNumber)));
             *static_cast<EbmlUInteger *>(trackelt) = tracknum;
           }
         }
@@ -199,11 +195,9 @@ filepos_t KaxCluster::Render(IOCallback & output, KaxCues & CueToUpdate, bool bS
   } else {
     // new school, using KaxBlockBlob
     for (Index = 0; Index<Blobs.size(); Index++) {
-#if MATROSKA_VERSION >= 2
       if (Blobs[Index]->IsSimpleBlock())
         PushElement( (KaxSimpleBlock&) *Blobs[Index] );
       else
-#endif
         PushElement( (KaxBlockGroup&) *Blobs[Index] );
     }
 
@@ -221,9 +215,9 @@ filepos_t KaxCluster::Render(IOCallback & output, KaxCues & CueToUpdate, bool bS
           }
           // the track wasn't found in this cluster
           if (Index == ListSize()) {
-            KaxClusterSilentTracks * SilentTracks = static_cast<KaxClusterSilentTracks *>(this->FindFirstElt(EBML_INFO(KaxClusterSilentTracks)));
-            assert(SilentTracks != NULL); // the flag bSilentTracksUsed should be set when creating the Cluster
-            KaxClusterSilentTrackNumber * trackelt = static_cast<KaxClusterSilentTrackNumber *>(SilentTracks->AddNewElt(EBML_INFO(KaxClusterSilentTrackNumber)));
+            auto SilentTracks = static_cast<KaxClusterSilentTracks *>(this->FindFirstElt(EBML_INFO(KaxClusterSilentTracks)));
+            assert(SilentTracks != nullptr); // the flag bSilentTracksUsed should be set when creating the Cluster
+            auto trackelt = static_cast<KaxClusterSilentTrackNumber *>(SilentTracks->AddNewElt(EBML_INFO(KaxClusterSilentTrackNumber)));
             *static_cast<EbmlUInteger *>(trackelt) = tracknum;
           }
         }
@@ -268,21 +262,21 @@ int16 KaxCluster::GetBlockLocalTimecode(uint64 aGlobalTimecode) const
   return int16(TimecodeDelay);
 }
 
-uint64 KaxCluster::GetBlockGlobalTimecode(int16 GlobalSavedTimecode)
+uint64 KaxCluster::GetBlockGlobalTimecode(int16 LocalTimecode)
 {
   if (!bFirstFrameInside) {
-    KaxClusterTimecode * Timecode = static_cast<KaxClusterTimecode *>(this->FindElt(EBML_INFO(KaxClusterTimecode)));
+    auto Timecode = static_cast<KaxClusterTimecode *>(this->FindElt(EBML_INFO(KaxClusterTimecode)));
     assert (bFirstFrameInside); // use the InitTimecode() hack for now
     MinTimecode = MaxTimecode = PreviousTimecode = *static_cast<EbmlUInteger *>(Timecode);
     bFirstFrameInside = true;
     bPreviousTimecodeIsSet = true;
   }
-  return int64(GlobalSavedTimecode * GlobalTimecodeScale()) + GlobalTimecode();
+  return int64(LocalTimecode * GlobalTimecodeScale()) + GlobalTimecode();
 }
 
 KaxBlockGroup & KaxCluster::GetNewBlock()
 {
-  KaxBlockGroup & MyBlock = AddNewChild<KaxBlockGroup>(*this);
+  auto & MyBlock = AddNewChild<KaxBlockGroup>(*this);
   MyBlock.SetParent(*this);
   return MyBlock;
 }
@@ -299,7 +293,7 @@ void KaxCluster::ReleaseFrames()
 
 uint64 KaxCluster::GetPosition() const
 {
-  assert(ParentSegment != NULL);
+  assert(ParentSegment != nullptr);
   return ParentSegment->GetRelativePosition(*this);
 }
 

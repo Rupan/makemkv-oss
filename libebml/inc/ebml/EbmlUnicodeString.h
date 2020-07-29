@@ -45,6 +45,7 @@
 
 START_LIBEBML_NAMESPACE
 
+#if 0
 /*!
   \class UTFstring
   A class storing strings in a wchar_t (ie, in UCS-2 or UCS-4)
@@ -57,7 +58,7 @@ public:
   UTFstring();
   UTFstring(const wchar_t *); // should be NULL terminated
   UTFstring(const UTFstring &);
-  //UTFstring(std::wstring const &);
+  UTFstring(std::wstring const &);
 
   virtual ~UTFstring();
   bool operator==(const UTFstring&) const;
@@ -91,6 +92,46 @@ public:
   void UpdateFromUCS2();
 };
 
+#else
+
+/*!
+  \class UTFstring
+  A class storing strings in a chars as UTF-8
+  \note inspired by joy of not needing any unicode handling whatsoever
+*/
+class EBML_DLL_API UTFstring {
+public:
+  UTFstring() = default;
+  UTFstring(const UTFstring &src) = default;
+  UTFstring(UTFstring &&src) = default;
+  bool operator==(const UTFstring& that) const
+  {
+      return (this->data == that.data);
+  }
+  inline bool operator!=(const UTFstring &cmp) const
+  {
+    return !(*this == cmp);
+  }
+  UTFstring & operator=(const UTFstring &src) = default;
+
+  /// Return length of string
+  size_t length() const {return data.length();}
+
+  const ref::string & GetUTF8() const {return data;}
+  void SetUTF8(const ccc::string & src)
+  {
+      data = src;
+  }
+
+#if defined(EBML_STRICT_API)
+    private:
+#else
+    protected:
+#endif
+  buf::string data;
+};
+
+#endif
 
 /*!
     \class EbmlUnicodeString
@@ -101,9 +142,9 @@ class EBML_DLL_API EbmlUnicodeString : public EbmlElement {
   public:
     EbmlUnicodeString();
     EbmlUnicodeString(const UTFstring & DefaultValue);
-    EbmlUnicodeString(const EbmlUnicodeString & ElementToClone);
+    EbmlUnicodeString(const EbmlUnicodeString & ElementToClone) = default;
 
-    virtual ~EbmlUnicodeString() {}
+    virtual ~EbmlUnicodeString() = default;
 
     virtual bool ValidateSize() const {return IsFiniteSize();} // any size is possible
     filepos_t RenderData(IOCallback & output, bool bForceRender, bool bWithDefault = false);

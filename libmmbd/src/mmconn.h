@@ -93,26 +93,26 @@ public:
     int open_auto(mmbd_read_file_proc_t read_file_proc);
     int close();
     void terminate();
-    int decrypt_unit(uint32_t name_flags,uint64_t file_offset,uint8_t* buf);
+    int decrypt_unit(uint32_t name_flags,uint64_t file_offset,uint8_t* buf) override;
     unsigned int get_mkb_version();
     const uint8_t* get_disc_id();
     void reset_cpsid();
-    int mmbdipc_version();
+    int mmbdipc_version() override;
     const uint8_t* get_encoded_ipc_handle();
     int get_busenc();
     inline void** user_data() { return m_user_data; }
 private:
-    void SetTotalName(unsigned long Name);
-    void UpdateCurrentBar(unsigned int Value);
-    void UpdateTotalBar(unsigned int Value);
-    void UpdateLayout(unsigned long CurrentName,unsigned int NameSubindex,unsigned int Flags,unsigned int Size,const unsigned long* Names);
-    void UpdateCurrentInfo(unsigned int Index,const utf16_t* Value);
-    void EnterJobMode(unsigned int Flags);
-    void LeaveJobMode();
-    void ExitApp();
-    void UpdateDrive(unsigned int Index,const utf16_t *DriveName,AP_DriveState DriveState,const utf16_t *DiskName,const utf16_t *DeviceName,AP_DiskFsFlags DiskFlags,const void* DiskData,unsigned int DiskDataSize);
-    int  ReportUiMessage(unsigned long Code,unsigned long Flags,const utf16_t* Text);
-    int  ReportUiDialog(unsigned long Code,unsigned long Flags,unsigned int Count,const utf16_t* Text[],utf16_t* Buffer);
+    void SetTotalName(unsigned long Name) override;
+    void UpdateCurrentBar(unsigned int Value) override;
+    void UpdateTotalBar(unsigned int Value) override;
+    void UpdateLayout(unsigned long CurrentName,unsigned int NameSubindex,unsigned int Flags,unsigned int Size,const unsigned long* Names) override;
+    void UpdateCurrentInfo(unsigned int Index,const utf16_t* Value) override;
+    void EnterJobMode(unsigned int Flags) override;
+    void LeaveJobMode() override;
+    void ExitApp() override;
+    void UpdateDrive(unsigned int Index,const utf16_t *DriveName,AP_DriveState DriveState,const utf16_t *DiskName,const utf16_t *DeviceName,AP_DiskFsFlags DiskFlags,const void* DiskData,unsigned int DiskDataSize) override;
+    int  ReportUiMessage(unsigned long Code,unsigned long Flags,const utf16_t* Text,uint64_t ExtraData) override;
+    int  ReportUiDialog(unsigned long Code,unsigned long Flags,unsigned int Count,const utf16_t* Text[],utf16_t* Buffer) override;
 private:
     typedef bool (CMMBDConn::*argp_proc_t)(const uint16_t* argp[]);
 private:
@@ -120,7 +120,7 @@ private:
     uint32_t* GetClipInfo(uint32_t Name);
     void message_worker(uint32_t error_code,const char* message);
     bool convertArg(const char* argp[],CMMBDConn::argp_proc_t Proc);
-    inline void error_message(uint32_t error_code,const char* message)
+    inline void error_message(uint32_t error_code,const char* message) override
     {
         message_worker(error_code|MMBD_MESSAGE_FLAG_MMBD_ERROR,message);
     }

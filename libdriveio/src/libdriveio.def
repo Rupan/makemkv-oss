@@ -12,6 +12,8 @@ EXPORTS
   DriveInfoList_GetSerializedChunkSize
   DriveInfoList_GetSerializedChunkInfo
   DriveIoQuery
+  DriveIoQueryCreate
+  DriveIoQueryAdd
   DriveIoGetInquiryData
   DriveIoGetDriveInfo
   DriveIoGetDriveId

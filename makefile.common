@@ -59,7 +59,7 @@ MAKEMKVGUI_GEN=\
   tmp/moc_backupdlg.cpp tmp/moc_lineeditk.cpp tmp/moc_dvdbox.cpp tmp/moc_drivebox.cpp tmp/moc_toolbuttonp.cpp
 
 MAKEMKVGUI_SRC_LINUX=makemkvgui/src/api_posix.cpp makemkvgui/src/api_linux.cpp makemkvgui/src/sem_posix.cpp \
-  makemkvgui/src/spawn_posix.cpp makemkvgui/src/logic_posix.cpp \
+  makemkvgui/src/spawn_posix.cpp makemkvgui/src/logic_posix.cpp libabi/src/sys_linux.c \
   makemkvgui/src/notify_linux.cpp makemkvgui/src/image_linux.cpp \
   tmp/image_data.o
 

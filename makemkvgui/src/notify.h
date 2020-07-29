@@ -23,4 +23,6 @@ void notifyEvent(QMainWindow* mainWindow,unsigned long Id,const char* IdName,con
 void notifyFinish(QMainWindow* mainWindow);
 void notifyCleanup();
 
+void desktopShowFile(const QString &FileName);
+
 #endif // APP_NOTIFY_H

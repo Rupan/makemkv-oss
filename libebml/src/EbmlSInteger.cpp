@@ -33,8 +33,25 @@
   \author Moritz Bunkus <moritz @ bunkus.org>
 */
 #include <lgpl/cassert>
+#include <lgpl/stl.h>
 
 #include "ebml/EbmlSInteger.h"
+
+// Converting unsigned int types to signed ints assuming the
+// underlying bits in memory should represent the 2's complement of a
+// signed integer. See https://stackoverflow.com/a/13208789/507077
+
+namespace {
+
+int64
+ToSigned(uint64 u) {
+  if (u <= static_cast<uint64>(std::numeric_limits<int64>::max()))
+    return static_cast<int64>(u);
+
+  return static_cast<int64>(u - std::numeric_limits<int64>::min()) + std::numeric_limits<int64>::min();
+}
+
+} // namespace
 
 START_LIBEBML_NAMESPACE
 
@@ -46,13 +63,6 @@ EbmlSInteger::EbmlSInteger(int64 aDefaultValue)
   :EbmlElement(DEFAULT_INT_SIZE, true), Value(aDefaultValue)
 {
   SetDefaultIsSet();
-}
-
-EbmlSInteger::EbmlSInteger(const EbmlSInteger & ElementToClone)
-  :EbmlElement(ElementToClone)
-  ,Value(ElementToClone.Value)
-  ,DefaultValue(ElementToClone.DefaultValue)
-{
 }
 
 EbmlSInteger::operator int8() const {return  int8(Value);}
@@ -128,15 +138,15 @@ filepos_t EbmlSInteger::ReadData(IOCallback & input, ScopeMode ReadFully)
     binary Buffer[8];
     input.readFully(Buffer, GetSize());
 
-    if (Buffer[0] & 0x80)
-      Value = -1; // this is a negative value
-    else
-      Value = 0; // this is a positive value
+    uint64 TempValue = Buffer[0] & 0x80 ? std::numeric_limits<uint64>::max() : 0;
 
     for (unsigned int i=0; i<GetSize(); i++) {
-      Value <<= 8;
-      Value |= Buffer[i];
+      TempValue <<= 8;
+      TempValue |= Buffer[i];
     }
+
+    Value = ToSigned(TempValue);
+
     SetValueIsSet();
   }
 
@@ -148,8 +158,8 @@ bool EbmlSInteger::IsSmallerThan(const EbmlElement *Cmp) const
 {
   if (EbmlId(*this) == EbmlId(*Cmp))
     return this->Value < static_cast<const EbmlSInteger *>(Cmp)->Value;
-  else
-    return false;
+
+  return false;
 }
 
 END_LIBEBML_NAMESPACE

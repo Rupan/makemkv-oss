@@ -141,8 +141,8 @@ private: // app actions
     void UpdateCurrentInfo(unsigned int Index,const utf16_t* Value);
     void SetTotalName(unsigned long Name);
 private:
-    void DoProcessLogMessage(QString Message,unsigned int Flags);
-    int ReportUiMessage(unsigned long Code,unsigned long Flags,const utf16_t* Text);
+    void DoProcessLogMessage(QString Message,unsigned int Flags,uint64_t ExtraData);
+    int ReportUiMessage(unsigned long Code,unsigned long Flags,const utf16_t* Text,uint64_t ExtraData);
     int ReportUiDialog(unsigned long Code,unsigned long Flags,unsigned int Count,const utf16_t* Text[],utf16_t* Buffer);
     void Update_TitleTree_from_app(bool setFolder);
     void Refresh_TitleTree();

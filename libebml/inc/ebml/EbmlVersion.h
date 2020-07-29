@@ -42,10 +42,10 @@
 
 START_LIBEBML_NAMESPACE
 
-#define LIBEBML_VERSION 0x010305
+#define LIBEBML_VERSION 0x01030a
 
-extern const ccc::string EbmlCodeVersion;
-extern const ccc::string EbmlCodeDate;
+extern const EBML_DLL_API ccc::string EbmlCodeVersion;
+extern const EBML_DLL_API ccc::string EbmlCodeDate;
 
 /*!
   \todo Closer relation between an element and the context it comes from (context is an element attribute ?)

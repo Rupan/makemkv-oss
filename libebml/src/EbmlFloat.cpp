@@ -53,13 +53,6 @@ EbmlFloat::EbmlFloat(const double aDefaultValue, const EbmlFloat::Precision prec
   SetPrecision(prec);
 }
 
-EbmlFloat::EbmlFloat(const EbmlFloat & ElementToClone)
-  :EbmlElement(ElementToClone)
-  ,Value(ElementToClone.Value)
-  ,DefaultValue(ElementToClone.DefaultValue)
-{
-}
-
 void EbmlFloat::SetDefaultValue(double aValue)
 {
   assert(!DefaultISset());
@@ -128,15 +121,15 @@ filepos_t EbmlFloat::ReadData(IOCallback & input, ScopeMode ReadFully)
     if (GetSize() == 4) {
       big_int32 TmpRead;
       TmpRead.Eval(Buffer);
-      int32 tmpp = int32(TmpRead);
+      auto tmpp = int32(TmpRead);
       float val;
       memcpy(&val, &tmpp, 4);
-      Value = val;
+      Value = static_cast<double>(val);
       SetValueIsSet();
     } else if (GetSize() == 8) {
       big_int64 TmpRead;
       TmpRead.Eval(Buffer);
-      int64 tmpp = int64(TmpRead);
+      auto tmpp = int64(TmpRead);
       double val;
       memcpy(&val, &tmpp, 8);
       Value = val;
@@ -152,8 +145,8 @@ bool EbmlFloat::IsSmallerThan(const EbmlElement *Cmp) const
 {
   if (EbmlId(*this) == EbmlId(*Cmp))
     return this->Value < static_cast<const EbmlFloat *>(Cmp)->Value;
-  else
-    return false;
+
+  return false;
 }
 
 END_LIBEBML_NAMESPACE

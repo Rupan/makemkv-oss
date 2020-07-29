@@ -60,8 +60,8 @@ EbmlMaster::EbmlMaster(const EbmlMaster & ElementToClone)
  ,Checksum(ElementToClone.Checksum)
 {
   // add a clone of the list
-  std::vector<EbmlElement *>::const_iterator Itr = ElementToClone.ElementList.begin();
-  std::vector<EbmlElement *>::iterator myItr = ElementList.begin();
+  auto Itr = ElementToClone.ElementList.begin();
+  auto myItr = ElementList.begin();
   while (Itr != ElementToClone.ElementList.end())
   {
     *myItr = (*Itr)->Clone();
@@ -74,11 +74,9 @@ EbmlMaster::~EbmlMaster()
 {
   assert(!IsLocked()); // you're trying to delete a locked element !!!
 
-  size_t Index;
-
-  for (Index = 0; Index < ElementList.size(); Index++) {
-    if (!(*ElementList[Index]).IsLocked())  {
-      delete ElementList[Index];
+  for (auto Element : ElementList) {
+    if (!Element->IsLocked())  {
+      delete Element;
     }
   }
 }
@@ -90,24 +88,23 @@ EbmlMaster::~EbmlMaster()
 filepos_t EbmlMaster::RenderData(IOCallback & output, bool bForceRender, bool bWithDefault)
 {
   filepos_t Result = 0;
-  size_t Index;
 
   if (!bForceRender) {
     assert(CheckMandatory());
   }
 
   if (!bChecksumUsed) { // old school
-    for (Index = 0; Index < ElementList.size(); Index++) {
-      if (!bWithDefault && (ElementList[Index])->IsDefaultValue())
+    for (auto Element : ElementList) {
+      if (!bWithDefault && Element->IsDefaultValue())
         continue;
-      Result += (ElementList[Index])->Render(output, bWithDefault, false ,bForceRender);
+      Result += Element->Render(output, bWithDefault, false ,bForceRender);
     }
   } else { // new school
     MemIOCallback TmpBuf(GetSize() - 6);
-    for (Index = 0; Index < ElementList.size(); Index++) {
-      if (!bWithDefault && (ElementList[Index])->IsDefaultValue())
+    for (auto Element : ElementList) {
+      if (!bWithDefault && Element->IsDefaultValue())
         continue;
-      (ElementList[Index])->Render(TmpBuf, bWithDefault, false ,bForceRender);
+      Element->Render(TmpBuf, bWithDefault, false ,bForceRender);
     }
     Checksum.FillCRC32(TmpBuf.GetDataBuffer(), TmpBuf.GetDataBufferSize());
     Result += Checksum.Render(output, true, false ,bForceRender);
@@ -138,13 +135,11 @@ uint64 EbmlMaster::UpdateSize(bool bWithDefault, bool bForceRender)
     assert(CheckMandatory());
     }
 
-  size_t Index;
-
-  for (Index = 0; Index < ElementList.size(); Index++) {
-    if (!bWithDefault && (ElementList[Index])->IsDefaultValue())
+  for (auto Element : ElementList) {
+    if (!bWithDefault && Element->IsDefaultValue())
       continue;
-    (ElementList[Index])->UpdateSize(bWithDefault, bForceRender);
-    uint64 SizeToAdd = (ElementList[Index])->ElementSize(bWithDefault);
+    Element->UpdateSize(bWithDefault, bForceRender);
+    uint64 SizeToAdd = Element->ElementSize(bWithDefault);
 #if defined(LIBEBML_DEBUG)
     if (static_cast<int64>(SizeToAdd) == (0-1))
       return (0-1);
@@ -205,7 +200,7 @@ bool EbmlMaster::CheckMandatory() const
   unsigned int EltIdx;
   for (EltIdx = 0; EltIdx < EBML_CTX_SIZE(Context); EltIdx++) {
     if (EBML_CTX_IDX(Context,EltIdx).IsMandatory()) {
-      if (FindElt(EBML_CTX_IDX_INFO(Context,EltIdx)) == NULL) {
+      if (FindElt(EBML_CTX_IDX_INFO(Context,EltIdx)) == nullptr) {
         EbmlElement *testElement = &EBML_CTX_IDX(Context,EltIdx).Create();
         bool hasDefaultValue     = testElement->DefaultISset();
         delete testElement;
@@ -230,8 +225,7 @@ std::vector<std::string> EbmlMaster::FindAllMissingElements()
 
   std::vector<std::string> missingElements;
 
-  for (size_t ChildElementNo = 0; ChildElementNo < ElementList.size(); ChildElementNo++) {
-       EbmlElement *childElement = ElementList[ChildElementNo];
+  for (auto childElement : ElementList) {
     if (!childElement->ValueIsSet()) {
       std::string missingValue;
       missingValue = "The Child Element \"";
@@ -243,22 +237,21 @@ std::vector<std::string> EbmlMaster::FindAllMissingElements()
     }
 
     if (childElement->IsMaster()) {
-      EbmlMaster *childMaster = (EbmlMaster *)childElement;
+      auto childMaster = reinterpret_cast<EbmlMaster *>(childElement);
 
       std::vector<std::string> childMissingElements = childMaster->FindAllMissingElements();
-      for (size_t s = 0; s < childMissingElements.size(); s++)
-        missingElements.push_back(childMissingElements[s]);
+      std::copy(childMissingElements.begin(), childMissingElements.end(), std::back_inserter(missingElements));
     }
   }
   unsigned int EltIdx;
   for (EltIdx = 0; EltIdx < EBML_CTX_SIZE(Context); EltIdx++) {
     if (EBML_CTX_IDX(Context,EltIdx).IsMandatory()) {
-      if (FindElt(EBML_CTX_IDX_INFO(Context,EltIdx)) == NULL) {
+      if (FindElt(EBML_CTX_IDX_INFO(Context,EltIdx)) == nullptr) {
         std::string missingElement;
         missingElement = "Missing element \"";
-                missingElement.append(EBML_INFO_NAME(EBML_CTX_IDX_INFO(Context,EltIdx)));
+        missingElement.append(EBML_INFO_NAME(EBML_CTX_IDX_INFO(Context,EltIdx)));
         missingElement.append("\" in EbmlMaster \"");
-                missingElement.append(EBML_INFO_NAME(*EBML_CTX_MASTER(Context)));
+        missingElement.append(EBML_INFO_NAME(*EBML_CTX_MASTER(Context)));
         missingElement.append("\"");
         missingElements.push_back(missingElement);
       }
@@ -271,52 +264,42 @@ std::vector<std::string> EbmlMaster::FindAllMissingElements()
 
 EbmlElement *EbmlMaster::FindElt(const EbmlCallbacks & Callbacks) const
 {
-  size_t Index;
+  auto it = std::find_if(ElementList.begin(), ElementList.end(), [&](const EbmlElement *Element)
+    { return EbmlId(*Element) == EBML_INFO_ID(Callbacks); });
 
-  for (Index = 0; Index < ElementList.size(); Index++) {
-    EbmlElement * tmp = ElementList[Index];
-    if (EbmlId(*tmp) == EBML_INFO_ID(Callbacks))
-      return tmp;
-  }
-
-  return NULL;
+  return it != ElementList.end() ? *it : nullptr;
 }
 
 EbmlElement *EbmlMaster::FindFirstElt(const EbmlCallbacks & Callbacks, bool bCreateIfNull)
 {
-  size_t Index;
+  auto it = std::find_if(ElementList.begin(), ElementList.end(), [&](const EbmlElement *Element)
+    { return Element && EbmlId(*Element) == EBML_INFO_ID(Callbacks); });
 
-  for (Index = 0; Index < ElementList.size(); Index++) {
-    if (ElementList[Index] && EbmlId(*(ElementList[Index])) == EBML_INFO_ID(Callbacks))
-      return ElementList[Index];
-  }
+  if (it != ElementList.end())
+    return *it;
 
   if (bCreateIfNull) {
     // add the element
     EbmlElement *NewElt = &EBML_INFO_CREATE(Callbacks);
-    if (NewElt == NULL)
-      return NULL;
+    if (NewElt == nullptr)
+      return nullptr;
 
     if (!PushElement(*NewElt)) {
       delete NewElt;
-      NewElt = NULL;
+      NewElt = nullptr;
     }
     return NewElt;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 EbmlElement *EbmlMaster::FindFirstElt(const EbmlCallbacks & Callbacks) const
 {
-  size_t Index;
+  auto it = std::find_if(ElementList.begin(), ElementList.end(), [&](const EbmlElement *Element)
+    { return EbmlId(*Element) == EBML_INFO_ID(Callbacks); });
 
-  for (Index = 0; Index < ElementList.size(); Index++) {
-    if (EbmlId(*(ElementList[Index])) == EBML_INFO_ID(Callbacks))
-      return ElementList[Index];
-  }
-
-  return NULL;
+  return it != ElementList.end() ? *it : nullptr;
 }
 
 /*!
@@ -336,7 +319,7 @@ EbmlElement *EbmlMaster::FindNextElt(const EbmlElement & PastElt, bool bCreateIf
   }
 
   while (Index < ElementList.size()) {
-    if ((EbmlId)PastElt == (EbmlId)(*ElementList[Index]))
+    if (EbmlId(PastElt) == EbmlId(*ElementList[Index]))
       break;
     Index++;
   }
@@ -347,17 +330,17 @@ EbmlElement *EbmlMaster::FindNextElt(const EbmlElement & PastElt, bool bCreateIf
   if (bCreateIfNull) {
     // add the element
     EbmlElement *NewElt = &(PastElt.CreateElement());
-    if (NewElt == NULL)
-      return NULL;
+    if (NewElt == nullptr)
+      return nullptr;
 
     if (!PushElement(*NewElt)) {
       delete NewElt;
-      NewElt = NULL;
+      NewElt = nullptr;
     }
     return NewElt;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 EbmlElement *EbmlMaster::FindNextElt(const EbmlElement & PastElt) const
@@ -373,24 +356,24 @@ EbmlElement *EbmlMaster::FindNextElt(const EbmlElement & PastElt) const
   }
 
   while (Index < ElementList.size()) {
-    if ((EbmlId)PastElt == (EbmlId)(*ElementList[Index]))
+    if (EbmlId(PastElt) == EbmlId(*ElementList[Index]))
       return ElementList[Index];
     Index++;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 EbmlElement *EbmlMaster::AddNewElt(const EbmlCallbacks & Callbacks)
 {
   // add the element
   EbmlElement *NewElt = &EBML_INFO_CREATE(Callbacks);
-  if (NewElt == NULL)
-    return NULL;
+  if (NewElt == nullptr)
+    return nullptr;
 
   if (!PushElement(*NewElt)) {
     delete NewElt;
-    NewElt = NULL;
+    NewElt = nullptr;
   }
   return NewElt;
 }
@@ -413,10 +396,9 @@ void EbmlMaster::Read(EbmlStream & inDataStream, const EbmlSemanticContext & sCo
 
   EbmlElement * ElementLevelA;
   // remove all existing elements, including the mandatory ones...
-  size_t Index;
-  for (Index=0; Index<ElementList.size(); Index++) {
-    if (!(*ElementList[Index]).IsLocked()) {
-      delete ElementList[Index];
+  for (auto Element : ElementList) {
+    if (!Element->IsLocked()) {
+        delete Element;
     }
   }
   ElementList.clear();
@@ -432,7 +414,7 @@ void EbmlMaster::Read(EbmlStream & inDataStream, const EbmlSemanticContext & sCo
   {
     inDataStream.I_O().setFilePointer(GetSizePosition() + GetSizeLength(), seek_beginning);
     ElementLevelA = inDataStream.FindNextElement(sContext, UpperEltFound, MaxSizeToRead, AllowDummyElt);
-    while (ElementLevelA != NULL && UpperEltFound <= 0 && MaxSizeToRead > 0) {
+    while (ElementLevelA != nullptr && UpperEltFound <= 0 && MaxSizeToRead > 0) {
       if (IsFiniteSize() && ElementLevelA->IsFiniteSize())
         MaxSizeToRead = GetEndPosition() - ElementLevelA->GetEndPosition(); // even if it's the default value
       if (!AllowDummyElt && ElementLevelA->IsDummy()) {
@@ -444,7 +426,12 @@ void EbmlMaster::Read(EbmlStream & inDataStream, const EbmlSemanticContext & sCo
           break;
         }
       } else {
-        ElementLevelA->Read(inDataStream, EBML_CONTEXT(ElementLevelA), UpperEltFound, FoundElt, AllowDummyElt, ReadFully);
+        try {
+          ElementLevelA->Read(inDataStream, EBML_CONTEXT(ElementLevelA), UpperEltFound, FoundElt, AllowDummyElt, ReadFully);
+        } catch (...) {
+          delete ElementLevelA;
+          throw;
+        }
 
         // Discard elements that couldn't be read properly if
         // SCOPE_ALL_DATA has been requested. This can happen
@@ -503,7 +490,7 @@ processCrc:
 
   EBML_MASTER_ITERATOR Itr, CrcItr;
   for (Itr = ElementList.begin(); Itr != ElementList.end();) {
-    if ((EbmlId)(*(*Itr)) == EBML_ID(EbmlCrc32)) {
+    if (EbmlId(*(*Itr)) == EBML_ID(EbmlCrc32)) {
       bChecksumUsed = true;
       // remove the element
       Checksum = *(static_cast<EbmlCrc32*>(*Itr));
@@ -526,7 +513,7 @@ processCrc:
 void EbmlMaster::Remove(size_t Index)
 {
   if (Index < ElementList.size()) {
-    std::vector<EbmlElement *>::iterator Itr = ElementList.begin();
+    auto Itr = ElementList.begin();
     while (Index-- > 0) {
       ++Itr;
     }
@@ -554,8 +541,8 @@ bool EbmlMaster::VerifyChecksum() const
   /// \todo remove the Checksum if it's in the list
   /// \todo find another way when not all default values are saved or (unknown from the reader !!!)
   MemIOCallback TmpBuf(GetSize() - 6);
-  for (size_t Index = 0; Index < ElementList.size(); Index++) {
-    (ElementList[Index])->Render(TmpBuf, true, false, true);
+  for (auto Element : ElementList) {
+    Element->Render(TmpBuf, true, false, true);
   }
   aChecksum.FillCRC32(TmpBuf.GetDataBuffer(), TmpBuf.GetDataBufferSize());
   return (aChecksum.GetCrc32() == Checksum.GetCrc32());
@@ -563,7 +550,7 @@ bool EbmlMaster::VerifyChecksum() const
 
 bool EbmlMaster::InsertElement(EbmlElement & element, size_t position)
 {
-  std::vector<EbmlElement *>::iterator Itr = ElementList.begin();
+  auto Itr = ElementList.begin();
   while (Itr != ElementList.end() && position--)
   {
     ++Itr;
@@ -577,7 +564,7 @@ bool EbmlMaster::InsertElement(EbmlElement & element, size_t position)
 
 bool EbmlMaster::InsertElement(EbmlElement & element, const EbmlElement & before)
 {
-  std::vector<EbmlElement *>::iterator Itr = ElementList.begin();
+  auto Itr = ElementList.begin();
   while (Itr != ElementList.end() && *Itr != &before)
   {
     ++Itr;

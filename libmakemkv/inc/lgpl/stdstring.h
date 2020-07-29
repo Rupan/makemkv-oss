@@ -31,6 +31,7 @@ public:
     inline const char* c_str() const { return data; }
     inline size_t length() const { return strlen(data); }
     inline bool operator==(const StringPointer& value) const { return(0==strcmp(data,value.data)); }
+    inline bool operator!=(const StringPointer& value) const { return(0!=strcmp(data,value.data)); }
     inline char operator[](size_t pos) const { return data[pos]; }
 };
 
@@ -46,8 +47,8 @@ namespace ref
     public:
         inline string(const StringPointer& value) { data=(char*)value.c_str(); }
     private:
-        inline string();
-        inline string(const char* value);
+        inline string() = delete;
+        inline string(const char* value) = delete;
     };
 };
 
@@ -62,10 +63,13 @@ namespace buf
         inline string() { data=(char*)emptyString; }
         inline string(const char* value) { data=(char*)emptyString; assign(value); }
         inline string(const StringPointer& value) { data=(char*)emptyString; assign(value.c_str()); }
+        inline string(const string& value) { data = (char*)emptyString; assign(value.c_str()); }
+        inline string(string&& value) { data = value.data; value.data = (char*)emptyString; }
         inline ~string() { assign(emptyString); }
     public:
         inline void operator=(const char* value) { assign(value); }
         inline void operator=(const StringPointer& value) { assign(value.c_str()); }
+        inline void operator=(const string& value) { assign(value.c_str()); }
         inline operator ref::string const & () const
         {
             const StringPointer *p=this;

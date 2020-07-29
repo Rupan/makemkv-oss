@@ -203,12 +203,12 @@ void CApClient::ExecCmd(AP_CMD cmd)
             return;
             break;
         case apBackFatalCommError:
-            m_Ui->ReportUiMessage(APP_IFACE_FATAL_COMM,AP_UIMSG_BOXERROR,AP_UI_STRING(APP_IFACE_FATAL_COMM));
+            m_Ui->ReportUiMessage(APP_IFACE_FATAL_COMM,AP_UIMSG_BOXERROR,AP_UI_STRING(APP_IFACE_FATAL_COMM),0);
             m_Ui->ExitApp();
             return;
             break;
         case apBackOutOfMem:
-            m_Ui->ReportUiMessage(APP_IFACE_FATAL_MEM,AP_UIMSG_BOXERROR,AP_UI_STRING(APP_IFACE_FATAL_MEM));
+            m_Ui->ReportUiMessage(APP_IFACE_FATAL_MEM,AP_UIMSG_BOXERROR,AP_UI_STRING(APP_IFACE_FATAL_MEM),0);
             m_Ui->ExitApp();
             return;
             break;
@@ -274,7 +274,7 @@ void CApClient::ExecCmd(AP_CMD cmd)
             int rr;
             if (m_Ui)
             {
-                rr = m_Ui->ReportUiMessage( (unsigned long) m_mem->args[0] , (unsigned long) m_mem->args[2] , (utf16_t*)m_mem->strbuf );
+                rr = m_Ui->ReportUiMessage( (unsigned long) m_mem->args[0] , (unsigned long) m_mem->args[2] , (utf16_t*)m_mem->strbuf , m_mem->args[3]);
             } else {
                 rr = 0;
             }

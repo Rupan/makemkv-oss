@@ -70,10 +70,15 @@ void CLogText::UpdateEnd()
 
 bool CLogText::isOverHyperLink(QMouseEvent *e)
 {
-    static const utf16_t http_str[8]={'h','t','t','p',':','/','/',0};
+    static const utf16_t http_str1[8] = {'h','t','t','p',':','/','/',0};
+    static const utf16_t http_str2[9] = {'h','t','t','p','s',':','/','/',0 };
+    static const utf16_t http_str3[8] = {'f','i','l','e',':','/','/',0 };
     QString qstr = anchorAt(e->pos());
     if (qstr.length()==0) return false;
-    return qstr.startsWith(QStringFromConstUtf16(http_str));
+    if (true == qstr.startsWith(QStringFromConstUtf16(http_str1))) return true;
+    if (true == qstr.startsWith(QStringFromConstUtf16(http_str2))) return true;
+    if (true == qstr.startsWith(QStringFromConstUtf16(http_str3))) return true;
+    return false;
 }
 
 void CLogText::mouseMoveEvent(QMouseEvent *e)

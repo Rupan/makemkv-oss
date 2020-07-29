@@ -143,7 +143,7 @@ class MATROSKA_DLL_API NotSoSimpleDataBuffer : public SimpleDataBuffer {
 
 DECLARE_MKX_MASTER(KaxBlockGroup)
   public:
-    ~KaxBlockGroup();
+    ~KaxBlockGroup() = default;
 
     /*!
       \brief Addition of a frame without references
@@ -205,7 +205,7 @@ DECLARE_MKX_MASTER(KaxBlockGroup)
     const KaxTrackEntry * ParentTrack;
 };
 
-class KaxInternalBlock : public EbmlBinary {
+class MATROSKA_DLL_API KaxInternalBlock : public EbmlBinary {
   public:
     KaxInternalBlock(EBML_DEF_CONS EBML_DEF_SEP bool bSimple EBML_DEF_SEP EBML_EXTRA_PARAM) :EBML_DEF_BINARY_INIT EBML_DEF_SEP bLocalTimecodeUsed(false), mLacing(LACING_AUTO), mInvisible(false)
       ,ParentCluster(NULL), bIsSimple(bSimple), bIsKeyframe(true), bIsDiscardable(false)
@@ -286,15 +286,14 @@ class KaxInternalBlock : public EbmlBinary {
     bool       bIsDiscardable;
 };
 
-DECLARE_MKX_CONTEXT(KaxBlock);
+DECLARE_MKX_CONTEXT(KaxBlock)
 class MATROSKA_DLL_API KaxBlock : public KaxInternalBlock {
   public:
     KaxBlock(EBML_EXTRA_PARAM) :KaxInternalBlock(EBML_DEF_BINARY_CTX(KaxBlock)EBML_DEF_SEP false EBML_DEF_SEP EBML_EXTRA_CALL) {}
         EBML_CONCRETE_CLASS(KaxBlock)
 };
 
-#if MATROSKA_VERSION >= 2
-DECLARE_MKX_CONTEXT(KaxSimpleBlock);
+DECLARE_MKX_CONTEXT(KaxSimpleBlock)
 class MATROSKA_DLL_API KaxSimpleBlock : public KaxInternalBlock {
   public:
     KaxSimpleBlock(EBML_EXTRA_PARAM) :KaxInternalBlock(EBML_DEF_BINARY_CTX(KaxSimpleBlock)EBML_DEF_SEP true EBML_DEF_SEP EBML_EXTRA_CALL) {}
@@ -309,7 +308,6 @@ class MATROSKA_DLL_API KaxSimpleBlock : public KaxInternalBlock {
 
         EBML_CONCRETE_CLASS(KaxSimpleBlock)
 };
-#endif // MATROSKA_VERSION
 
 /// Placeholder class for either a BlockGroup or a SimpleBlock
 class MATROSKA_DLL_API KaxBlockBlob {
@@ -320,19 +318,15 @@ public:
   }
 
   ~KaxBlockBlob() {
-#if MATROSKA_VERSION >= 2
     if (bUseSimpleBlock)
       delete Block.simpleblock;
     else
-#endif // MATROSKA_VERSION
       delete Block.group;
   }
 
   operator KaxBlockGroup &();
   operator const KaxBlockGroup &() const;
-#if MATROSKA_VERSION >= 2
   operator KaxSimpleBlock &();
-#endif
   operator KaxInternalBlock &();
   operator const KaxInternalBlock &() const;
 
@@ -350,15 +344,12 @@ protected:
   KaxCluster * ParentCluster;
   union {
     KaxBlockGroup *group;
-#if MATROSKA_VERSION >= 2
     KaxSimpleBlock *simpleblock;
-#endif // MATROSKA_VERSION
   } Block;
   bool bUseSimpleBlock;
   BlockBlobType SimpleBlockMode;
 };
 
-#if MATROSKA_VERSION >= 2
 DECLARE_MKX_BINARY_CONS(KaxBlockVirtual)
   public:
     ~KaxBlockVirtual();
@@ -381,7 +372,6 @@ DECLARE_MKX_BINARY_CONS(KaxBlockVirtual)
 
     const KaxCluster * ParentCluster;
 };
-#endif // MATROSKA_VERSION
 
 END_LIBMATROSKA_NAMESPACE
 

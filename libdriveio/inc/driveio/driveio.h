@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include "scsicmd.h"
 
-#define LIBDRIVEIO_VERSION "2.01"
+#define LIBDRIVEIO_VERSION "2.3"
 
 //
 // All values in enums below are fixed, new values may be added
@@ -173,15 +173,16 @@ void            DIO_CDECL   DriveInfoList_GetItem(DIO_INFOLIST List,size_t Index
 int             DIO_CDECL   DriveInfoList_GetItemById(DIO_INFOLIST List,DriveInfoId Id,DriveInfoItem *Item);
 int             DIO_CDECL   DriveInfoList_AddItem(DIO_INFOLIST List,DriveInfoId Id,const void* Data,size_t Size);
 int             DIO_CDECL   DriveInfoList_AddOrUpdateItem(DIO_INFOLIST List, DriveInfoId Id, const void* Data, size_t Size);
+int             DIO_CDECL   DriveInfoList_CopyAllItemsFrom(DIO_INFOLIST List, const DIO_INFOLIST Src);
+int             DIO_CDECL   DriveInfoList_MoveAllItemsFrom(DIO_INFOLIST List, DIO_INFOLIST Src);
 size_t          DIO_CDECL   DriveInfoList_Serialize(DIO_INFOLIST List, void* Buffer, size_t BufferSize);
 DIO_INFOLIST    DIO_CDECL   DriveInfoList_Deserialize(const void* Buffer,size_t BufferSize);
-size_t          DIO_CDECL   DriveInfoList_GetSerializedChunkSize(const void* Buffer);
-void            DIO_CDECL   DriveInfoList_GetSerializedChunkInfo(const void* Buffer,DriveInfoItem *Item);
 
 //
 // Query API
 //
-int             DIO_CDECL   DriveIoQuery(DriveIoExecScsiCmdFunc ScsiProc,void* ScsiContext,DriveIoQueryType QueryType,DIO_INFOLIST* InfoList);
+int             DIO_CDECL   DriveIoQueryCreate(DriveIoExecScsiCmdFunc ScsiProc,void* ScsiContext,DriveIoQueryType QueryType,DIO_INFOLIST* InfoList);
+int             DIO_CDECL   DriveIoQueryAdd(DriveIoExecScsiCmdFunc ScsiProc,void* ScsiContext,DriveIoQueryType QueryType,DIO_INFOLIST InfoList);
 
 //
 // Utility
@@ -215,36 +216,43 @@ static inline int DIO_CDECL DriveIoSimpleScsiWrapperExecScsiCmdFunc(void *Contex
     return ((ISimpleScsiTarget*)Context)->Exec(Cmd,CmdResult);
 }
 
-static inline int DriveIoQuery(ISimpleScsiTarget* ScsiTarget,DriveIoQueryType QueryType,DIO_INFOLIST* InfoList)
+static inline int DriveIoQueryCreate(ISimpleScsiTarget* ScsiTarget,DriveIoQueryType QueryType,DIO_INFOLIST* InfoList)
 {
-    return DriveIoQuery(&DriveIoSimpleScsiWrapperExecScsiCmdFunc,(void*)ScsiTarget,QueryType,InfoList);
+    return DriveIoQueryCreate(&DriveIoSimpleScsiWrapperExecScsiCmdFunc,(void*)ScsiTarget,QueryType,InfoList);
+}
+
+static inline int DriveIoQueryAdd(ISimpleScsiTarget* ScsiTarget, DriveIoQueryType QueryType, DIO_INFOLIST InfoList)
+{
+    return DriveIoQueryAdd(&DriveIoSimpleScsiWrapperExecScsiCmdFunc, (void*)ScsiTarget, QueryType, InfoList);
 }
 
 //
-// C++ wrapper classes
+// Serialized DriveInfoList manipulation
 //
-class CDriveInfoList
+#include <lgpl/byteorder.h>
+
+static inline size_t DriveInfoList_GetSerializedChunkSize(const void* Buffer)
 {
-private:
-    DIO_INFOLIST    m_list;
-public:
-    inline CDriveInfoList(DIO_INFOLIST List) : m_list(List)
-    {
-    }
-    inline void Destroy()
-    {
-        if (NULL!=m_list)
-        {
-            DriveInfoList_Destroy(m_list);
-            m_list=NULL;
-        }
-    }
-    inline bool Create()
-    {
-        Destroy();
-        m_list = DriveInfoList_Create();
-        return (NULL!=m_list);
-    }
+    uint32_t sz = rd32be(((const uint8_t*)Buffer) + 4);
+    sz += 8;
+    return sz;
+}
+
+static inline void DriveInfoList_GetSerializedChunkInfo(const void* Buffer, DriveInfoItem *Item)
+{
+    Item->Data = ((const uint8_t*)Buffer) + 8;
+    Item->Id = (DriveInfoId)rd32be(((const uint8_t*)Buffer) + 0);
+    Item->Size = rd32be(((const uint8_t*)Buffer) + 4);
+}
+
+#else
+
+//
+// Serialized DriveInfoList manipulation (C API)
+//
+extern "C" {
+size_t          DIO_CDECL   DriveInfoList_GetSerializedChunkSize(const void* Buffer);
+void            DIO_CDECL   DriveInfoList_GetSerializedChunkInfo(const void* Buffer, DriveInfoItem *Item);
 };
 
 #endif

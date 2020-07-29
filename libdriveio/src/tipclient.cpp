@@ -25,6 +25,7 @@
 #include <driveio/scsihlp.h>
 #include <driveio/error.h>
 #include <lgpl/tcpip.h>
+#include <lgpl/byteorder.h>
 #include <string.h>
 #include <errno.h>
 #include "tipcommon.h"
@@ -316,8 +317,8 @@ int CTIPSClient::ExecV1(const ScsiCmd* Cmd,ScsiCmdResponse *CmdResult)
 
     data[0] = 0x80 | Cmd->CdbLen; len = 3;
     memcpy(data+len,Cmd->Cdb,Cmd->CdbLen);  len += Cmd->CdbLen;
-    uint32_put_be(data+len,Cmd->InputLen);  len += 4;
-    uint32_put_be(data+len,Cmd->OutputLen);  len += 4;
+    wr32be(data+len,Cmd->InputLen);  len += 4;
+    wr32be(data+len,Cmd->OutputLen);  len += 4;
 
     if ((Cmd->InputLen<=MaxSmallDataLen) && (Cmd->InputLen!=0))
     {
@@ -325,7 +326,7 @@ int CTIPSClient::ExecV1(const ScsiCmd* Cmd,ScsiCmdResponse *CmdResult)
         len += Cmd->InputLen;
     }
 
-    uint16_put_be(data+1,len);
+    wr16be(data+1,len);
 
     err=snd_data(m_socket,data,len);
     if (err<0) return err;
@@ -351,7 +352,7 @@ int CTIPSClient::ExecV1(const ScsiCmd* Cmd,ScsiCmdResponse *CmdResult)
         rlen = len;
     }
 
-    len = uint16_get_be(data);
+    len = rd16be(data);
     if ( (len<(2+4+1+1)) || (len>MaxDataBufferSizeIn) )
     {
         return DRIVEIO_TIPS_ERROR(ERANGE);
@@ -363,7 +364,7 @@ int CTIPSClient::ExecV1(const ScsiCmd* Cmd,ScsiCmdResponse *CmdResult)
         rlen = len;
     }
 
-    CmdResult->Transferred=uint32_get_be(data+2);
+    CmdResult->Transferred=rd32be(data+2);
     CmdResult->Status = data[2+4];
     CmdResult->SenseLen=data[2+4+1];
 

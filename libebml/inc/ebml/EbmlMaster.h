@@ -82,11 +82,11 @@ class EBML_DLL_API EbmlMaster : public EbmlElement {
       if (IsFiniteSize())
                 return EbmlElement::GetSize();
       else
-        return (0-1);
+        return (uint64_t)(0-1ll);
     }
 
     uint64 GetDataStart() const {
-      return GetElementPosition() + EBML_ID_LENGTH((const EbmlId&)*this) + CodedSizeLength(GetSize(), GetSizeLength(), IsFiniteSize());
+      return GetElementPosition() + EBML_ID_LENGTH((const EbmlId&)*this) + CodedSizeLength(EbmlElement::GetSize(), GetSizeLength(), IsFiniteSize());
     }
 
     /*!

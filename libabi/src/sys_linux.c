@@ -104,11 +104,11 @@ int SYS_readdir(void* dirp,SYS_dirent *entry)
 
 #ifdef SYSABI_USE_READDIR_R
     pent = NULL;
-    err = readdir64_r(dirp,&data.ent,&pent);
+    err = readdir64_r((DIR*)dirp,&data.ent,&pent);
     if (err) return err;
     data.ent.d_name[sizeof(data.ent.d_name)-1]=0;
 #else
-    pent = readdir64(dirp);
+    pent = readdir64((DIR*)dirp);
 #endif
 
     if (pent==NULL) return -1;

@@ -664,6 +664,21 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
             track_info[i].codec_private = NULL;
         }
 
+        for (unsigned int nx=0;nx<4;nx++)
+        {
+            KaxBlockAdditionMapping *block_mapping;
+
+            if (ti->codec_private_extra_tag[nx] == 0) break;
+
+            block_mapping = &AddNewChild<KaxBlockAdditionMapping>(*cur_track);
+#ifdef LIBMATROSKA_OLD_SEMANTIC
+            GetChild<EbmlUInteger, KaxBlockAddIDValue>(block_mapping) = 1;
+#endif
+            GetChild<EbmlUInteger, KaxBlockAddIDType>(block_mapping) = ti->codec_private_extra_tag[nx];
+            GetChild<EbmlBinary, KaxBlockAddIDExtraData>(block_mapping).CopyBuffer(
+                ti->codec_private_extra_data[nx], ti->codec_private_extra_size[nx]);
+        }
+
         if (0!=ti->default_duration)
         {
             GetChild<EbmlUInteger,KaxTrackDefaultDuration>(cur_track) = TimecodeFromClock(ti->default_duration);

@@ -15,6 +15,7 @@
 #include "qtapp.h"
 #include "notify.h"
 #include <QtDBus/QDBusInterface>
+#include <lgpl/sysabi.h>
 
 static QDBusInterface*  notifyInterface = NULL;
 
@@ -84,5 +85,29 @@ void notifyCleanup()
 {
     delete notifyInterface;
     notifyInterface = NULL;
+}
+
+void desktopShowFile(const QString &FileName)
+{
+    char*       argv[6];
+    QByteArray  name;
+    SYS_stat    st;
+
+    name = FileName.toUtf8();
+    argv[0] = NULL;
+
+    static const char* nautilus = "/usr/bin/nautilus";
+    if (SYS_nstat(nautilus,&st)==0)
+    {
+        argv[0]=(char*)nautilus;
+        argv[1]=(char*)"-w";
+        argv[2]=(char*)"-s";
+        argv[3]=name.data();
+        argv[4]=NULL;
+    }
+    if (NULL!=argv[0])
+    {
+        SYS_posix_launch(argv,0,0,0,SYS_posix_envp());
+    }
 }
 

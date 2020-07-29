@@ -27,5 +27,6 @@
 #include <exception>
 #include <vector>
 #include <stdexcept>
+#include <limits>
 
 #endif // LGPL_STL_H_INCLUDED

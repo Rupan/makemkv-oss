@@ -53,7 +53,7 @@ DECLARE_MKX_MASTER(KaxCuePoint)
     void PositionSet(const KaxBlockGroup & BlockReference, uint64 GlobalTimecodeScale);
     void PositionSet(const KaxBlockBlob & BlobReference, uint64 GlobalTimecodeScale);
     void PositionSet(const KaxSimpleBlock & BlockReference, uint64 GlobalTimecodeScale);
-    void PositionSet(const KaxInternalBlock & BlockReference, const KaxBlockGroup* BlockGroup, uint64 GlobalTimecodeScale);
+    void PositionSet(const KaxInternalBlock & BlockReference, const KaxBlockGroup *BlockGroup, uint64 GlobalTimecodeScale);
 
     virtual bool IsSmallerThan(const EbmlElement *Cmp) const;
 
@@ -67,13 +67,11 @@ DECLARE_MKX_MASTER(KaxCueTrackPositions)
     uint16 TrackNumber() const;
 };
 
-#if MATROSKA_VERSION >= 2
 DECLARE_MKX_MASTER(KaxCueReference)
   public:
     void AddReference(const KaxBlockGroup & BlockReferenced, uint64 GlobalTimecodeScale);
     void AddReference(const KaxBlockBlob & BlockReferenced, uint64 GlobalTimecodeScale);
 };
-#endif // MATROSKA_VERSION
 
 END_LIBMATROSKA_NAMESPACE
 

@@ -22,6 +22,7 @@
 #include <stdint.h>
 #include <driveio/scsihlp.h>
 #include <driveio/error.h>
+#include <lgpl/byteorder.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -257,7 +258,7 @@ static int ReadSingleFeatureDescriptor(ISimpleScsiTarget* ScsiTarget,uint16_t Id
     err=LibDriveIo::ExecuteReadScsiCommand(ScsiTarget,cdb_rf,10,Buffer,&len);
     if (err) return err;
 
-    slen = uint32_get_be(Buffer) + 4;
+    slen = rd32be(Buffer) + 4;
     if (slen>len) slen = len;
 
     if ( (slen > BufferLen) || (slen < (8+2)) )
@@ -266,7 +267,7 @@ static int ReadSingleFeatureDescriptor(ISimpleScsiTarget* ScsiTarget,uint16_t Id
         return 0;
     }
 
-    code = uint16_get_be(Buffer+8);
+    code = rd16be(Buffer+8);
     if (code != Id)
     {
         *Have = false;

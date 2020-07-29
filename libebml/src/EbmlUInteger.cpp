@@ -50,13 +50,6 @@ EbmlUInteger::EbmlUInteger(uint64 aDefaultValue)
   SetDefaultIsSet();
 }
 
-EbmlUInteger::EbmlUInteger(const EbmlUInteger & ElementToClone)
-  :EbmlElement(ElementToClone)
-  ,Value(ElementToClone.Value)
-  ,DefaultValue(ElementToClone.DefaultValue)
-{
-}
-
 void EbmlUInteger::SetDefaultValue(uint64 aValue)
 {
   assert(!DefaultISset());
@@ -155,8 +148,8 @@ bool EbmlUInteger::IsSmallerThan(const EbmlElement *Cmp) const
 {
   if (EbmlId(*this) == EbmlId(*Cmp))
     return this->Value < static_cast<const EbmlUInteger *>(Cmp)->Value;
-  else
-    return false;
+
+  return false;
 }
 
 END_LIBEBML_NAMESPACE

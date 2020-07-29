@@ -293,7 +293,7 @@ public:
         virtual void LeaveJobMode()=0;
         virtual void ExitApp()=0;
         virtual void UpdateDrive(unsigned int Index,const utf16_t *DriveName,AP_DriveState DriveState,const utf16_t *DiskName,const utf16_t *DeviceName,AP_DiskFsFlags DiskFlags,const void* DiskData,unsigned int DiskDataSize)=0;
-        virtual int  ReportUiMessage(unsigned long Code,unsigned long Flags,const utf16_t* Text)=0;
+        virtual int  ReportUiMessage(unsigned long Code,unsigned long Flags,const utf16_t* Text,uint64_t ExtraData)=0;
         virtual int  ReportUiDialog(unsigned long Code,unsigned long Flags,unsigned int Count,const utf16_t* Text[],utf16_t* Buffer)=0;
     };
 private:

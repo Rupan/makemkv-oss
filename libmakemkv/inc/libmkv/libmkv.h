@@ -88,10 +88,14 @@ typedef struct _MkvTrackInfo
     const mkv_utf8_t*   metadata_lang;
     const mkv_utf8_t*   name;
 
-    const unsigned char *codec_private;
+    const uint8_t*      codec_private;
     unsigned int        codec_private_size;
 
-    const unsigned char *header_comp_data;
+    uint32_t            codec_private_extra_tag[4];
+    const uint8_t*      codec_private_extra_data[4];
+    unsigned int        codec_private_extra_size[4];
+
+    const uint8_t*      header_comp_data;
     unsigned int        header_comp_size;
 
     unsigned int        mkv_flags;

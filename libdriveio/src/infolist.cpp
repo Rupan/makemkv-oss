@@ -75,6 +75,8 @@ public:
     ~CDriveInfoList();
     bool AddItem(DriveInfoId Id,const void* Data,size_t Size);
     bool AddOrUpdateItem(DriveInfoId Id, const void* Data, size_t Size);
+    bool CopyAllItemsFrom(const CDriveInfoList* Src);
+    void MoveAllItemsFrom(CDriveInfoList* Src);
     size_t GetCount();
     void GetItem(size_t Index,DriveInfoItem *Item);
     bool GetItemById(DriveInfoId Id,DriveInfoItem *Item);
@@ -87,6 +89,8 @@ public:
     void operator delete(void*,CDriveInfoList*)
     {
     }
+private:
+    void AddItem(CDriveInfoItem* pitem);
 };
 
 CDriveInfoItem* CDriveInfoItem::Create(size_t Size)
@@ -124,9 +128,17 @@ bool CDriveInfoList::AddItem(DriveInfoId Id,const void* Data,size_t Size)
 
     memcpy( (void*) pitem->m_item.Data,Data,Size);
     pitem->m_item.Id = Id;
+
+    AddItem(pitem);
+
+    return true;
+}
+
+void CDriveInfoList::AddItem(CDriveInfoItem* pitem)
+{
     pitem->m_next = NULL;
 
-    if (NULL==m_first)
+    if (NULL == m_first)
     {
         m_first = pitem;
     } else {
@@ -134,9 +146,7 @@ bool CDriveInfoList::AddItem(DriveInfoId Id,const void* Data,size_t Size)
     }
 
     m_last = pitem;
-    m_count ++;
-
-    return true;
+    m_count++;
 }
 
 size_t CDriveInfoList::GetCount()
@@ -202,6 +212,47 @@ bool CDriveInfoList::AddOrUpdateItem(DriveInfoId Id, const void* Data, size_t Si
     }
 
     return AddItem(Id,Data,Size);
+}
+
+bool CDriveInfoList::CopyAllItemsFrom(const CDriveInfoList* Src)
+{
+    CDriveInfoItem* pitem;
+    CDriveInfoList  temp;
+    bool r = true;
+
+    for (pitem = Src->m_first; pitem != NULL; pitem = pitem->m_next)
+    {
+        if (pitem->m_item.Id == diid_DriveioTag) continue;
+        if (false == temp.AddItem(pitem->m_item.Id, pitem->m_item.Data, pitem->m_item.Size))
+        {
+            r = false;
+            break;
+        }
+    }
+    if (r)
+    {
+        MoveAllItemsFrom(&temp);
+    }
+
+    return r;
+}
+
+void CDriveInfoList::MoveAllItemsFrom(CDriveInfoList* Src)
+{
+    CDriveInfoItem *pitem,*pnext;
+
+    pnext = Src->m_first;
+    while (pnext != NULL)
+    {
+        pitem = pnext;
+        pnext = pnext->m_next;
+
+        if (pitem->m_item.Id == diid_DriveioTag) continue;
+        this->AddItem(pitem);
+    }
+
+    Src->m_first = Src->m_last = NULL;
+    Src->m_count = 0;
 }
 
 static void uint32_put_ns(uint32_t Value,void *Buf)
@@ -345,6 +396,21 @@ extern "C" int DIO_CDECL DriveInfoList_GetItemById(DIO_INFOLIST List,DriveInfoId
 
     if (List==NULL) return -1;
     return plist->GetItemById(Id,Item) ? 0 : -1;
+}
+
+extern "C" int DIO_CDECL DriveInfoList_CopyAllItemsFrom(DIO_INFOLIST List, const DIO_INFOLIST Src)
+{
+    LibDriveIo::CDriveInfoList* plist = (LibDriveIo::CDriveInfoList*) List;
+    const LibDriveIo::CDriveInfoList* psrc = (const LibDriveIo::CDriveInfoList*) Src;
+    return plist->CopyAllItemsFrom(psrc) ? 0 : DRIVEIO_ERR_NO_MEMORY;
+}
+
+extern "C" int DIO_CDECL DriveInfoList_MoveAllItemsFrom(DIO_INFOLIST List, DIO_INFOLIST Src)
+{
+    LibDriveIo::CDriveInfoList* plist = (LibDriveIo::CDriveInfoList*) List;
+    LibDriveIo::CDriveInfoList* psrc = (LibDriveIo::CDriveInfoList*) Src;
+    plist->MoveAllItemsFrom(psrc);
+    return 0;
 }
 
 extern "C" size_t DIO_CDECL DriveInfoList_Serialize(DIO_INFOLIST List,void* Buffer,size_t BufferSize)
