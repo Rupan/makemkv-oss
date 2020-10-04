@@ -5,6 +5,7 @@ GXX=@CXX@
 MOC=@QT_MOC@
 
 CFLAGS=@CFLAGS@ -D_linux_
+CXXFLAGS=@CXXFLAGS@
 LDFLAGS=@LDFLAGS@
 DESTDIR=@DESTDIR@
 prefix=@prefix@
@@ -38,6 +39,9 @@ ifeq ($(ENABLE_DEBUG),no)
 STRIP_FLAGS=--strip-all --strip-debug --strip-unneeded --discard-all
 endif
 
+LIBABI_OBJ := $(patsubst %,tmp/%.o,$(LIBABI_SRC))
+LIBFFABI_OBJ := $(patsubst %,tmp/%.o,$(LIBFFABI_SRC))
+
 all: out/libdriveio.so.0 out/libmakemkv.so.1 $(OUT_GUI) out/libmmbd.so.0
 	@echo "type \"sudo make install\" to install"
 
@@ -67,23 +71,28 @@ out/%: out/%.full
 
 out/libdriveio.so.0.full:
 	mkdir -p out
-	$(GCC) $(CFLAGS) $(LDFLAGS) -D_REENTRANT -shared -Wl,-z,defs -o$@ $(INCF)$(LIBDRIVEIO_INC) $(LIBDRIVEIO_SRC) \
+	$(GXX) $(CXXFLAGS) $(CFLAGS) $(LDFLAGS) -D_REENTRANT -shared -Wl,-z,defs -o$@ $(INCF)$(LIBDRIVEIO_INC) $(LIBDRIVEIO_SRC) \
 	-fPIC -Xlinker -dy -Xlinker --version-script=libdriveio/src/libdriveio.vers \
 	-Xlinker -soname=libdriveio.so.0 -lc -lstdc++
 
-out/libmakemkv.so.1.full: tmp/gen_buildinfo.h
+tmp/%.c.o: %.c
+	mkdir -p $(dir $@)
+	$(GCC) -c $(CFLAGS) $(NO_EC_DEF) -D_GNU_SOURCE -D_REENTRANT -o$@ $(INCF)$(LIBABI_INC) $(INCF)$(LIBFFABI_INC) \
+	-DHAVE_BUILDINFO_H -Itmp $(FFMPEG_CFLAGS) -fPIC $<
+
+out/libmakemkv.so.1.full: tmp/gen_buildinfo.h $(LIBABI_OBJ) $(LIBFFABI_OBJ)
 	mkdir -p out
-	$(GCC) $(CFLAGS) $(LDFLAGS) $(NO_EC_DEF) -D_GNU_SOURCE -D_REENTRANT -shared -Wl,-z,defs -o$@ $(INCF)$(LIBEBML_INC) $(LIBEBML_DEF) \
+	$(GXX) $(CXXFLAGS) $(CFLAGS) $(LDFLAGS) $(NO_EC_DEF) -D_GNU_SOURCE -D_REENTRANT -shared -Wl,-z,defs -o$@ $(INCF)$(LIBEBML_INC) $(LIBEBML_DEF) \
 	$(INCF)$(LIBMATROSKA_INC) $(INCF)$(LIBMAKEMKV_INC) $(INCF)$(SSTRING_INC) $(INCF)$(MAKEMKVGUI_INC) $(INCF)$(LIBABI_INC) \
-	$(INCF)$(LIBFFABI_INC) $(LIBEBML_SRC) $(LIBMATROSKA_SRC) $(LIBMAKEMKV_SRC) $(GLIBC_SRC) $(SSTRING_SRC) \
-	$(LIBABI_SRC) $(LIBABI_SRC_LINUX) $(LIBFFABI_SRC) \
-	-DHAVE_BUILDINFO_H -Itmp $(FFMPEG_CFLAGS) \
+	$(INCF)$(LIBFFABI_INC) $(LIBEBML_SRC) $(LIBMATROSKA_SRC) $(LIBMAKEMKV_SRC) $(SSTRING_SRC) $(LIBABI_SRC_LINUX) \
+	$(LIBABI_OBJ) $(LIBFFABI_OBJ) \
+	-DHAVE_BUILDINFO_H -Itmp \
 	-fPIC -Xlinker -dy -Xlinker --version-script=libmakemkv/src/libmakemkv.vers \
 	-Xlinker -soname=libmakemkv.so.1 -lc -lstdc++ -lcrypto -lz -lexpat $(FFMPEG_LIBS) -lm -lrt
 
 out/libmmbd.so.0.full:
 	mkdir -p out
-	$(GCC) $(CFLAGS) $(LDFLAGS) -D_REENTRANT -shared -Wl,-z,defs -o$@ $(INCF)$(MAKEMKVGUI_INC) $(INCF)$(LIBMMBD_INC) $(INCF)$(LIBDRIVEIO_INC) \
+	$(GXX) $(CXXFLAGS) $(CFLAGS) $(LDFLAGS) -D_REENTRANT -shared -Wl,-z,defs -o$@ $(INCF)$(MAKEMKVGUI_INC) $(INCF)$(LIBMMBD_INC) $(INCF)$(LIBDRIVEIO_INC) \
 	$(INCF)$(LIBMAKEMKV_INC) $(INCF)$(SSTRING_INC) $(INCF)$(LIBABI_INC) $(LIBMMBD_SRC) $(LIBMMBD_SRC_LINUX) $(SSTRING_SRC) \
 	$(LIBDRIVEIO_SRC_PUB) \
 	-fPIC -Xlinker -dy -Xlinker --version-script=libmmbd/src/libmmbd.vers \
@@ -91,7 +100,7 @@ out/libmmbd.so.0.full:
 
 out/makemkv.full: $(MAKEMKVGUI_GEN) $(MAKEMKVGUI_SRC_LINUX) tmp/gen_buildinfo.h
 	mkdir -p out
-	$(GXX) -std=c++11 $(CFLAGS) $(QT_CFLAGS) $(LDFLAGS) -o$@ $(INCF)$(MAKEMKVGUI_INC) $(INCF)$(LIBMAKEMKV_INC) $(INCF)$(SSTRING_INC) \
+	$(GXX) $(CXXFLAGS) $(CFLAGS) $(QT_CFLAGS) $(LDFLAGS) -o$@ $(INCF)$(MAKEMKVGUI_INC) $(INCF)$(LIBMAKEMKV_INC) $(INCF)$(SSTRING_INC) \
 	$(INCF)$(LIBDRIVEIO_INC) $(INCF)$(LIBABI_INC) $(MAKEMKVGUI_SRC) $(MAKEMKVGUI_SRC_LINUX) $(MAKEMKVGUI_GEN) \
 	$(SSTRING_SRC) $(LIBDRIVEIO_SRC_PUB) \
 	-DHAVE_BUILDINFO_H -Itmp \

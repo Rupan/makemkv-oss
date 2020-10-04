@@ -11726,6 +11726,10 @@ fi
 ENABLE_DEBUG=$enable_debug
 
 
+if test -z $CXXFLAGS; then
+    CXXFLAGS='-std=c++11'
+fi
+
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'

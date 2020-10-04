@@ -272,10 +272,12 @@ static const unsigned long APP_IFACE_SETTINGS_DEST_TYPE_CUSTOM=6092;
 static const unsigned long APP_IFACE_SETTINGS_DESTDIR=6093;
 static const unsigned long APP_IFACE_SETTINGS_GENERAL_MISC=6094;
 static const unsigned long APP_IFACE_SETTINGS_LOG_DEBUG_MSG=6095;
-static const unsigned long APP_IFACE_SETTINGS_ENABLE_SITE_ACCESS=6149;
 static const unsigned long APP_IFACE_SETTINGS_DATA_DIR=6167;
 static const unsigned long APP_IFACE_SETTINGS_EXPERT_MODE=6169;
 static const unsigned long APP_IFACE_SETTINGS_SHOW_AVSYNC=6170;
+static const unsigned long APP_IFACE_SETTINGS_GENERAL_ONLINE_UPDATES=6188;
+static const unsigned long APP_IFACE_SETTINGS_ENABLE_INTERNET_ACCESS=6187;
+static const unsigned long APP_IFACE_SETTINGS_PROXY_SERVER=6189;
 static const unsigned long APP_IFACE_SETTINGS_TAB_GENERAL=6096;
 static const unsigned long APP_IFACE_SETTINGS_MSG_FAILED=6097;
 static const unsigned long APP_IFACE_SETTINGS_MSG_RESTART=6098;
@@ -414,6 +416,7 @@ typedef enum _ApSettingId
   apset_path_DestDirMRU ,
   apset_app_DefaultOutputFileName ,
   apset_sdf_Stop ,
+  apset_app_Proxy ,
   apset_MaxValue
 } ApSettingId;
 

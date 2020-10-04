@@ -32,6 +32,7 @@ public:
     QCheckBox*      check_SiteAccess;
     QCheckBox*      check_ExpertMode;
     QCheckBox*      check_ShowAV;
+    QLineEdit*      lineEditProxy;
 
 public:
     CGeneralTab(QWidget *parent = 0);

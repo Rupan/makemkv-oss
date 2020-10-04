@@ -22,7 +22,6 @@
 #include <libmkv/libmkv.h>
 #include <lgpl/osslabi.h>
 #include <lgpl/zlibabi.h>
-#include <lgpl/httpabi.h>
 #include <lgpl/sysabi.h>
 #include <lgpl/ffabi.h>
 #include <lgpl/libmabi.h>
@@ -109,7 +108,6 @@ bool __cdecl set_world(IWorld* new_world,int world_name)
     {
         static int volatile i=0;
         MkvCreateFile(NULL,NULL,NULL,NULL,NULL);
-        i+=HTTP_Download(NULL,NULL,NULL,NULL);
 #ifdef _linux_
         OSSL_SHA1_Init(NULL);
         ZLIB_compressBound(1);

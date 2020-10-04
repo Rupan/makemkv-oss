@@ -11,11 +11,6 @@
 #include <stdarg.h>
 #include <wchar.h>
 
-#if defined(__GLIBC__) || defined(_darwin_)
-#define _vsnprintf vsnprintf
-#define _vsnwprintf vswprintf
-#endif
-
 #ifdef _MSC_VER
 #define NEED_WIDE_SSTRING
 #endif
@@ -75,7 +70,7 @@ int __cdecl sprintf_s(char *buffer,size_t sizeOfBuffer,const char *format,...)
     va_list args;
     va_start(args,format);
 
-    int rtn = _vsnprintf(buffer,sizeOfBuffer,format,args);
+    int rtn = vsnprintf(buffer,sizeOfBuffer,format,args);
 
     va_end(args);
 

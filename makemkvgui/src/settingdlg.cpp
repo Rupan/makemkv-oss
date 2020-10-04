@@ -114,6 +114,9 @@ void CSettingDialog::ReadSettings(bool first)
     int show_av = client->GetSettingInt(apset_app_ShowAVSyncMessages);
     generalTab->check_ShowAV->setCheckState( (show_av==0) ? Qt::Unchecked : Qt::Checked );
 
+    const utf16_t *app_proxy = client->GetSettingString(apset_app_Proxy);
+    generalTab->lineEditProxy->setText(QStringFromUtf16(app_proxy));
+
     // language
     languageTab->setValue(languageTab->comboBoxInterfaceLanguage,client->GetSettingString(apset_app_InterfaceLanguage));
     languageTab->setValue(languageTab->comboBoxPreferredLanguage,client->GetSettingString(apset_app_PreferredLanguage));
@@ -216,6 +219,7 @@ bool CSettingDialog::WriteSettings(bool& restartRequired)
     client->SetSettingInt( apset_app_UpdateEnable , (generalTab->check_SiteAccess->checkState() == Qt::Checked) ? 1 : 0 );
     client->SetSettingInt( apset_app_ExpertMode , (generalTab->check_ExpertMode->checkState() == Qt::Checked) ? 1 : 0 );
     client->SetSettingInt( apset_app_ShowAVSyncMessages , (generalTab->check_ShowAV->checkState() == Qt::Checked) ? 1 : 0 );
+    client->SetSettingString(apset_app_Proxy, Utf16FromQString(generalTab->lineEditProxy->text()));
 
     // language
     client->SetSettingString(apset_app_InterfaceLanguage,languageTab->getValue(languageTab->comboBoxInterfaceLanguage,string));
@@ -422,20 +426,30 @@ CGeneralTab::CGeneralTab(QWidget *parent) : QWidget(parent)
     check_DebugLog = new QCheckBox();
     m_lay->addWidget(createLabel(UI_QSTRING(APP_IFACE_SETTINGS_LOG_DEBUG_MSG)),0,0,Qt::AlignRight);
     m_lay->addWidget(check_DebugLog,0,1);
-    check_SiteAccess = new QCheckBox();
-    m_lay->addWidget(createLabel(UI_QSTRING(APP_IFACE_SETTINGS_ENABLE_SITE_ACCESS)),1,0,Qt::AlignRight);
-    m_lay->addWidget(check_SiteAccess,1,1);
     check_ExpertMode = new QCheckBox();
-    m_lay->addWidget(createLabel(UI_QSTRING(APP_IFACE_SETTINGS_EXPERT_MODE)),2,0,Qt::AlignRight);
-    m_lay->addWidget(check_ExpertMode,2,1);
+    m_lay->addWidget(createLabel(UI_QSTRING(APP_IFACE_SETTINGS_EXPERT_MODE)),1,0,Qt::AlignRight);
+    m_lay->addWidget(check_ExpertMode,1,1);
     check_ShowAV = new QCheckBox();
-    m_lay->addWidget(createLabel(UI_QSTRING(APP_IFACE_SETTINGS_SHOW_AVSYNC)),3,0,Qt::AlignRight);
-    m_lay->addWidget(check_ShowAV,3,1);
+    m_lay->addWidget(createLabel(UI_QSTRING(APP_IFACE_SETTINGS_SHOW_AVSYNC)),2,0,Qt::AlignRight);
+    m_lay->addWidget(check_ShowAV,2,1);
     miscBox->setLayout(m_lay);
+
+
+    QGroupBox* netBox = new QGroupBox(UI_QSTRING(APP_IFACE_SETTINGS_GENERAL_ONLINE_UPDATES));
+    QGridLayout *net_lay = new QGridLayout();
+
+    check_SiteAccess = new QCheckBox();
+    net_lay->addWidget(createLabel(UI_QSTRING(APP_IFACE_SETTINGS_ENABLE_INTERNET_ACCESS)), 0, 0, Qt::AlignRight);
+    net_lay->addWidget(check_SiteAccess, 0, 1);
+    lineEditProxy = new QLineEdit();
+    net_lay->addWidget(createLabel(UI_QSTRING(APP_IFACE_SETTINGS_PROXY_SERVER)), 1, 0, Qt::AlignRight);
+    net_lay->addWidget(lineEditProxy,1,1);
+    netBox->setLayout(net_lay);
 
     QBoxLayout *lay = new QVBoxLayout();
     lay->addWidget(dataDir);
     lay->addWidget(miscBox);
+    lay->addWidget(netBox);
 
     lay->addStretch(2);
 

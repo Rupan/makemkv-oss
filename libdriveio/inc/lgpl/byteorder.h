@@ -38,6 +38,11 @@
 #define __bswap32(x)    __bswap_32(x)
 #define __bswap16(x)    __bswap_16(x)
 
+#define _LITTLE_ENDIAN  __LITTLE_ENDIAN
+#define _BIG_ENDIAN     __BIG_ENDIAN
+#define _PDP_ENDIAN     __PDP_ENDIAN
+#define _BYTE_ORDER     __BYTE_ORDER
+
 #elif defined(_darwin_)
 
 #include <machine/endian.h>
@@ -45,6 +50,11 @@
 #define __bswap64(x)    _OSSwapInt64(x)
 #define __bswap32(x)    _OSSwapInt32(x)
 #define __bswap16(x)    _OSSwapInt16(x)
+
+#define _LITTLE_ENDIAN  __DARWIN_LITTLE_ENDIAN
+#define _BIG_ENDIAN     __DARWIN_BIG_ENDIAN
+#define _PDP_ENDIAN     __DARWIN_PDP_ENDIAN
+#define _BYTE_ORDER     __DARWIN_BYTE_ORDER
 
 #elif defined(__BSD_VISIBLE)
 
