@@ -115,7 +115,7 @@ static QString FormatProtectionString(AP_DiskFsFlags FsFlags,const uint8_t* Copy
         }
         if (aacs_ver)
         {
-            char    ver[8];
+            char    ver[16];
             sprintf(ver, " v%u", aacs_ver);
             append_const(str, ver);
         }

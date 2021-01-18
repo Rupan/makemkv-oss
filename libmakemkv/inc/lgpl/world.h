@@ -24,7 +24,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) && !defined(__cdecl)
 #define __cdecl
 #endif
 

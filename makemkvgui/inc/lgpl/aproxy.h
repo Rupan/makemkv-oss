@@ -12,7 +12,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <libmkv/libmkv.h>
 #include <lgpl/stl.h>
 
 #ifndef APROXY_STD
@@ -72,6 +71,7 @@ static inline uint64_t utf16tol(const utf16_t *SrcString)
 
 #ifdef __GNUC__
 #define ALIGN_PACKED __attribute((packed))
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
 #endif
 
 typedef struct _AP_SHMEM

@@ -74,69 +74,6 @@ static void static_log_callback(void* ptr, int level, const char* fmt, va_list v
     }
 }
 
-#if !defined(FFABI_HAVE_ALL_CODECS) && defined(FFABI_HAVE_DECODER_AC3) && (LIBAVCODEC_VERSION_MAJOR < 58)
-#define FFABI_REGISTER_ALL
-extern AVCodec ff_ac3_decoder,ff_eac3_decoder,ff_aac_latm_decoder,ff_aac_fixed_decoder;
-extern AVCodec ff_dca_decoder,ff_mlp_decoder,ff_truehd_decoder;
-extern AVCodec ff_mp1_decoder,ff_mp2_decoder,ff_mp3_decoder;
-extern AVCodec ff_flac_decoder;
-extern AVCodec ff_ac3_encoder,ff_ac3_fixed_encoder,ff_aac_encoder,ff_libfdk_aac_encoder,ff_flac_encoder;
-extern AVCodecParser ff_mlp_parser;
-
-static void ffabi_register_all(void)
-{
-    avcodec_register(&ff_ac3_decoder);
-#ifdef FFABI_HAVE_DECODER_EAC3
-    avcodec_register(&ff_eac3_decoder);
-#endif
-#ifdef FFABI_HAVE_DECODER_AAC_LATM
-    avcodec_register(&ff_aac_latm_decoder);
-#endif
-#ifdef FFABI_HAVE_DECODER_AAC_FIXED
-    avcodec_register(&ff_aac_fixed_decoder);
-#endif
-#ifdef FFABI_HAVE_DECODER_DCA
-    avcodec_register(&ff_dca_decoder);
-#endif
-#ifdef FFABI_HAVE_DECODER_MLP
-    avcodec_register(&ff_mlp_decoder);
-#endif
-#ifdef FFABI_HAVE_DECODER_TRUEHD
-    avcodec_register(&ff_truehd_decoder);
-#endif
-#ifdef FFABI_HAVE_DECODER_MP1
-    avcodec_register(&ff_mp1_decoder);
-#endif
-#ifdef FFABI_HAVE_DECODER_MP2
-    avcodec_register(&ff_mp2_decoder);
-#endif
-#ifdef FFABI_HAVE_DECODER_MP3
-    avcodec_register(&ff_mp3_decoder);
-#endif
-#ifdef FFABI_HAVE_DECODER_FLAC
-    avcodec_register(&ff_flac_decoder);
-#endif
-
-#ifdef FFABI_HAVE_ENCODER_AC3
-    avcodec_register(&ff_ac3_encoder);
-#endif
-#ifdef FFABI_HAVE_ENCODER_AC3_FIXED
-    avcodec_register(&ff_ac3_fixed_encoder);
-#endif
-#ifdef FFABI_HAVE_ENCODER_AAC
-    avcodec_register(&ff_aac_encoder);
-#endif
-#ifdef FFABI_HAVE_ENCODER_LIBFDK_AAC
-    avcodec_register(&ff_libfdk_aac_encoder);
-#endif
-#ifdef FFABI_HAVE_ENCODER_FLAC
-    avcodec_register(&ff_flac_encoder);
-#endif
-
-    av_register_codec_parser(&ff_mlp_parser);
-}
-#endif
-
 int __cdecl ffm_init(ffm_log_callback_t log_proc,void* log_ctx,ffm_memalign_t memalign_proc,ffm_realloc_t realloc_proc,ffm_free_t free_proc)
 {
     log_context = log_ctx;
@@ -147,9 +84,7 @@ int __cdecl ffm_init(ffm_log_callback_t log_proc,void* log_ctx,ffm_memalign_t me
 
     av_log_set_callback(static_log_callback);
 
-#ifdef FFABI_REGISTER_ALL
-    ffabi_register_all();
-#else
+#ifndef FFABI_HAVE_AV_CODEC_ITERATE
     avcodec_register_all();
 #endif
 

@@ -169,10 +169,12 @@ typedef int (DIO_CDECL *DriveIoExecScsiCmdFunc)(void *Context,const ScsiCmd* Cmd
 DIO_INFOLIST    DIO_CDECL   DriveInfoList_Create();
 void            DIO_CDECL   DriveInfoList_Destroy(DIO_INFOLIST List);
 size_t          DIO_CDECL   DriveInfoList_GetCount(DIO_INFOLIST List);
-void            DIO_CDECL   DriveInfoList_GetItem(DIO_INFOLIST List,size_t Index,DriveInfoItem *Item);
+int             DIO_CDECL   DriveInfoList_GetItem(DIO_INFOLIST List,size_t Index,DriveInfoItem *Item);
 int             DIO_CDECL   DriveInfoList_GetItemById(DIO_INFOLIST List,DriveInfoId Id,DriveInfoItem *Item);
 int             DIO_CDECL   DriveInfoList_AddItem(DIO_INFOLIST List,DriveInfoId Id,const void* Data,size_t Size);
 int             DIO_CDECL   DriveInfoList_AddOrUpdateItem(DIO_INFOLIST List, DriveInfoId Id, const void* Data, size_t Size);
+int             DIO_CDECL   DriveInfoList_RemoveItem(DIO_INFOLIST List, size_t Index);
+int             DIO_CDECL   DriveInfoList_RemoveItemById(DIO_INFOLIST List, DriveInfoId Id);
 int             DIO_CDECL   DriveInfoList_CopyAllItemsFrom(DIO_INFOLIST List, const DIO_INFOLIST Src);
 int             DIO_CDECL   DriveInfoList_MoveAllItemsFrom(DIO_INFOLIST List, DIO_INFOLIST Src);
 size_t          DIO_CDECL   DriveInfoList_Serialize(DIO_INFOLIST List, void* Buffer, size_t BufferSize);

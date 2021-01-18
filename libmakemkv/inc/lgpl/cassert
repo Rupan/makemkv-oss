@@ -24,6 +24,18 @@
 #include <lgpl/stl.h>
 #include <lgpl/stdstring.h>
 
+#if defined (_darwin_)
+// Below is a verbatim quote from Mac OS developer tools <memory> header. Thank you Apple, you are the best.
+
+// TODO: We re-added #include <cassert> to <memory> to make the internal build
+//       pass, but we should remove it as soon as all internal clients have fixed
+//       their code.
+#include <memory>
+#if defined(assert)
+#undef assert
+#endif // assert
+#endif // _darwin_
+
 class mkv_error_exception_unbuffered : public std::exception
 {
     const char* m_message;

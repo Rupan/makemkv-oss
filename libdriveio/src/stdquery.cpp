@@ -429,6 +429,7 @@ static int DriveIoQuery(ISimpleScsiTarget* ScsiTarget,DriveIoQueryType QueryType
         err = QueryDiscInfo(ScsiTarget,list,true);
         break;
     default:
+        err = DRIVEIO_ERROR_INVALID_ARG;
         break;
     }
     return err;

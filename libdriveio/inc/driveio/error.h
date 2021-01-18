@@ -31,6 +31,7 @@
 #define DRIVEIO_ERR_NO_MEMORY                   DRIVEIO_ERROR(3,0)
 #define DRIVEIO_ERR_FILE_NOT_FOUND              DRIVEIO_ERROR(3,1)
 #define DRIVEIO_ERR_NOT_READY                   DRIVEIO_ERROR(3,2)
+#define DRIVEIO_ERR_NOT_FOUND                   DRIVEIO_ERROR(3,3)
 
 // sdfw errors (comparable)
 #define SDFRUN_INVALID_OUT_LENGTH(length)       DRIVEIO_ERROR(11,(length))

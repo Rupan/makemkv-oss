@@ -7,6 +7,8 @@ EXPORTS
   DriveInfoList_GetItemById
   DriveInfoList_AddItem
   DriveInfoList_AddOrUpdateItem
+  DriveInfoList_RemoveItem
+  DriveInfoList_RemoveItemById
   DriveInfoList_Serialize
   DriveInfoList_Deserialize
   DriveInfoList_GetSerializedChunkSize

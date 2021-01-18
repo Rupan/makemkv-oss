@@ -17,6 +17,10 @@
 
 #include "mainwnd.h"
 
+#if !defined(_MSC_VER) && !defined(__cdecl)
+#define __cdecl
+#endif
+
 #define aversion aversion002
 extern "C" const unsigned int __cdecl aversion();
 
