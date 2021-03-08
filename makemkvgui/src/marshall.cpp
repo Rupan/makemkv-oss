@@ -17,87 +17,96 @@
 
 void CApClient::SignalExit()
 {
-    ExecCmd(apCallSignalExit);
-    m_mem->exit = 1;
+    ExecCmd(apCallSignalExit,0,0);
+    m_mem->flags |= (AP_SHMEM_FLAG_EXIT | 1);
 }
 
 void CApClient::CancelAllJobs()
 {
-    ExecCmd(apCallCancelAllJobs);
+    ExecCmd(apCallCancelAllJobs,0,0);
 }
 
 void CApClient::OnIdle()
 {
-    ExecCmd(apCallOnIdle);
+    ExecCmd(apCallOnIdle,0,0);
 }
 
-bool CApClient::UpdateAvailableDrives()
+bool CApClient::UpdateAvailableDrives(uint32_t Flags)
 {
-    ExecCmd(apCallUpdateAvailableDrives);
+    m_mem->args[0]=Flags;
+    ExecCmd(apCallUpdateAvailableDrives,1,0);
     return (m_mem->args[0]!=0);
 }
 
 bool CApClient::CloseDisk(unsigned int EjectId)
 {
     m_mem->args[0]=EjectId;
-    ExecCmd(apCallCloseDisk);
+    ExecCmd(apCallCloseDisk,1,0);
     return (m_mem->args[0]!=0);
 }
 
 int CApClient::GetSettingInt(ApSettingId Id)
 {
     m_mem->args[0]=Id;
-    ExecCmd(apCallGetSettingInt);
+    ExecCmd(apCallGetSettingInt,1,0);
     return (int)(m_mem->args[0]);
 }
 
-const utf16_t* CApClient::GetSettingString(ApSettingId Id)
+const char* CApClient::GetSettingString(ApSettingId Id)
 {
     m_mem->args[0]=Id;
-    ExecCmd(apCallGetSettingString);
+    ExecCmd(apCallGetSettingString,1,0);
     if (0==m_mem->args[0]) return NULL;
-    return (utf16_t*)(m_mem->strbuf);
+    return (char*)(m_mem->strbuf);
 }
 
 void CApClient::SetSettingInt(ApSettingId Id,int Value)
 {
     m_mem->args[0]=Id;
     m_mem->args[1]=Value;
-    ExecCmd(apCallSetSettingInt);
+    ExecCmd(apCallSetSettingInt,2,0);
 }
 
-void CApClient::SetSettingString(ApSettingId Id,const utf16_t* Value)
+void CApClient::SetSettingString(ApSettingId Id, const utf8_t* Value)
+{
+    SetSettingString(Id, SetUtf8(Value));
+}
+
+void CApClient::SetSettingString(ApSettingId Id, const utf16_t* Value)
+{
+    SetSettingString(Id, SetUtf16(Value));
+}
+
+void CApClient::SetSettingString(ApSettingId Id, size_t ValueSize)
 {
     m_mem->args[0]=Id;
-    if (NULL==Value)
+    if (0 == ValueSize)
     {
         m_mem->args[1]=0;
     } else {
         m_mem->args[1]=1;
-        memcpy((void*)m_mem->strbuf,Value,(utf16len(Value)+1)*sizeof(utf16_t));
     }
-    ExecCmd(apCallSetSettingString);
+    ExecCmd(apCallSetSettingString,2,ValueSize);
 }
 
 bool CApClient::SaveSettings()
 {
-    ExecCmd(apCallSaveSettings);
+    ExecCmd(apCallSaveSettings,0,0);
     return (m_mem->args[0]!=0);
 }
 
-const utf16_t* CApClient::GetAppString(unsigned int Id,unsigned int Index1,unsigned int Index2)
+const char* CApClient::GetAppString(unsigned int Id,unsigned int Index1,unsigned int Index2)
 {
-    static const utf16_t zero = 0;
-    if (m_shutdown) return &zero;
+    if (m_shutdown) return "";
     m_mem->args[0] = Id;
     m_mem->args[1] = Index1;
     m_mem->args[2] = Index2;
-    ExecCmd(apCallAppGetString);
+    ExecCmd(apCallAppGetString,3,0);
     if (m_mem->args[0]==0)
     {
         return NULL;
     } else {
-        return (utf16_t*)m_mem->strbuf;
+        return (char*)m_mem->strbuf;
     }
 }
 

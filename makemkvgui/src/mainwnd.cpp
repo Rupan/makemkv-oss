@@ -108,19 +108,19 @@ MainWnd::MainWnd(CGUIApClient* App,const char* AppDir)
     RestoreGeometry();
 
     // rescan drives
-    App->UpdateAvailableDrives();
+    App->UpdateAvailableDrives(0);
     m_started=true;
 }
 
 void MainWnd::ReadStrings()
 {
-    app_name = QStringFromUtf16(m_app->GetAppString(AP_vastr_Name));
-    app_ver = QStringFromUtf16(m_app->GetAppString(AP_vastr_Version));
-    app_arch = QStringFromUtf16(m_app->GetAppString(AP_vastr_Platform));
-    app_keytype = QStringFromUtf16(m_app->GetAppString(AP_vastr_KeyType));
-    app_evalstate = QStringFromUtf16(m_app->GetAppString(AP_vastr_EvalState));
-    app_keytime = QStringFromUtf16(m_app->GetAppString(AP_vastr_KeyExpiration));
-    app_prgtime = QStringFromUtf16(m_app->GetAppString(AP_vastr_ProgExpiration));
+    app_name = QStringFromUtf8(m_app->GetAppString(AP_vastr_Name));
+    app_ver = QStringFromUtf8(m_app->GetAppString(AP_vastr_Version));
+    app_arch = QStringFromUtf8(m_app->GetAppString(AP_vastr_Platform));
+    app_keytype = QStringFromUtf8(m_app->GetAppString(AP_vastr_KeyType));
+    app_evalstate = QStringFromUtf8(m_app->GetAppString(AP_vastr_EvalState));
+    app_keytime = QStringFromUtf8(m_app->GetAppString(AP_vastr_KeyExpiration));
+    app_prgtime = QStringFromUtf8(m_app->GetAppString(AP_vastr_ProgExpiration));
     aboutAct->setEnabled(true);
 
     app_expired = (*m_app->GetAppString(AP_vastr_ProgExpired) == 'y');
@@ -129,9 +129,9 @@ void MainWnd::ReadStrings()
 void MainWnd::ReReadSettings()
 {
     setting_DestinationType = m_app->GetSettingInt(apset_app_DestinationType);
-    setting_DestinationDir = QStringFromUtf16(m_app->GetSettingString(apset_app_DestinationDir));
+    setting_DestinationDir = QStringFromUtf8(m_app->GetSettingString(apset_app_DestinationDir));
     setting_ShowDebug = ( m_app->GetSettingInt(apset_app_ShowDebug) != 0 );
-    const utf16_t* dk = m_app->GetSettingString(apset_app_DebugKey);
+    const utf8_t* dk = m_app->GetSettingString(apset_app_DebugKey);
     setting_Debug = ((dk!=NULL)&&(dk[0]!=0));
 
     iface_ExpertMode = (*m_app->GetAppString(AP_vastr_ExpertMode) == 'y');
@@ -150,7 +150,7 @@ MainWnd::~MainWnd()
 void MainWnd::SlotAbout()
 {
     bool registered = false;
-    QString key_string = QStringFromUtf16(m_app->GetSettingString(apset_app_Key));
+    QString key_string = QStringFromUtf8(m_app->GetSettingString(apset_app_Key));
     if (key_string.length()==AP_KEY_STRING_LEN)
     {
         registered = true;
@@ -246,9 +246,9 @@ void MainWnd::SlotOnIdle()
     m_last_version_count++;
     if ( ((m_last_version_count%3)==0) && (m_have_last_version==false) )
     {
-        app_lastver = QStringFromUtf16(m_app->GetAppString(AP_vastr_LatestVersion));
+        app_lastver = QStringFromUtf8(m_app->GetAppString(AP_vastr_LatestVersion));
         if (!app_lastver.isEmpty()) {
-            app_website = QStringFromUtf16(m_app->GetAppString(AP_vastr_WebSiteURL));
+            app_website = QStringFromUtf8(m_app->GetAppString(AP_vastr_WebSiteURL));
             m_have_last_version = true;
             if (m_about_dialog) m_about_dialog->OnIdle();
         }
@@ -265,7 +265,7 @@ void MainWnd::SlotOpenTestFile()
 void MainWnd::AppExpired()
 {
     QPushButton *registerButton;
-    QString url = QStringFromUtf16(m_app->GetAppString(AP_vastr_WebSiteURL));
+    QString url = QStringFromUtf8(m_app->GetAppString(AP_vastr_WebSiteURL));
     QMessageBox msgBox(QMessageBox::Warning,UI_QSTRING(APP_CAPTION_MSG),UI_QSTRING(PROT_DEMO_KEY_EXPIRED).arg(url),QMessageBox::Ok,this);
     msgBox.setEscapeButton(QMessageBox::Ok);
     registerButton = msgBox.addButton(UI_QSTRING(APP_IFACE_ACT_REGISTER_NAME), QMessageBox::ActionRole);
@@ -284,8 +284,8 @@ void MainWnd::SlotOpenFiles()
 {
     unsigned int id = qobject_cast<QAction *>(sender())->data().toUInt();
 
-    QString filter = QStringFromUtf16(m_app->GetAppString((id==0)?AP_vastr_OpenFileFilter:AP_vastr_OpenDVDFileFilter));
-    QString dir = QStringFromUtf16(m_app->GetSettingString(apset_path_OpenFile));
+    QString filter = QStringFromUtf8(m_app->GetAppString((id==0)?AP_vastr_OpenFileFilter:AP_vastr_OpenDVDFileFilter));
+    QString dir = QStringFromUtf8(m_app->GetSettingString(apset_path_OpenFile));
 
     QString fileName = QFileDialog::getOpenFileName(this,
         UI_QSTRING(APP_IFACE_OPENFILE_TITLE),
@@ -392,7 +392,7 @@ void MainWnd::SlotBackup()
     QString name = DriveInfo[ndx].strLabel;
 
     dlg.backupDir->setAppendName(&name);
-    dlg.backupDir->setText(QStringFromUtf16(m_app->GetAppString(AP_vastr_OutputBaseName)) + QLatin1String("/backup/") + name,true);
+    dlg.backupDir->setText(QStringFromUtf8(m_app->GetAppString(AP_vastr_OutputBaseName)) + QLatin1String("/backup/") + name,true);
     dlg.backupDir->setMRU(m_app->GetSettingString(apset_path_BackupDirMRU),&name);
 
     if (dlg.exec()==QDialog::Accepted)
@@ -407,7 +407,7 @@ void MainWnd::SlotSaveAllMkv()
 {
     m_FileInfo.setFile(saveFolderBox->text());
 
-    QString defPath = QStringFromUtf16(m_app->GetAppString(AP_vastr_OutputFolderName));
+    QString defPath = QStringFromUtf8(m_app->GetAppString(AP_vastr_OutputFolderName));
     bool custPath = (defPath != saveFolderBox->text());
 
     SlotInfoCboxIndexChanged();
@@ -948,7 +948,7 @@ void MainWnd::UpdateDrivesCount()
 }
 
 
-void MainWnd::UpdateDrive(unsigned int Index,const utf16_t *DriveName,AP_DriveState DriveState,const utf16_t *DiskName,const utf16_t *DeviceName,AP_DiskFsFlags FsFlags,const void* DiskData,unsigned int DiskDataSize)
+void MainWnd::UpdateDrive(unsigned int Index,const utf8_t *DriveName,AP_DriveState DriveState,const utf8_t *DiskName,const utf8_t *DeviceName,AP_DiskFsFlags FsFlags,const void* DiskData,unsigned int DiskDataSize)
 {
     if (DriveState==AP_DriveStateNoDrive)
     {
@@ -961,7 +961,7 @@ void MainWnd::UpdateDrive(unsigned int Index,const utf16_t *DriveName,AP_DriveSt
 
     OpenDriveAction[Index]->setVisible(true);
     OpenDriveAction[Index]->setEnabled(false);
-    OpenDriveAction[Index]->setText(QStringFromUtf16(DriveName));
+    OpenDriveAction[Index]->setText(QStringFromUtf8(DriveName));
     UpdateDrivesCount();
 
     if (DriveState!=AP_DriveStateInserted)
@@ -973,9 +973,9 @@ void MainWnd::UpdateDrive(unsigned int Index,const utf16_t *DriveName,AP_DriveSt
         }
     }
 
-    QString disktext = QStringFromUtf16(DriveName);
+    QString disktext = QStringFromUtf8(DriveName);
     disktext += QLatin1String(" : ");
-    disktext += QStringFromUtf16(DiskName);
+    disktext += QStringFromUtf8(DiskName);
     OpenDriveAction[Index]->setText(disktext);
 
     DriveInfo[Index].Update(DriveState,DriveName,DiskName,DeviceName,FsFlags,DiskData,DiskDataSize);
@@ -1055,7 +1055,7 @@ void MainWnd::SlotClearLog()
 int MainWnd::ReportUiMessage(
     unsigned long Code,
     unsigned long Flags,
-    const utf16_t* Text,
+    const utf8_t* Text,
     uint64_t ExtraData
     )
 {
@@ -1084,7 +1084,7 @@ int MainWnd::ReportUiMessage(
             icon = QMessageBox::Warning;
         }
 
-        QMessageBox msgBox(icon,UI_QSTRING(APP_CAPTION_MSG),QStringFromUtf16(Text),QMessageBox::Ok,this);
+        QMessageBox msgBox(icon,UI_QSTRING(APP_CAPTION_MSG),QStringFromUtf8(Text),QMessageBox::Ok,this);
         msgBox.setEscapeButton(QMessageBox::Ok);
 
         m_disable_onidle++;
@@ -1097,7 +1097,7 @@ int MainWnd::ReportUiMessage(
     if ( (Flags&AP_UIMSG_BOX_MASK) == AP_UIMSG_BOXYESNO )
     {
         m_disable_onidle++;
-        int v=QMessageBox::question(this,UI_QSTRING(APP_CAPTION_MSG),QStringFromUtf16(Text),QMessageBox::Yes|QMessageBox::No);
+        int v=QMessageBox::question(this,UI_QSTRING(APP_CAPTION_MSG),QStringFromUtf8(Text),QMessageBox::Yes|QMessageBox::No);
         m_disable_onidle--;
         switch(v)
         {
@@ -1109,7 +1109,7 @@ int MainWnd::ReportUiMessage(
     if ( (Flags&AP_UIMSG_BOX_MASK) == AP_UIMSG_BOXYESNO_ERR )
     {
         m_disable_onidle++;
-        int v=QMessageBox::critical(this,UI_QSTRING(APP_CAPTION_MSG),QStringFromUtf16(Text),QMessageBox::Yes|QMessageBox::No);
+        int v=QMessageBox::critical(this,UI_QSTRING(APP_CAPTION_MSG),QStringFromUtf8(Text),QMessageBox::Yes|QMessageBox::No);
         m_disable_onidle--;
         switch(v)
         {
@@ -1130,10 +1130,10 @@ int MainWnd::ReportUiMessage(
 
     if (0!=(Flags&AP_UIMSG_EVENT))
     {
-        notifyEvent(this,Code,QStringFromUtf16(Text),m_notify_name);
+        notifyEvent(this,Code,QStringFromUtf8(Text),m_notify_name);
     }
 
-    DoProcessLogMessage(QStringFromUtf16(Text),Flags,ExtraData);
+    DoProcessLogMessage(QStringFromUtf8(Text),Flags,ExtraData);
     return 0;
 }
 
@@ -1185,12 +1185,12 @@ void MainWnd::SlotSettings()
 
 void MainWnd::SlotHelppage()
 {
-    SlotLaunchUrl(QStringFromUtf16(m_app->GetAppString(AP_vastr_WebSiteURL))+QLatin1String("onlinehelp/"));
+    SlotLaunchUrl(QStringFromUtf8(m_app->GetAppString(AP_vastr_WebSiteURL))+QLatin1String("onlinehelp/"));
 }
 
 void MainWnd::SlotPurchase()
 {
-    SlotLaunchUrl(QStringFromUtf16(m_app->GetAppString(AP_vastr_WebSiteURL))+QLatin1String("buy/"));
+    SlotLaunchUrl(QStringFromUtf8(m_app->GetAppString(AP_vastr_WebSiteURL))+QLatin1String("buy/"));
 }
 
 
@@ -1258,7 +1258,7 @@ static inline bool KeyCheckStringCrc(const utf16_t* str)
 void MainWnd::SlotRegister()
 {
     bool ok = false;
-    QString key_string = QStringFromUtf16(m_app->GetSettingString(apset_app_Key));
+    QString key_string = QStringFromUtf8(m_app->GetSettingString(apset_app_Key));
 
     QString reg_code = QInputDialog::getText(this,UI_QSTRING(APP_CAPTION_MSG),UI_QSTRING(APP_IFACE_REGISTER_TEXT),QLineEdit::Normal,key_string,&ok);
     if ( (false==ok) || (reg_code.isEmpty()) ) return;
@@ -1307,12 +1307,12 @@ void MainWnd::SaveGeometry()
 void MainWnd::RestoreGeometry()
 {
     QByteArray byteData,byteBase;
-    const utf16_t* strValue;
+    const utf8_t* strValue;
 
     strValue = m_app->GetSettingString(apset_screen_state);
     if (strValue)
     {
-        byteBase = QStringFromUtf16(strValue).toLatin1();
+        byteBase = QByteArray(strValue);
         byteData = QByteArray::fromBase64(byteBase);
         restoreState(byteData);
     }
@@ -1320,7 +1320,7 @@ void MainWnd::RestoreGeometry()
     strValue = m_app->GetSettingString(apset_screen_geometry);
     if (strValue)
     {
-        byteBase = QStringFromUtf16(strValue).toLatin1();
+        byteBase = QByteArray(strValue);
         byteData = QByteArray::fromBase64(byteBase);
         restoreGeometry(byteData);
     }
@@ -1335,13 +1335,13 @@ void MainWnd::SlotNewInstance()
 #endif
 }
 
-int MainWnd::ReportUiDialog(unsigned long Code,unsigned long Flags,unsigned int Count,const utf16_t* Text[],utf16_t* Buffer)
+int MainWnd::ReportUiDialog(unsigned long Code,unsigned long Flags,unsigned int Count,const unsigned int Codes[], const utf8_t* Text[],utf8_t* Buffer)
 {
     *Buffer=0;
 
     if (Code==APP_DVD_MANUAL_TITLE)
     {
-        CDVDBox dbox(this,mainIcon,Code,Text);
+        CDVDBox dbox(this,mainIcon,Code,Codes,Text);
 
         m_disable_onidle++;
         int r = dbox.exec();
@@ -1358,7 +1358,7 @@ int MainWnd::ReportUiDialog(unsigned long Code,unsigned long Flags,unsigned int 
 
     if (Code==APP_SINGLE_DRIVE_TITLE)
     {
-        CDriveBox dbox(this,mainIcon,Count,Text);
+        CDriveBox dbox(this,mainIcon,Count,Codes,Text);
 
         m_disable_onidle++;
         int r = dbox.exec();

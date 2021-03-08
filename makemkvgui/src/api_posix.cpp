@@ -28,6 +28,7 @@
 #include <lgpl/sysabi.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <poll.h>
 
 const char* const* ApGetAppLocations();
 
@@ -39,17 +40,20 @@ static mode_t mstat(const char* path)
     return buf.st_mode;
 }
 
-int ApSpawnApp(const char* verstr,const char* AppName,char* response,size_t responselength)
+int ApSpawnApp(char* verstr, const char* AppName, uint64_t* stdh)
 {
-    int     pipe_fd[2],err;
+    int     pipe_fd_stdout[2],pipe_fd_stdin[2],err;
     char    app_path[1024+32];
     char*   argv[4];
     char    str_guiserver[sizeof("guiserver")+2];
-    char    str_apver[8];
 
-    if (pipe(pipe_fd))
+    if (pipe(pipe_fd_stdout))
     {
         return errno|0x80000000;
+    }
+    if (pipe(pipe_fd_stdin))
+    {
+        return errno|0x81000000;
     }
 
     if (AppName[0]==':')
@@ -107,40 +111,26 @@ int ApSpawnApp(const char* verstr,const char* AppName,char* response,size_t resp
     }
 
     strcpy(str_guiserver,"guiserver");
-    strcpy(str_apver,verstr);
 
     argv[0]=app_path;
     argv[1]=str_guiserver;
-    argv[2]=str_apver;
+    argv[2]=verstr;
     argv[3]=NULL;
 
-    err = SYS_posix_launch(argv,0,pipe_fd[1],0,SYS_posix_envp());
+    err = SYS_posix_launch(argv,pipe_fd_stdin[0],pipe_fd_stdout[1],0,SYS_posix_envp());
 
-    close(pipe_fd[1]);
+    close(pipe_fd_stdout[1]);
+    close(pipe_fd_stdin[0]);
 
     if (err)
     {
         return err;
     }
 
-    for (unsigned int i=0;i<(responselength-1);i++)
-    {
-        if (1!=read(pipe_fd[0],response+i,1))
-        {
-            return errno|0x80000000;
-        }
+    stdh[0] = pipe_fd_stdout[0];
+    stdh[1] = pipe_fd_stdin[1];
 
-        if (response[i]=='$')
-        {
-            response[i]=0;
-
-            // break pipe
-            close(pipe_fd[0]);
-            return 0;
-        }
-    }
-
-    return -3;
+    return 0;
 }
 
 int ApSpawnNewInstance()
@@ -215,18 +205,39 @@ void ApDebugOut(uintptr_t file,const char* string)
     }
 }
 
-int ApCreatePipe(uint64_t* data)
+int ApClosePipe(uint64_t handle)
 {
-    int fd[2];
+    return close((int)handle);
+}
 
-    if (pipe(fd)!=0)
-    {
-        return errno | 0x80000000;
-    }
+int ApReadPipe(uint64_t handle, void* buffer, unsigned int size,unsigned int timeout)
+{
+    struct pollfd pf;
+    int err;
 
-    data[0]=fd[0];
-    data[1]=fd[1];
+    bzero(&pf,sizeof(pf));
+    pf.fd = (int)handle;
+    pf.events = POLLIN;
 
-    return 0;
+    err = poll(&pf,1,timeout << 10);
+    if (err<=0) return -1;
+
+    err = read((int)handle,buffer,size);
+    if (err<=0) return -1;
+
+#ifdef DBG_DUMP_PIPE
+    ApDebugDump("crp", buffer, err);
+#endif
+
+    return err;
+}
+
+int ApWritePipe(uint64_t handle, const void* buffer, unsigned int size)
+{
+#ifdef DBG_DUMP_PIPE
+    ApDebugDump("cwp", buffer, size);
+#endif
+
+    return write((int)handle,buffer,size);
 }
 

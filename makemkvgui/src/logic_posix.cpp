@@ -21,18 +21,15 @@
 #include <sys/mount.h>
 #endif
 
-uint64_t get_free_space(const utf16_t* Folder)
+uint64_t get_free_space(const utf8_t* Folder)
 {
     uint64_t fspace;
     struct statfs st;
-    QString folder_str;
-
-    folder_str = QStringFromUtf16(Folder);
 
     fspace=0;
     fspace--;
 
-    if (statfs((const char*)folder_str.toUtf8(),&st))
+    if (statfs(Folder,&st))
     {
         return 0;
     }

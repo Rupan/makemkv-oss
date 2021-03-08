@@ -77,7 +77,7 @@ static EC_GROUP *EC_GROUP_new(const EC_METHOD *meth)
 		return NULL;
 		}
 
-	ret = OPENSSL_malloc(sizeof *ret);
+	ret = (EC_GROUP *) OPENSSL_malloc(sizeof *ret);
 	if (ret == NULL)
 		{
 		ECerr(EC_F_EC_GROUP_NEW, ERR_R_MALLOC_FAILURE);
@@ -259,7 +259,7 @@ static EC_POINT *EC_POINT_new(const EC_GROUP *group)
 		return NULL;
 		}
 
-	ret = OPENSSL_malloc(sizeof *ret);
+	ret = (EC_POINT *) OPENSSL_malloc(sizeof *ret);
 	if (ret == NULL)
 		{
 		ECerr(EC_F_EC_POINT_NEW, ERR_R_MALLOC_FAILURE);

@@ -72,8 +72,8 @@ public:
     bool            load;
 public:
     CDriveInfo();
-    void Update(AP_DriveState DriveState,const utf16_t* DriveName,const utf16_t* DiskName,const utf16_t* DeviceName,AP_DiskFsFlags DiskFlags,const void* DiskData,unsigned int DiskDataSize);
-    bool FormatDriveDiskInfo(const utf16_t* DeviceNameString,const void* DiskData,unsigned int DiskDataSize);
+    void Update(AP_DriveState DriveState,const utf8_t* DriveName,const utf8_t* DiskName,const utf8_t* DeviceName,AP_DiskFsFlags DiskFlags,const void* DiskData,unsigned int DiskDataSize);
+    bool FormatDriveDiskInfo(const utf8_t* DeviceNameString,const void* DiskData,unsigned int DiskDataSize);
     bool showOpen();
 };
 
@@ -134,16 +134,16 @@ private:
 private: // app actions
     void EnterJobMode(unsigned int Flags);
     void LeaveJobMode();
-    void UpdateDrive(unsigned int Index,const utf16_t *DriveName,AP_DriveState DriveState,const utf16_t *DiskName,const utf16_t *DeviceName,AP_DiskFsFlags DiskFlags,const void* DiskData,unsigned int DiskDataSize);
+    void UpdateDrive(unsigned int Index,const utf8_t *DriveName,AP_DriveState DriveState,const utf8_t *DiskName,const utf8_t *DeviceName,AP_DiskFsFlags DiskFlags,const void* DiskData,unsigned int DiskDataSize);
     void UpdateCurrentBar(unsigned int Value);
     void UpdateTotalBar(unsigned int Value);
     void UpdateLayout(unsigned long CurrentName,unsigned int NameSubindex,unsigned int Flags,unsigned int Size,const unsigned long* Names);
-    void UpdateCurrentInfo(unsigned int Index,const utf16_t* Value);
+    void UpdateCurrentInfo(unsigned int Index,const utf8_t* Value);
     void SetTotalName(unsigned long Name);
 private:
     void DoProcessLogMessage(QString Message,unsigned int Flags,uint64_t ExtraData);
-    int ReportUiMessage(unsigned long Code,unsigned long Flags,const utf16_t* Text,uint64_t ExtraData);
-    int ReportUiDialog(unsigned long Code,unsigned long Flags,unsigned int Count,const utf16_t* Text[],utf16_t* Buffer);
+    int ReportUiMessage(unsigned long Code,unsigned long Flags,const utf8_t* Text,uint64_t ExtraData);
+    int ReportUiDialog(unsigned long Code,unsigned long Flags,unsigned int Count,const unsigned int Codes[],const utf8_t* Text[],utf8_t* Buffer);
     void Update_TitleTree_from_app(bool setFolder);
     void Refresh_TitleTree();
     void Update_TitleInfo_from_app();

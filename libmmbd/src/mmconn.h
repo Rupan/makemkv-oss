@@ -40,17 +40,18 @@ class CMMBDConn : private CApClient::INotifier , public IMMBDIpc
     private:
         void**                  m_user_data;
         mmbd_read_file_proc_t   m_file_proc;
-        uint16_t                m_auto_locator[MaxLocatorLen+1];
+        char                    m_auto_locator[MaxLocatorLen+1];
         cache_entry_t           m_cache_mkb;
         cache_entry_t           m_cache_cert0;
     public:
         ScanContext(void** user_data,mmbd_read_file_proc_t file_proc);
-        const uint16_t* GetLocator();
-        void TestDisc(const utf16_t *DeviceName,const void* DiskData,unsigned int DiskDataSize);
+        const char* GetLocator();
+        void TestDisc(const char *DeviceName,const void* DiskData,unsigned int DiskDataSize);
         bool CompareItem(const DriveInfoItem* item,CMMBDConn::cache_entry_t* cache_entry,const char* file_name);
     };
 private:
     CMMBDApClient       m_apc;
+    CStdPipeTransport   m_std;
     mmbd_output_proc_t  m_output_proc;
     void*               m_output_context;
     aes_cbc_d_proc_t    m_aes_cbcd;
@@ -83,13 +84,10 @@ public:
     static void destroy_instance(CMMBDConn*);
 public:
     bool initialize(const char* argp[]);
-    bool initializeU(const uint16_t* argp[]);
     bool reinitialize(const char* argp[]);
-    bool reinitializeU(const uint16_t* argp[]);
     bool launch();
     const char* get_version_string();
     int open(const char *prefix,const char *locator);
-    int openU(const uint16_t *locator);
     int open_auto(mmbd_read_file_proc_t read_file_proc);
     int close();
     void terminate();
@@ -106,20 +104,18 @@ private:
     void UpdateCurrentBar(unsigned int Value) override;
     void UpdateTotalBar(unsigned int Value) override;
     void UpdateLayout(unsigned long CurrentName,unsigned int NameSubindex,unsigned int Flags,unsigned int Size,const unsigned long* Names) override;
-    void UpdateCurrentInfo(unsigned int Index,const utf16_t* Value) override;
+    void UpdateCurrentInfo(unsigned int Index,const utf8_t* Value) override;
     void EnterJobMode(unsigned int Flags) override;
     void LeaveJobMode() override;
     void ExitApp() override;
-    void UpdateDrive(unsigned int Index,const utf16_t *DriveName,AP_DriveState DriveState,const utf16_t *DiskName,const utf16_t *DeviceName,AP_DiskFsFlags DiskFlags,const void* DiskData,unsigned int DiskDataSize) override;
-    int  ReportUiMessage(unsigned long Code,unsigned long Flags,const utf16_t* Text,uint64_t ExtraData) override;
-    int  ReportUiDialog(unsigned long Code,unsigned long Flags,unsigned int Count,const utf16_t* Text[],utf16_t* Buffer) override;
+    void UpdateDrive(unsigned int Index,const utf8_t *DriveName,AP_DriveState DriveState,const utf8_t *DiskName,const utf8_t *DeviceName,AP_DiskFsFlags DiskFlags,const void* DiskData,unsigned int DiskDataSize) override;
+    int  ReportUiMessage(unsigned long Code,unsigned long Flags,const utf8_t* Text,uint64_t ExtraData) override;
+    int  ReportUiDialog(unsigned long Code,unsigned long Flags,unsigned int Count,const unsigned int* Codes,const utf8_t* Text[],utf8_t* Buffer) override;
 private:
-    typedef bool (CMMBDConn::*argp_proc_t)(const uint16_t* argp[]);
-private:
+    int  DarwinOpenDirectoryPanel(utf8_t* Data,const utf8_t* Title,const utf8_t* Message,const utf8_t* Path);
     void WaitJob();
     uint32_t* GetClipInfo(uint32_t Name);
     void message_worker(uint32_t error_code,const char* message);
-    bool convertArg(const char* argp[],CMMBDConn::argp_proc_t Proc);
     inline void error_message(uint32_t error_code,const char* message) override
     {
         message_worker(error_code|MMBD_MESSAGE_FLAG_MMBD_ERROR,message);

@@ -11,6 +11,10 @@
   OSSL_SHA1_Init;
   OSSL_SHA1_Update;
   OSSL_SHA1_Final;
+  OSSL_sizeof_SHA256_CTX;
+  OSSL_SHA256_Init;
+  OSSL_SHA256_Update;
+  OSSL_SHA256_Final;
   OSSL_BN_new;
   OSSL_BN_free;
   OSSL_BN_bin2bn;

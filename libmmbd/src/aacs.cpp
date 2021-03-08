@@ -38,7 +38,7 @@
     is discouraged.
 */
 
-static void __cdecl stderr_print(void* user_context,uint32_t flags,const char* message,const uint16_t*)
+static void __cdecl stderr_print(void* user_context,uint32_t flags,const char* message,const void*)
 {
     fprintf(stderr,"MMBD: %s\n",message);
     fflush(stderr);
@@ -46,10 +46,10 @@ static void __cdecl stderr_print(void* user_context,uint32_t flags,const char* m
 
 #ifdef MMBD_WIN32_DEBUG
 #include <Windows.h>
-static void __cdecl windbg_print(void* user_context,uint32_t flags,const char* ,const uint16_t* messageW)
+static void __cdecl windbg_print(void* user_context,uint32_t flags,const char* message,const void*)
 {
-    OutputDebugStringW((LPCWSTR)messageW);
-    OutputDebugStringW(L"\n");
+    OutputDebugStringA(message);
+    OutputDebugStringA(L"\n");
 }
 #endif
 

@@ -42,16 +42,22 @@ int qMain(int argc, char **argv)
     static CGUIApClient apc;
     QApplication app(argc, argv);
 
-    if (argc>=3)
+    char* appname = argv[0];
+
+    argv++; argc--;
+
+    if (argc>=2)
     {
-        if (strcmp(argv[1],"debug")==0)
+        if (strcmp(argv[0],"debug")==0)
         {
-            apc.EnableDebug(argv[2]);
+            apc.EnableDebug(argv[1]);
+            argv += 2; argc -= 2;
         }
 #ifdef Q_OS_WIN
-        if (strcmp(argv[1], "break")==0)
+        if (strcmp(argv[0], "break")==0)
         {
             __debugbreak();
+            argv += 2; argc -= 2;
         }
 #endif
     }
@@ -60,17 +66,58 @@ int qMain(int argc, char **argv)
     QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 #endif
 
-    unsigned int errcode;
-    if (false==apc.Init('G',"makemkvcon",&errcode))
+    CApClient::ITransport*  p_trans = NULL;
+
+    CShMemTransport     shmt;
+    CStdPipeTransport   stdt;
+    if ( (argc >= 1) && (strcmp(argv[0], "-std") == 0) )
     {
-        QMessageBox::critical(NULL,UI_QSTRING(APP_CAPTION_MSG),UI_QSTRING(APP_INIT_FAILED));
+        p_trans = &stdt;
+        argv++; argc--;
+    }
+#if 0
+    if ((argc >= 2) && (strcmp(argv[0], "-net") == 0))
+    {
+        if (!nett.Init(argv[1]))
+        {
+            fprintf(stderr, "Network failed\n");
+            return 1;
+        }
+        p_trans = &nett;
+        argv+=2; argc-=2;
+    }
+#endif
+    if (NULL == p_trans)
+    {
+        p_trans = &shmt;
+    }
+
+    unsigned int errcode;
+    if (false==apc.Init(p_trans,"makemkvcon",&errcode))
+    {
+        QString msg = UI_QSTRING(APP_INIT_FAILED);
+
+        const char* err;
+        switch (errcode)
+        {
+        case 1:  err = "CANT_LOCATE_MAKEMKVCON"; break;
+        case 2:  err = "VERSION_MISMATCH"; break;
+        case 3:  err = "COMMUNICATION_FAILURE"; break;
+        case 4:  err = "NO_ANSWER_FROM_MAKEMKVCON"; break;
+        default: err = NULL; break;
+        }
+        if (err)
+        {
+            msg.append(QLatin1String("\n"));
+            msg.append(QLatin1String(err));
+        }
+        QMessageBox::critical(NULL,UI_QSTRING(APP_CAPTION_MSG),msg);
         return 1;
     }
 
     AppGetInterfaceLanguageData(&apc);
 
     const char* appdir;
-    char* appname = argv[0];
     char *aend = strrchr(appname,'/');
     if (!aend)
     {

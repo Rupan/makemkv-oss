@@ -212,7 +212,7 @@ static void AppendTimestamp(QString& str,const uint8_t* Data)
     }
 }
 
-bool CDriveInfo::FormatDriveDiskInfo(const utf16_t* DeviceNameString,const void* DiskData,unsigned int DiskDataSize)
+bool CDriveInfo::FormatDriveDiskInfo(const utf8_t* DeviceNameString,const void* DiskData,unsigned int DiskDataSize)
 {
     struct _items{
         DriveInfoItem   inquiry,drive_serial,firmware_date,firmware_string,current_profile;
@@ -383,7 +383,7 @@ bool CDriveInfo::FormatDriveDiskInfo(const utf16_t* DeviceNameString,const void*
     if ((items.custom.Size>1) && (items.custom.Data[items.custom.Size-1]==0))
     {
         QString customStr = QString::fromUtf8((const char*)items.custom.Data,items.custom.Size-1);
-        QStringList customList = customStr.split(QLatin1Char('\n'),QString::SkipEmptyParts);
+        QStringList customList = splitSkipEmptyParts(customStr,'\n');
         if (customList.size()>=1)
         {
             append_const(str,"<br><b>");

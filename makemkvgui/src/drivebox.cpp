@@ -15,7 +15,7 @@
 #include "drivebox.h"
 #include "qtapp.h"
 
-CDriveBox::CDriveBox(MainWnd *MainWnd,QIcon* icon,unsigned int Count,const utf16_t* Text[]) : QDialog(MainWnd)
+CDriveBox::CDriveBox(MainWnd *MainWnd,QIcon* icon,unsigned int Count,const unsigned int Codes[],const utf8_t* Text[]) : QDialog(MainWnd)
 {
     setWindowIcon(*icon);
     setWindowTitle(UI_QSTRING(APP_SINGLE_DRIVE_TITLE));
@@ -46,7 +46,7 @@ CDriveBox::CDriveBox(MainWnd *MainWnd,QIcon* icon,unsigned int Count,const utf16
     m_Box->addItem(UI_QSTRING(APP_SINGLE_DRIVE_ALL));
     for (unsigned int i=0;i<Count;i++)
     {
-        m_Box->addItem(QStringFromUtf16(Text[i]));
+        m_Box->addItem(QStringFromCodeUtf8(Codes[i],Text[i]));
     }
     m_Box->setCurrentIndex(0);
 }

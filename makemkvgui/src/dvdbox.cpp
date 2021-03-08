@@ -16,24 +16,24 @@
 #include "qtgui.h"
 #include "qtapp.h"
 
-CDVDBox::CDVDBox(MainWnd *mainWnd,QIcon* icon,unsigned long Code,const utf16_t* Text[]) : QDialog(mainWnd)
+CDVDBox::CDVDBox(MainWnd *mainWnd,QIcon* icon,unsigned int Code, const unsigned int Codes[], const utf8_t* Text[]) : QDialog(mainWnd)
 {
     setWindowIcon(*icon);
     setWindowTitle(UI_QSTRING(Code));
     m_MainWnd = mainWnd;
 
-    QGroupBox* box1 = new QGroupBox(QStringFromUtf16(Text[0]));
+    QGroupBox* box1 = new QGroupBox(QStringFromCodeUtf8(Codes[0],Text[0]));
     QBoxLayout *lay1 = new QVBoxLayout();
     QGrayTextViewer* tview = new QGrayTextViewer();
-    tview->setHtmlBody(QStringFromConstUtf16(Text[2]));
+    tview->setHtmlBody(QStringFromCodeUtf8(Codes[2],Text[2]));
     lay1->addWidget(tview);
     box1->setLayout(lay1);
 
-    QGroupBox* box2 = new QGroupBox(QStringFromUtf16(Text[1]));
+    QGroupBox* box2 = new QGroupBox(QStringFromCodeUtf8(Codes[1],Text[1]));
     QBoxLayout *lay2 = new QVBoxLayout();
     QLabel *text = new QLabel();
     text->setTextFormat(Qt::RichText);
-    text->setText(QStringFromUtf16(Text[3]));
+    text->setText(QStringFromCodeUtf8(Codes[3],Text[3]));
     check(connect(text, &QLabel::linkActivated, mainWnd, &MainWnd::SlotLaunchUrl));
     m_Line = new QLineEdit();
     lay2->addWidget(text);

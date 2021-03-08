@@ -18,6 +18,16 @@
 QT_C_ASSERT(sizeof(ushort)==sizeof(utf16_t));
 QT_C_ASSERT(sizeof(ushort)==sizeof(QChar));
 
+static inline QString QStringFromUtf8(const utf8_t *str)
+{
+    return (NULL != str) ? QString::fromUtf8(str) : QString();
+}
+
+static inline QString QStringFromUtf8(const utf8_t *str, size_t count)
+{
+    return QString::fromUtf8(str, count);
+}
+
 static inline const utf16_t* Utf16FromQString(const QString &str)
 {
     return (const utf16_t*)str.utf16();
@@ -25,21 +35,8 @@ static inline const utf16_t* Utf16FromQString(const QString &str)
 
 static inline QString QStringFromUtf16(const utf16_t *str)
 {
-    QString t;
-    if (NULL!=str)
-    {
-        t.setUtf16((const ushort*)str,utf16len(str));
-    }
-    return t;
+    return (NULL != str) ? QString::fromUtf16(str) : QString();
 }
-
-static inline QString QStringFromUtf16(const utf16_t *str,size_t count)
-{
-    QString t;
-    t.setUtf16((const ushort*)str,count);
-    return t;
-}
-
 
 static inline utf16_t* QStringAccessBufferRW(QString &str)
 {
@@ -92,6 +89,23 @@ static inline void append_const(QString &Qstr,const utf16_t *Str,size_t Size)
     Qstr.append(QStringFromConstUtf16(Str,Size));
 }
 
+static inline QString QStringFromCodeUtf8(unsigned int Code,const utf8_t *Str)
+{
+    if (0 != Code)
+    {
+        return UI_QSTRING(Code);
+    }  else {
+        return QStringFromUtf8(Str);
+    }
+}
+
+static inline QStringList splitSkipEmptyParts(const QString &str, char sep, Qt::CaseSensitivity cs = Qt::CaseSensitive)
+{
+#if (QT_VERSION >= 0x050f00)
+    return str.split(QLatin1Char(sep), Qt::SkipEmptyParts, cs);
+#else
+    return str.split(QLatin1Char(sep), QString::SkipEmptyParts, cs);
+#endif
+}
 
 #endif // APP_QTSTR_H
-

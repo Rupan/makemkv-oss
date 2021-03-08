@@ -52,6 +52,8 @@ static const unsigned int AP_vastr_OpenDVDFileFilter=19;
 static const unsigned int AP_vastr_DefaultSelectionString=20;
 static const unsigned int AP_vastr_DefaultOutputFileName=21;
 static const unsigned int AP_vastr_ExternalAppItem=22;
+static const unsigned int AP_vastr_InterfaceLanguage=23;
+static const unsigned int AP_vastr_ProfileString=24;
 //
 typedef enum _AP_ItemAttributeId
 {
@@ -126,6 +128,10 @@ static const unsigned int AP_DriveStateLoading=3;
 
 static const unsigned int AP_Notify_UpdateLayoutFlag_NoTime=1;
 static const unsigned int AP_ProgressCurrentIndex_SourceName=65280;
+static const unsigned int AP_BackupFlagDecryptVideo=1;
+static const unsigned int AP_OpenFlagManualMode=1;
+static const unsigned int AP_UpdateDrivesFlagNoScan=1;
+static const unsigned int AP_UpdateDrivesFlagNoSingleDrive=2;
 
 
 static const unsigned int AP_AVStreamFlag_DirectorsComments=1;
@@ -140,8 +146,7 @@ static const unsigned int AP_AVStreamFlag_ProfileSecondaryStream=16384;
 static const unsigned int AP_AVStreamFlag_OffsetSequenceIdPresent=32768;
 
 
-static const unsigned int AP_APP_LOC_POGZ=1;
-static const unsigned int AP_APP_LOC_MAX=100;
+static const unsigned int AP_APP_LOC_MAX=7000;
 
 
 static const unsigned long APP_DUMP_DONE_PARTIAL=5004;

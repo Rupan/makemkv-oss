@@ -36,7 +36,6 @@ private:
     CApClient*   client;
     QLineEdit*   lineEditDir;
     QComboBox*   comboBoxDir;
-    QStringList  mru;
     QToolButtonP* toolButtonSelect;
     QAction*     toolButtonAction;
     bool         validState;
@@ -53,7 +52,7 @@ public:
     int getIndexValue();
     bool IsDirValid();
     void setText(const QString &Text,bool addMRU=false);
-    void setMRU(const utf16_t* Data,const QString* AppendLast=NULL);
+    void setMRU(const utf8_t* Data,const QString* AppendLast=NULL);
     QString text();
     QAction* selectDialogAction();
     void setDirEnabled(bool Enabled);

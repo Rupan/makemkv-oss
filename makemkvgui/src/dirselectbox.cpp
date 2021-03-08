@@ -189,9 +189,9 @@ QString CDirSelectBox::append(const QString& Text,const QString* AppendName)
     return path;
 }
 
-void CDirSelectBox::setMRU(const utf16_t* Data,const QString* AppendLast)
+void CDirSelectBox::setMRU(const utf8_t* Data,const QString* AppendLast)
 {
-    const utf16_t *start,*end;
+    const utf8_t *start,*end;
 
     if (Data==NULL) return;
 
@@ -204,7 +204,7 @@ void CDirSelectBox::setMRU(const utf16_t* Data,const QString* AppendLast)
         while ( (*end!='*') && (*end!=0) ) end++;
 
         if (start!=end) {
-            path = QStringFromUtf16(start,end-start);
+            path = QStringFromUtf8(start,end-start);
             if (AppendLast) {
                 path = append(path,AppendLast);
             }

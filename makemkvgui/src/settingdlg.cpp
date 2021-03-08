@@ -96,11 +96,9 @@ void CSettingDialog::SlotApply()
 
 void CSettingDialog::ReadSettings(bool first)
 {
-    static const utf16_t zero[1]={0};
-
     // general
-    const utf16_t *datapath = client->GetSettingString(apset_app_DataDir);
-    generalTab->dataDir->setText(QStringFromUtf16(datapath));
+    const utf8_t *datapath = client->GetSettingString(apset_app_DataDir);
+    generalTab->dataDir->setText(QStringFromUtf8(datapath));
 
     int show_debug = client->GetSettingInt(apset_app_ShowDebug);
     generalTab->check_DebugLog->setCheckState( (show_debug==0) ? Qt::Unchecked : Qt::Checked );
@@ -114,8 +112,8 @@ void CSettingDialog::ReadSettings(bool first)
     int show_av = client->GetSettingInt(apset_app_ShowAVSyncMessages);
     generalTab->check_ShowAV->setCheckState( (show_av==0) ? Qt::Unchecked : Qt::Checked );
 
-    const utf16_t *app_proxy = client->GetSettingString(apset_app_Proxy);
-    generalTab->lineEditProxy->setText(QStringFromUtf16(app_proxy));
+    const utf8_t *app_proxy = client->GetSettingString(apset_app_Proxy);
+    generalTab->lineEditProxy->setText(QStringFromUtf8(app_proxy));
 
     // language
     languageTab->setValue(languageTab->comboBoxInterfaceLanguage,client->GetSettingString(apset_app_InterfaceLanguage));
@@ -145,9 +143,9 @@ void CSettingDialog::ReadSettings(bool first)
     ioTab->checkSingleDrive->setCheckState( (single_drive==0) ? Qt::Unchecked : Qt::Checked );
 
     // dvd
-    const utf16_t *dest_path = client->GetSettingString(apset_app_DestinationDir);
-    if (NULL==dest_path) dest_path=zero;
-    dvdTab->destinationDir->setText(QStringFromUtf16(dest_path),true);
+    const utf8_t *dest_path = client->GetSettingString(apset_app_DestinationDir);
+    if (NULL==dest_path) dest_path="";
+    dvdTab->destinationDir->setText(QStringFromUtf8(dest_path),true);
     dvdTab->destinationDir->setMRU(client->GetSettingString(apset_path_DestDirMRU));
 
     int dest_type = client->GetSettingInt(apset_app_DestinationType);
@@ -159,7 +157,7 @@ void CSettingDialog::ReadSettings(bool first)
     // prot
     int SpRemoveMethod = client->GetSettingInt(apset_dvd_SPRemoveMethod);
     protTab->comboBoxSpRemoveMethod->setCurrentIndex(SpRemoveMethod);
-    protTab->javaDir->setText(QStringFromUtf16( client->GetSettingString(apset_app_Java)));
+    protTab->javaDir->setText(QStringFromUtf8( client->GetSettingString(apset_app_Java)));
 
     int dump_always = client->GetSettingInt(apset_bdplus_DumpAlways);
     protTab->check_DumpAlways->setCheckState( (dump_always==0) ? Qt::Unchecked : Qt::Checked );
@@ -167,13 +165,13 @@ void CSettingDialog::ReadSettings(bool first)
     decryptTab->LoadSettings(client);
 
     // advanced
-    const utf16_t *defaultProfile = client->GetSettingString(apset_app_DefaultProfileName);
-    if (NULL==defaultProfile) defaultProfile=zero;
+    const utf8_t *defaultProfile = client->GetSettingString(apset_app_DefaultProfileName);
+    if (NULL==defaultProfile) defaultProfile="";
     int profileIndex = 0;
     for (int index=1;index<advancedTab->comboProfile->count();++index)
     {
         if (defaultProfile[0]==0) break;
-        if (advancedTab->comboProfile->itemText(index) == QStringFromUtf16(defaultProfile))
+        if (advancedTab->comboProfile->itemText(index) == QStringFromUtf8(defaultProfile))
         {
             profileIndex = index;
             break;
@@ -181,23 +179,23 @@ void CSettingDialog::ReadSettings(bool first)
     }
     advancedTab->comboProfile->setCurrentIndex(profileIndex);
 
-    const utf16_t *defaultSelection = client->GetSettingString(apset_app_DefaultSelectionString);
-    if (NULL==defaultSelection) defaultSelection=zero;
+    const utf8_t *defaultSelection = client->GetSettingString(apset_app_DefaultSelectionString);
+    if (NULL==defaultSelection) defaultSelection="";
     if (defaultSelection[0]==0)
     {
         defaultSelection = client->GetAppString(AP_vastr_DefaultSelectionString);
     }
-    advancedTab->lineEditSelection->setText(QStringFromUtf16(defaultSelection));
+    advancedTab->lineEditSelection->setText(QStringFromUtf8(defaultSelection));
 
-    const utf16_t *defaultOutputFileName = client->GetSettingString(apset_app_DefaultOutputFileName);
-    if (NULL==defaultOutputFileName) defaultOutputFileName=zero;
+    const utf8_t *defaultOutputFileName = client->GetSettingString(apset_app_DefaultOutputFileName);
+    if (NULL==defaultOutputFileName) defaultOutputFileName="";
     if (defaultOutputFileName[0]==0)
     {
         defaultOutputFileName = client->GetAppString(AP_vastr_DefaultOutputFileName);
     }
-    advancedTab->lineEditOutputFileName->setText(QStringFromUtf16(defaultOutputFileName));
+    advancedTab->lineEditOutputFileName->setText(QStringFromUtf8(defaultOutputFileName));
 
-    advancedTab->ccextractorDir->setText(QStringFromUtf16(client->GetSettingString(apset_app_ccextractor)));
+    advancedTab->ccextractorDir->setText(QStringFromUtf8(client->GetSettingString(apset_app_ccextractor)));
 
     toggleAdvanced(expert_mode!=0);
 
@@ -254,17 +252,17 @@ bool CSettingDialog::WriteSettings(bool& restartRequired)
     {
         client->SetSettingString(apset_app_DefaultProfileName,Utf16FromQString(advancedTab->comboProfile->currentText()));
     } else {
-        client->SetSettingString(apset_app_DefaultProfileName,NULL);
+        client->SetSettingString(apset_app_DefaultProfileName,(const utf16_t*)NULL);
     }
-    if (advancedTab->lineEditSelection->text() == QStringFromUtf16(client->GetAppString(AP_vastr_DefaultSelectionString)))
+    if (advancedTab->lineEditSelection->text() == QStringFromUtf8(client->GetAppString(AP_vastr_DefaultSelectionString)))
     {
-        client->SetSettingString(apset_app_DefaultSelectionString,NULL);
+        client->SetSettingString(apset_app_DefaultSelectionString, (const utf16_t*)NULL);
     } else {
         client->SetSettingString(apset_app_DefaultSelectionString,Utf16FromQString(advancedTab->lineEditSelection->text()));
     }
-    if (advancedTab->lineEditOutputFileName->text() == QStringFromUtf16(client->GetAppString(AP_vastr_DefaultOutputFileName)))
+    if (advancedTab->lineEditOutputFileName->text() == QStringFromUtf8(client->GetAppString(AP_vastr_DefaultOutputFileName)))
     {
-        client->SetSettingString(apset_app_DefaultOutputFileName,NULL);
+        client->SetSettingString(apset_app_DefaultOutputFileName, (const utf16_t*)NULL);
     } else {
         client->SetSettingString(apset_app_DefaultOutputFileName,Utf16FromQString(advancedTab->lineEditOutputFileName->text()));
     }
@@ -489,17 +487,17 @@ CLanguageTab::CLanguageTab(CGUIApClient* ap_client,QWidget *parent) : QWidget(pa
 
     for (unsigned int i=0;i<AP_APP_LOC_MAX;i++)
     {
-        uint16_t* name;
-        uint64_t* param;
+        const utf8_t* name;
         QString qstrName;
 
-        if (!ap_client->GetInterfaceLanguage(i,&name,&param)) break;
+        name = ap_client->GetAppString(AP_vastr_InterfaceLanguage, i, 0);
+        if (NULL == name) break;
 
         qstrName.clear();
-        qstrName.reserve(10+utf16len(name));
-        qstrName.append(QStringFromUtf16(name).mid(0,3));
+        qstrName.reserve(10+strlen(name));
+        qstrName.append(QStringFromUtf8(name,3));
         qstrName.append(QString::fromLatin1(" : "));
-        qstrName.append(QStringFromUtf16(name).mid(4));
+        qstrName.append(QStringFromUtf8(name+4));
 
         comboBoxInterfaceLanguage->addItem(qstrName);
     }
@@ -541,7 +539,7 @@ CLanguageTab::CLanguageTab(CGUIApClient* ap_client,QWidget *parent) : QWidget(pa
     this->setLayout(lay);
 }
 
-void CLanguageTab::setValue(QComboBox*  comboBox,const utf16_t *value)
+void CLanguageTab::setValue(QComboBox*  comboBox,const utf8_t *value)
 {
     comboBox->setCurrentIndex(0);
     if (!value)
@@ -553,7 +551,7 @@ void CLanguageTab::setValue(QComboBox*  comboBox,const utf16_t *value)
         return;
     }
 
-    QString valueStr = QStringFromUtf16(value);
+    QString valueStr = QStringFromUtf8(value);
 
     for (int i=1;i<comboBox->count();i++)
     {
@@ -602,10 +600,10 @@ CAdvancedTab::CAdvancedTab(CGUIApClient* ap_client,QWidget *parent) : QWidget(pa
     comboProfile->addItem(QString(UI_QSTRING(PROFILE_NAME_DEFAULT)));
     comboProfile->setEditable(false);
 
-    unsigned int profile_count = (unsigned int)utf16tol(ap_client->GetAppString(AP_vastr_ProfileCount));
+    unsigned int profile_count = (unsigned int)strtoul(ap_client->GetAppString(AP_vastr_ProfileCount),0,10);
     for (unsigned int i=1;i<profile_count;i++)
     {
-        comboProfile->addItem(QStringFromUtf16(ap_client->GetProfileString(i,0)));
+        comboProfile->addItem(QStringFromUtf8(ap_client->GetAppString(AP_vastr_ProfileString,i,0)));
     }
 
     lineEditSelection = new QLineEdit();
@@ -674,7 +672,7 @@ void CDecryptTab::LoadSettings(CGUIApClient* client)
     for (unsigned int i=0; i<128; i++)
     {
         QTreeWidgetItem* item;
-        const utf16_t *itemStr;
+        const utf8_t *itemStr;
         unsigned int itemStatus;
 
         itemStr = client->GetAppString(AP_vastr_ExternalAppItem, i, 0);
@@ -689,10 +687,10 @@ void CDecryptTab::LoadSettings(CGUIApClient* client)
         item->setCheckState(0, (((itemStatus&2)!=0)?Qt::Checked:Qt::Unchecked));
 
         itemStr = client->GetAppString(AP_vastr_ExternalAppItem, i, 1);
-        item->setText(0, QStringFromUtf16(itemStr));
+        item->setText(0, QStringFromUtf8(itemStr));
 
         itemStr = client->GetAppString(AP_vastr_ExternalAppItem, i, 2);
-        item->setText(1, QStringFromUtf16(itemStr));
+        item->setText(1, QStringFromUtf8(itemStr));
 
         viewItems->addTopLevelItem(item);
     }
@@ -704,17 +702,17 @@ bool CDecryptTab::SaveSettings(CGUIApClient* client)
 {
     unsigned int count = viewItems->topLevelItemCount();
     if (0==count) return true;
-    if (count>128) count=128;
+    if (count>256) count=256;
 
-    uint64_t bits[2]={0, 0};
+    uint32_t bits[8]={0};
 
     for (unsigned int i=0; i<count; i++)
     {
         if (Qt::Checked==viewItems->topLevelItem(i)->checkState(0))
         {
-            bits[i>>6] |= (((uint64_t)1) << (i&63));
+            bits[i>>5] |= (((uint32_t)1) << (i&31));
         }
     }
-    return (0==client->SetExternAppFlags(bits));
+    return (0==client->SetExternAppFlags(bits,8));
 }
 

@@ -208,7 +208,7 @@ static signed char *compute_wNAF(const BIGNUM *scalar, int w, size_t *ret_len)
 	
 	if (BN_is_zero(scalar))
 		{
-		r = OPENSSL_malloc(1);
+		r = (signed char *) OPENSSL_malloc(1);
 		if (!r)
 			{
 			ECerr(EC_F_COMPUTE_WNAF, ERR_R_MALLOC_FAILURE);
@@ -240,7 +240,7 @@ static signed char *compute_wNAF(const BIGNUM *scalar, int w, size_t *ret_len)
 		}
 
 	len = BN_num_bits(scalar);
-	r = OPENSSL_malloc(len + 1); /* modified wNAF may be one digit longer than binary representation
+	r = (signed char *)OPENSSL_malloc(len + 1); /* modified wNAF may be one digit longer than binary representation
 	                              * (*ret_len will be set to the actual length, i.e. at most
 	                              * BN_num_bits(scalar) + 1) */
 	if (r == NULL)
@@ -433,10 +433,10 @@ static int ec_wNAF_mul(const EC_GROUP *group, EC_POINT *r, const BIGNUM *scalar,
 	
 	totalnum = num + numblocks;
 
-	wsize    = OPENSSL_malloc(totalnum * sizeof wsize[0]);
-	wNAF_len = OPENSSL_malloc(totalnum * sizeof wNAF_len[0]);
-	wNAF     = OPENSSL_malloc((totalnum + 1) * sizeof wNAF[0]); /* includes space for pivot */
-	val_sub  = OPENSSL_malloc(totalnum * sizeof val_sub[0]);
+	wsize    = (size_t*)OPENSSL_malloc(totalnum * sizeof wsize[0]);
+	wNAF_len = (size_t*)OPENSSL_malloc(totalnum * sizeof wNAF_len[0]);
+	wNAF     = (signed char **)OPENSSL_malloc((totalnum + 1) * sizeof wNAF[0]); /* includes space for pivot */
+	val_sub  = (EC_POINT ***)OPENSSL_malloc(totalnum * sizeof val_sub[0]);
 		 
 	if (!wsize || !wNAF_len || !wNAF || !val_sub)
 		{
@@ -552,7 +552,7 @@ static int ec_wNAF_mul(const EC_GROUP *group, EC_POINT *r, const BIGNUM *scalar,
 						wNAF_len[i] = tmp_len;
 					
 					wNAF[i + 1] = NULL;
-					wNAF[i] = OPENSSL_malloc(wNAF_len[i]);
+					wNAF[i] = (signed char*)OPENSSL_malloc(wNAF_len[i]);
 					if (wNAF[i] == NULL)
 						{
 						ECerr(EC_F_EC_WNAF_MUL, ERR_R_MALLOC_FAILURE);
@@ -581,7 +581,7 @@ static int ec_wNAF_mul(const EC_GROUP *group, EC_POINT *r, const BIGNUM *scalar,
 	/* All points we precompute now go into a single array 'val'.
 	 * 'val_sub[i]' is a pointer to the subarray for the i-th point,
 	 * or to a subarray of 'pre_comp->points' if we already have precomputation. */
-	val = OPENSSL_malloc((num_val + 1) * sizeof val[0]);
+	val = (EC_POINT**)OPENSSL_malloc((num_val + 1) * sizeof val[0]);
 	if (val == NULL)
 		{
 		ECerr(EC_F_EC_WNAF_MUL, ERR_R_MALLOC_FAILURE);
@@ -817,7 +817,7 @@ static int ec_wNAF_precompute_mult(EC_GROUP *group, BN_CTX *ctx)
 	pre_points_per_block = (size_t)1 << (w - 1);
 	num = pre_points_per_block * numblocks; /* number of points to compute and store */
 
-	points = OPENSSL_malloc(sizeof (EC_POINT*)*(num + 1));
+	points = (EC_POINT**)OPENSSL_malloc(sizeof (EC_POINT*)*(num + 1));
 	if (!points)
 		{
 		ECerr(EC_F_EC_WNAF_PRECOMPUTE_MULT, ERR_R_MALLOC_FAILURE);

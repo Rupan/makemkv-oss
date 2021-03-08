@@ -38,42 +38,52 @@ void CMMBDApClient::SetTitleCollInfo(uint64_t handle,unsigned int Count)
     m_TitleCount = Count;
 }
 
-bool CMMBDApClient::OpenMMBD(const utf16_t* Source)
+bool CMMBDApClient::OpenMMBD(const utf8_t* Prefix,const utf8_t* Locator)
 {
-    memcpy((void*)m_mem->strbuf,Source,(utf16len(Source)+1)*sizeof(utf16_t));
-    ExecCmd(apCallOpenMMBD);
+    size_t len = 0, slen;
+
+    if (NULL != Prefix)
+    {
+        slen = strlen(Prefix);
+        memcpy( ((char*)m_mem->strbuf) + len, Prefix, slen);
+        len += slen;
+    }
+    slen = strlen(Locator) + 1;
+    memcpy(((char*)m_mem->strbuf) + len, Locator, slen);
+    len += slen;
+
+    ExecCmd(apCallOpenMMBD,0,len);
     return (m_mem->args[0]!=0);
 }
 
-bool CMMBDApClient::InitMMBD(const uint16_t* argp[])
+bool CMMBDApClient::InitMMBD(const utf8_t* argp[])
 {
+    char* p = (char*)m_mem->strbuf;
     if (argp==NULL)
     {
         m_mem->args[0]=0;
     } else {
         unsigned int count =0;
-        unsigned int offset = 0;
         while(argp[count]!=NULL)
         {
             size_t len;
 
-            len = utf16len(argp[count])+1;
+            len = strlen(argp[count]) + 1;
+            memcpy(p, argp[count], len);
+            p += len;
 
-            memcpy((void*)(m_mem->strbuf+offset),argp[count],len*sizeof(uint16_t));
-            m_mem->args[1+count] = offset;
-            offset += len;
             count ++;
         }
         m_mem->args[0] = count;
     }
 
-    ExecCmd(apCallInitMMBD);
+    ExecCmd(apCallInitMMBD, 1, p-((char*)m_mem->strbuf) );
     return (m_mem->args[0]!=0);
 }
 
 const uint8_t* CMMBDApClient::DiscInfoMMBD(uint32_t *Flags,uint8_t *BusKey,uint8_t *DiscId,uint32_t *MkbVersion,uint32_t* ClipCount)
 {
-    ExecCmd(apCallDiscInfoMMBD);
+    ExecCmd(apCallDiscInfoMMBD,0,0);
 
     if (m_mem->args[0]==0) return NULL;
 
@@ -93,15 +103,16 @@ const uint8_t* CMMBDApClient::DecryptUnitMMBD(uint32_t NameFlags,uint32_t* ClipI
 {
     m_mem->args[0]=NameFlags;
     m_mem->args[1]=*ClipInfo;
-    m_mem->args[2]=FileOffset;
-    if (Size) memcpy((void*)(m_mem->args+4),Data,Size);
+    m_mem->args[2]=(uint32_t)FileOffset;
+    m_mem->args[3]=(uint32_t)(FileOffset>>32);
+    if (Size) memcpy((void*)(m_mem->strbuf),Data,Size);
 
-    ExecCmd(apCallDecryptUnitMMBD);
+    ExecCmd(apCallDecryptUnitMMBD,4,Size);
 
     if (m_mem->args[0]==0) return NULL;
 
     *ClipInfo = (uint32_t)m_mem->args[1];
 
-    return (const uint8_t*)(m_mem->args+4);
+    return (const uint8_t*)(m_mem->strbuf);
 }
 

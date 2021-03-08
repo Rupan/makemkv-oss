@@ -24,7 +24,7 @@ class CDriveBox : public QDialog
     Q_OBJECT
 
 public:
-    CDriveBox(MainWnd *MainWnd,QIcon* icon,unsigned int Count,const utf16_t* Text[]);
+    CDriveBox(MainWnd *MainWnd,QIcon* icon,unsigned int Count,const unsigned int Codes[],const utf8_t* Text[]);
     unsigned int result();
 
 private:

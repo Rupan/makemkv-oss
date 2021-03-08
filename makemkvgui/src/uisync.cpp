@@ -833,7 +833,7 @@ void MainWnd::Update_TitleTree_from_app(bool setFolder)
         {
             saveFolderBox->clear();
             saveFolderBox->setMRU(m_app->GetSettingString(apset_path_DestDirMRU));
-            saveFolderBox->setText(QStringFromUtf16(m_app->GetAppString(AP_vastr_OutputFolderName)));
+            saveFolderBox->setText(QStringFromUtf8(m_app->GetAppString(AP_vastr_OutputFolderName)));
         }
 
     } else {
@@ -844,14 +844,14 @@ void MainWnd::Update_TitleTree_from_app(bool setFolder)
     // profile
     m_uisync_disabled++;
     profileCbox->clear();
-    unsigned int profile_count = (unsigned int)utf16tol(m_app->GetAppString(AP_vastr_ProfileCount));
+    unsigned int profile_count = (unsigned int)strtoul(m_app->GetAppString(AP_vastr_ProfileCount),NULL,10);
     if (profile_count>0)
     {
         for (unsigned int i=0;i<profile_count;i++)
         {
-            profileCbox->addItem(QStringFromUtf16(m_app->GetProfileString(i,0)));
+            profileCbox->addItem(QStringFromUtf8(m_app->GetAppString(AP_vastr_ProfileString,i,0)));
         }
-        profileCbox->setCurrentIndex((unsigned int)utf16tol(m_app->GetAppString(AP_vastr_CurrentProfile)));
+        profileCbox->setCurrentIndex((unsigned int)strtoul(m_app->GetAppString(AP_vastr_CurrentProfile),NULL,10));
         profileCbox->setEnabled(true);
     } else {
         profileCbox->setEnabled(false);
@@ -913,13 +913,13 @@ bool CDriveInfo::showOpen()
     return (diskType!=dtUnknown);
 }
 
-void CDriveInfo::Update(AP_DriveState DriveState,const utf16_t* DriveName,const utf16_t* DiskName,const utf16_t* DeviceName,AP_DiskFsFlags FsFlags,const void* DiskData,unsigned int DiskDataSize)
+void CDriveInfo::Update(AP_DriveState DriveState,const utf8_t* DriveName,const utf8_t* DiskName,const utf8_t* DeviceName,AP_DiskFsFlags FsFlags,const void* DiskData,unsigned int DiskDataSize)
 {
     AP_DriveState   prevState = driveState;
 
     driveState = DriveState;
-    driveName = QStringFromUtf16(DriveName);
-    strLabel = QStringFromUtf16(DiskName);
+    driveName = QStringFromUtf8(DriveName);
+    strLabel = QStringFromUtf8(DiskName);
 
     diskFsFlags = FsFlags;
     load = false;

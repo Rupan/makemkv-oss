@@ -114,6 +114,17 @@ void MainWnd::UpdateTotalBar(unsigned int Value)
     totalProgress.Update(Value,this);
 }
 
+static const utf16_t* utf16chr(const utf16_t *SrcString, utf16_t c)
+{
+    const uint16_t *p = SrcString;
+    while (*p != 0)
+    {
+        if (*p == c) return p;
+        p++;
+    }
+    return NULL;
+}
+
 void MainWnd::UpdateLayout(unsigned long CurrentName,unsigned int NameSubindex,unsigned int Flags,unsigned int Size,const unsigned long* Names)
 {
     bool log_at_end = logtext_progress->IsAtBottom();
@@ -170,13 +181,13 @@ void MainWnd::UpdateLayout(unsigned long CurrentName,unsigned int NameSubindex,u
     }
 }
 
-void MainWnd::UpdateCurrentInfo(unsigned int Index,const utf16_t* Value)
+void MainWnd::UpdateCurrentInfo(unsigned int Index,const utf8_t* Value)
 {
     QString str;
 
     if (Index>=AP_ProgressCurrentIndex_SourceName)
     {
-        m_notify_name = QStringFromUtf16(Value);
+        m_notify_name = QStringFromUtf8(Value);
         return;
     }
 
@@ -186,7 +197,7 @@ void MainWnd::UpdateCurrentInfo(unsigned int Index,const utf16_t* Value)
         str = FormatDiskFreeSpace(Value);
         break;
     default:
-        str = QStringFromUtf16(Value);
+        str = QStringFromUtf8(Value);
         break;
     }
     infoValues[Index]->setText(str);

@@ -15,25 +15,52 @@
 #include <lgpl/aproxy.h>
 #include <strings.h>
 
-void CGUIApClient::SetOutputFolder(const utf16_t *Name)
+void CGUIApClient::SetOutputFolder(const utf8_t *Name)
 {
-    memcpy((void*)m_mem->strbuf,Name,(utf16len(Name)+1)*sizeof(utf16_t));
-    ExecCmd(apCallSetOutputFolder);
+    SetOutputFolder(SetUtf8(Name));
 }
 
-bool CGUIApClient::OpenFile(const utf16_t* FileName,uint32_t Flags)
+void CGUIApClient::SetOutputFolder(const utf16_t *Name)
 {
-    memcpy((void*)m_mem->strbuf,FileName,(utf16len(FileName)+1)*sizeof(utf16_t));
+    SetOutputFolder(SetUtf16(Name));
+}
+
+void CGUIApClient::SetOutputFolder(size_t NameSize)
+{
+    ExecCmd(apCallSetOutputFolder,0, NameSize);
+}
+
+bool CGUIApClient::OpenFile(const utf8_t* FileName, uint32_t Flags)
+{
+    return OpenFile(SetUtf8(FileName), Flags);
+}
+
+bool CGUIApClient::OpenFile(const utf16_t* FileName, uint32_t Flags)
+{
+    return OpenFile(SetUtf16(FileName), Flags);
+}
+
+bool CGUIApClient::OpenFile(size_t FileNameSize, uint32_t Flags)
+{
     m_mem->args[0]=Flags;
-    ExecCmd(apCallOpenFile);
+    ExecCmd(apCallOpenFile,1, FileNameSize);
     return (m_mem->args[0]!=0);
 }
 
-bool CGUIApClient::OpenTitleCollection(const utf16_t* Source,uint32_t Flags)
+bool CGUIApClient::OpenTitleCollection(const utf8_t* Source, uint32_t Flags)
 {
-    memcpy((void*)m_mem->strbuf,Source,(utf16len(Source)+1)*sizeof(utf16_t));
+    return OpenTitleCollection(SetUtf8(Source), Flags);
+}
+
+bool CGUIApClient::OpenTitleCollection(const utf16_t* Source, uint32_t Flags)
+{
+    return OpenTitleCollection(SetUtf16(Source), Flags);
+}
+
+bool CGUIApClient::OpenTitleCollection(size_t SourceSize, uint32_t Flags)
+{
     m_mem->args[0]=Flags;
-    ExecCmd(apCallOpenTitleCollection);
+    ExecCmd(apCallOpenTitleCollection,1, SourceSize);
     return (m_mem->args[0]!=0);
 }
 
@@ -41,29 +68,38 @@ bool CGUIApClient::OpenCdDisk(unsigned int Id,uint32_t Flags)
 {
     m_mem->args[0]=Id;
     m_mem->args[1]=Flags;
-    ExecCmd(apCallOpenCdDisk);
+    ExecCmd(apCallOpenCdDisk,2,0);
     return (m_mem->args[0]!=0);
 }
 
 bool CGUIApClient::EjectDisk(unsigned int Id)
 {
     m_mem->args[0]=Id;
-    ExecCmd(apCallEjectDisk);
+    ExecCmd(apCallEjectDisk,1,0);
     return (m_mem->args[0]!=0);
 }
 
 bool CGUIApClient::SaveAllSelectedTitlesToMkv()
 {
-    ExecCmd(apCallSaveAllSelectedTitlesToMkv);
+    ExecCmd(apCallSaveAllSelectedTitlesToMkv,0,0);
     return (m_mem->args[0]!=0);
 }
 
-bool CGUIApClient::BackupDisc(unsigned int Id,const utf16_t* Folder,uint32_t Flags)
+bool CGUIApClient::BackupDisc(unsigned int Id, const utf8_t* Folder, uint32_t Flags)
+{
+    return BackupDisc(Id, SetUtf8(Folder), Flags);
+}
+
+bool CGUIApClient::BackupDisc(unsigned int Id, const utf16_t* Folder, uint32_t Flags)
+{
+    return BackupDisc(Id, SetUtf16(Folder), Flags);
+}
+
+bool CGUIApClient::BackupDisc(unsigned int Id, size_t FolderSize, uint32_t Flags)
 {
     m_mem->args[0]=Id;
     m_mem->args[1]=Flags;
-    memcpy((void*)m_mem->strbuf,Folder,(utf16len(Folder)+1)*sizeof(utf16_t));
-    ExecCmd(apCallBackupDisc);
+    ExecCmd(apCallBackupDisc,2, FolderSize);
     return (m_mem->args[0]!=0);
 }
 
@@ -71,8 +107,9 @@ void AP_UiItem::syncFlags()
 {
     if (!isset(&m_flags,7))
     {
-        m_client->m_mem->args[0] = m_handle;
-        m_client->ExecCmd(apCallGetUiItemState);
+        m_client->m_mem->args[0] = (uint32_t)m_handle;
+        m_client->m_mem->args[1] = (uint32_t)(m_handle>>32);
+        m_client->ExecCmd(apCallGetUiItemState,2,0);
         m_flags = (bmp_type_t)(m_client->m_mem->args[0]) | 0x80;
     }
 }
@@ -93,9 +130,10 @@ void AP_UiItem::set_Flag(unsigned int Index,bool State)
     }
     if (oldFlags != m_flags)
     {
-        m_client->m_mem->args[0] = m_handle;
-        m_client->m_mem->args[1] = m_flags;
-        m_client->ExecCmd(apCallSetUiItemState);
+        m_client->m_mem->args[0] = (uint32_t)(m_handle);
+        m_client->m_mem->args[1] = (uint32_t)(m_handle>>32);
+        m_client->m_mem->args[2] = m_flags;
+        m_client->ExecCmd(apCallSetUiItemState,3,0);
     }
 }
 
@@ -174,13 +212,14 @@ const utf16_t* AP_UiItem::GetInfo(AP_ItemAttributeId Id)
 {
     if (isset(m_infos_known,Id)) return m_infos[Id];
 
-    m_client->m_mem->args[0]=m_handle;
-    m_client->m_mem->args[1]=Id;
-    m_client->ExecCmd(apCallGetUiItemInfo);
+    m_client->m_mem->args[0]=(uint32_t)m_handle;
+    m_client->m_mem->args[1]=(uint32_t)(m_handle>>32);
+    m_client->m_mem->args[2]=Id;
+    m_client->ExecCmd(apCallGetUiItemInfo,3,0);
     setone(m_infos_known,Id);
     if (0!=m_client->m_mem->args[0])
     {
-        m_infos[Id]=(utf16_t*)AppGetString((unsigned long)m_client->m_mem->args[0]);
+        m_infos[Id]=(utf16_t*)AppGetString((unsigned int)m_client->m_mem->args[0]);
         setzero(m_infos_alloc,Id);
     } else {
         if (0==m_client->m_mem->args[1])
@@ -188,9 +227,11 @@ const utf16_t* AP_UiItem::GetInfo(AP_ItemAttributeId Id)
             m_infos[Id]=NULL;
             setzero(m_infos_alloc,Id);
         } else {
-            size_t len = utf16len((utf16_t*)m_client->m_mem->strbuf);
-            m_infos[Id]=new utf16_t[len+1];
-            memcpy(m_infos[Id],(void*)m_client->m_mem->strbuf,(len+1)*sizeof(utf16_t));
+            const utf8_t* src = (utf8_t*)m_client->m_mem->strbuf;
+            size_t len8  = strlen(src);
+            size_t len16 = utf8toutf16len(src);
+            utf16_t* dst = m_infos[Id] = new utf16_t[len16+1];
+            utf8toutf16(dst, len16, src, len8); dst[len16] = 0;
             setone(m_infos_alloc,Id);
         }
     }
@@ -229,23 +270,24 @@ void AP_UiItem::Forget(AP_ItemAttributeId Id)
 
 int AP_UiItem::SetInfo(AP_ItemAttributeId Id,const utf16_t* Value)
 {
-    m_client->m_mem->args[0]=m_handle;
-    m_client->m_mem->args[1]=Id;
+    m_client->m_mem->args[0]=(uint32_t)m_handle;
+    m_client->m_mem->args[1]=(uint32_t)(m_handle>>32);
+    m_client->m_mem->args[2]=Id;
 
+    size_t size = 0;
     if (Value==NULL)
     {
-        m_client->m_mem->args[2]=0;
+        m_client->m_mem->args[3]=0;
     } else {
         if (Value[0]==0)
         {
-            m_client->m_mem->args[2]=0;
+            m_client->m_mem->args[3]=0;
         } else {
-            size_t len = utf16len(Value);
-            memcpy((void*)m_client->m_mem->strbuf,Value,(len+1)*sizeof(utf16_t));
-            m_client->m_mem->args[2]=1;
+            size = m_client->SetUtf16(Value);
+            m_client->m_mem->args[3]=1;
         }
     }
-    m_client->ExecCmd(apCallSetUiItemInfo);
+    m_client->ExecCmd(apCallSetUiItemInfo,4,size);
 
     Forget(Id);
     setone(m_infos_change,Id);
@@ -254,10 +296,11 @@ int AP_UiItem::SetInfo(AP_ItemAttributeId Id,const utf16_t* Value)
 
 int AP_UiItem::RevertInfo(AP_ItemAttributeId Id)
 {
-    m_client->m_mem->args[0]=m_handle;
-    m_client->m_mem->args[1]=Id;
-    m_client->m_mem->args[2]=2;
-    m_client->ExecCmd(apCallSetUiItemInfo);
+    m_client->m_mem->args[0]=(uint32_t)m_handle;
+    m_client->m_mem->args[1]=(uint32_t)(m_handle>>32);
+    m_client->m_mem->args[2]=Id;
+    m_client->m_mem->args[3]=2;
+    m_client->ExecCmd(apCallSetUiItemInfo,4,0);
 
     Forget(Id);
     setzero(m_infos_change,Id);
@@ -319,24 +362,10 @@ void CGUIApClient::SetTitleCollInfo(uint64_t handle,unsigned int Count)
     m_TitleCollection.m_Updated=true;
 }
 
-bool CGUIApClient::GetInterfaceLanguage(unsigned int Id,utf16_t** Name,uint64_t** Param)
-{
-    m_mem->args[0]=Id;
-    ExecCmd(apCallGetInterfaceLanguage);
-    if (m_mem->args[0]==0)
-    {
-        return false;
-    }
-    *Name = (utf16_t*)m_mem->strbuf;
-    *Param = ((uint64_t*)&(m_mem->args[1]));
-
-    return true;
-}
-
 const void* CGUIApClient::GetInterfaceLanguageData(unsigned int Id,unsigned int* Size1,unsigned int* Size2)
 {
     m_mem->args[0]=Id;
-    ExecCmd(apCallGetInterfaceLanguageData);
+    ExecCmd(apCallGetInterfaceLanguageData,1,0);
     if (m_mem->args[0]==0)
     {
         return NULL;
@@ -346,32 +375,21 @@ const void* CGUIApClient::GetInterfaceLanguageData(unsigned int Id,unsigned int*
     return (void*)m_mem->strbuf;
 }
 
-const utf16_t* CGUIApClient::GetProfileString(unsigned int Index,unsigned int Id)
-{
-    m_mem->args[0] = Index;
-    m_mem->args[1] = Id;
-    ExecCmd(apCallGetProfileString);
-    if (m_mem->args[0]==0)
-    {
-        return NULL;
-    } else {
-        return (utf16_t*)m_mem->strbuf;
-    }
-}
-
 int CGUIApClient::SetProfile(unsigned int Index)
 {
     m_mem->args[0] = Index;
-    ExecCmd(apCallSetProfile);
+    ExecCmd(apCallSetProfile,1,0);
     return (int)(m_mem->args[0]);
 }
 
-int CGUIApClient::SetExternAppFlags(const uint64_t* Flags)
+int CGUIApClient::SetExternAppFlags(const uint32_t* Flags,unsigned int Count)
 {
-    m_mem->args[0] = 2;
-    m_mem->args[1] = Flags[0];
-    m_mem->args[2] = Flags[1];
-    ExecCmd(apCallSetExternAppFlags);
+    m_mem->args[0] = Count;
+    for (unsigned int i = 0; i < Count; i++)
+    {
+        m_mem->args[i + 1] = Flags[i];
+    }
+    ExecCmd(apCallSetExternAppFlags,1+Count, 0);
     return (int)(m_mem->args[0]);
 }
 

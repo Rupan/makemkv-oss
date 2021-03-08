@@ -19,7 +19,6 @@
 
 */
 #include "mmconn.h"
-#include "utf8.h"
 #include <alloca.h>
 #include <lgpl/sstring.h>
 #include <stdlib.h>
@@ -73,19 +72,6 @@ CMMBDConn::~CMMBDConn()
     free(m_clip_info);
 }
 
-static char* append_utf16(char* pd,char* pe,const uint16_t* p)
-{
-    size_t len;
-
-    len = utf16toutf8len(p);
-
-    if (len>=((size_t)(pe-pd))) return pd;
-
-    utf16toutf8(pd,len,p,utf16len(p));
-
-    return pd+len;
-}
-
 static char* append_utf8(char* pd,char* pe,const char* p)
 {
     size_t len;
@@ -99,41 +85,13 @@ static char* append_utf8(char* pd,char* pe,const char* p)
     return pd+len;
 }
 
-bool CMMBDConn::convertArg(const char* argp[],CMMBDConn::argp_proc_t Proc)
-{
-    const uint16_t* argu[30];
-    unsigned int count=0;
-
-    if (!argp) {
-        return (this->*Proc)(NULL);
-    } else {
-        while((argp[count]!=NULL) && (count<29)) {
-            size_t      len;
-            uint16_t*   p;
-
-            len = utf8toutf16len(argp[count])+2;
-            p=(uint16_t*)alloca(len*sizeof(uint16_t));
-            utf8toutf16(p,len,argp[count],strlen(argp[count])+1);
-            argu[count]=p;
-            count++;
-        }
-        argu[count]=NULL;
-        return (this->*Proc)(argu);
-    }
-}
-
-bool CMMBDConn::initialize(const char* argp[])
-{
-    return convertArg(argp,&CMMBDConn::initializeU);
-}
-
 bool CMMBDConn::launch()
 {
     char            strbuf[300];
     unsigned int    err;
     const char*     errtxt;
 
-    if (!m_apc.Init('C',":makemkvcon",&err)) {
+    if (!m_apc.Init(&m_std,":makemkvcon",&err)) {
         switch (err) {
         case 1:  errtxt="Can't locate makemkvcon executable"; break;
         case 2:  errtxt="Version mismatch"; break;
@@ -146,9 +104,9 @@ bool CMMBDConn::launch()
     return true;
 }
 
-bool CMMBDConn::initializeU(const uint16_t* argp[])
+bool CMMBDConn::initialize(const char* argp[])
 {
-    const utf16_t*  p;
+    const utf8_t*   p;
     char            strbuf[300],*pd,*pe;
 
     if (!launch()) return false;
@@ -163,28 +121,28 @@ bool CMMBDConn::initializeU(const uint16_t* argp[])
     pd = strbuf;
     pe = strbuf + sizeof(strbuf);
 
-    pd=append_utf16(pd,pe,m_apc.GetAppString(AP_vastr_Name));
+    pd=append_utf8(pd,pe,m_apc.GetAppString(AP_vastr_Name));
     pd=append_utf8(pd,pe," ");
-    pd=append_utf16(pd,pe,m_apc.GetAppString(AP_vastr_Version));
+    pd=append_utf8(pd,pe,m_apc.GetAppString(AP_vastr_Version));
     pd=append_utf8(pd,pe," [");
-    pd=append_utf16(pd,pe,m_apc.GetAppString(AP_vastr_Platform));
+    pd=append_utf8(pd,pe,m_apc.GetAppString(AP_vastr_Platform));
     pd=append_utf8(pd,pe,"] ");
-    pd=append_utf16(pd,pe,m_apc.GetAppString(AP_vastr_KeyType));
+    pd=append_utf8(pd,pe,m_apc.GetAppString(AP_vastr_KeyType));
 
     p=m_apc.GetAppString(AP_vastr_KeyExpiration);
     if (*p) {
         pd=append_utf8(pd,pe," (");
-        pd=append_utf16(pd,pe,m_apc.GetAppString(0x10000+APP_IFACE_EVAL_EXPIRATION));
+        pd=append_utf8(pd,pe,m_apc.GetAppString(0x10000+APP_IFACE_EVAL_EXPIRATION));
         pd=append_utf8(pd,pe," ");
-        pd=append_utf16(pd,pe,m_apc.GetAppString(AP_vastr_KeyExpiration));
+        pd=append_utf8(pd,pe,m_apc.GetAppString(AP_vastr_KeyExpiration));
         pd=append_utf8(pd,pe,")");
     } else {
         p=m_apc.GetAppString(AP_vastr_ProgExpiration);
         if (*p) {
             pd=append_utf8(pd,pe," (");
-            pd=append_utf16(pd,pe,m_apc.GetAppString(0x10000+APP_IFACE_PROG_EXPIRATION));
+            pd=append_utf8(pd,pe,m_apc.GetAppString(0x10000+APP_IFACE_PROG_EXPIRATION));
             pd=append_utf8(pd,pe," ");
-            pd=append_utf16(pd,pe,m_apc.GetAppString(AP_vastr_ProgExpiration));
+            pd=append_utf8(pd,pe,m_apc.GetAppString(AP_vastr_ProgExpiration));
             pd=append_utf8(pd,pe,")");
         }
     }
@@ -208,11 +166,6 @@ bool CMMBDConn::initializeU(const uint16_t* argp[])
 
 bool CMMBDConn::reinitialize(const char* argp[])
 {
-    return convertArg(argp,&CMMBDConn::reinitializeU);
-}
-
-bool CMMBDConn::reinitializeU(const uint16_t* argp[])
-{
     if (!m_active) return false;
 
     if (!m_apc.InitMMBD(argp)) {
@@ -230,22 +183,7 @@ const char* CMMBDConn::get_version_string()
     return m_version;
 }
 
-int CMMBDConn::open(const char *prefix,const char *locator)
-{
-    size_t plen = (prefix)?utf8toutf16len(prefix):0;
-    size_t len = utf8toutf16len(locator);
-
-    uint16_t* p = (uint16_t*)alloca((plen+len+2)*sizeof(uint16_t));
-
-    if (prefix) {
-        utf8toutf16(p,plen,prefix,strlen(prefix));
-    }
-    utf8toutf16(p+plen,len+2,locator,strlen(locator)+1);
-
-    return openU(p);
-}
-
-int CMMBDConn::openU(const uint16_t *locator)
+int CMMBDConn::open(const char *prefix, const char *locator)
 {
     const uint8_t* clip_info;
 
@@ -253,12 +191,12 @@ int CMMBDConn::openU(const uint16_t *locator)
 
     close();
 
-    if (!m_apc.UpdateAvailableDrives()) {
+    if (!m_apc.UpdateAvailableDrives(AP_UpdateDrivesFlagNoScan|AP_UpdateDrivesFlagNoSingleDrive)) {
         return -3;
     }
     WaitJob();
 
-    if (!m_apc.OpenMMBD(locator)) {
+    if (!m_apc.OpenMMBD(prefix,locator)) {
         return -4;
     }
 
@@ -323,7 +261,7 @@ void CMMBDConn::UpdateLayout(unsigned long CurrentName,unsigned int NameSubindex
 {
 }
 
-void CMMBDConn::UpdateCurrentInfo(unsigned int Index,const utf16_t* Value)
+void CMMBDConn::UpdateCurrentInfo(unsigned int Index,const utf8_t* Value)
 {
 }
 
@@ -342,7 +280,7 @@ void CMMBDConn::ExitApp()
     m_active = false;
 }
 
-void CMMBDConn::UpdateDrive(unsigned int Index,const utf16_t *DriveName,AP_DriveState DriveState,const utf16_t *DiskName,const utf16_t *DeviceName,AP_DiskFsFlags DiskFlags,const void* DiskData,unsigned int DiskDataSize)
+void CMMBDConn::UpdateDrive(unsigned int Index,const utf8_t *DriveName,AP_DriveState DriveState,const utf8_t *DiskName,const utf8_t *DeviceName,AP_DiskFsFlags DiskFlags,const void* DiskData,unsigned int DiskDataSize)
 {
     if ((NULL!=m_scan_ctx) && (AP_DriveStateInserted==DriveState))
     {
@@ -350,30 +288,27 @@ void CMMBDConn::UpdateDrive(unsigned int Index,const utf16_t *DriveName,AP_Drive
     }
 }
 
-int CMMBDConn::ReportUiMessage(unsigned long Code,unsigned long Flags,const utf16_t* Text,uint64_t)
+int CMMBDConn::ReportUiMessage(unsigned long Code,unsigned long Flags,const utf8_t* Text,uint64_t)
 {
     if (Flags&(AP_UIMSG_HIDDEN|AP_UIMSG_EVENT)) return 0;
 
     if (m_output_proc)
     {
-        size_t  len;
-        char*   str;
-        uint32_t flags;
+        uint32_t flags = Code & 0x000fffff;
 
-        len = utf16toutf8len(Text);
-        str = (char*)alloca(len+2);
-
-        utf16toutf8(str,len+2,Text,utf16len(Text)+1);
-
-        flags = Code & 0x000fffff;
-
-        (*m_output_proc)(m_output_context,flags,str,Text);
+        (*m_output_proc)(m_output_context,flags,Text,NULL);
     }
     return 0;
 }
 
-int CMMBDConn::ReportUiDialog(unsigned long Code,unsigned long Flags,unsigned int Count,const utf16_t* Text[],utf16_t* Buffer)
+int CMMBDConn::ReportUiDialog(unsigned long Code,unsigned long Flags,unsigned int Count,const unsigned int* Codes,const utf8_t* Text[],utf8_t* Buffer)
 {
+#if defined(_darwin_) && defined(HAVE_DARWIN_SANDBOX)
+    if (Code==APP_FOLDER_INVALID)
+    {
+        return DarwinOpenDirectoryPanel(Buffer,Text[0],Text[1],Text[2]);
+    }
+#endif
     return -1;
 }
 
@@ -562,42 +497,32 @@ int CMMBDConn::open_auto(mmbd_read_file_proc_t read_file_proc)
 {
     ScanContext scan_ctx(this->m_user_data,read_file_proc);
 
-    CMMBDConn* mmbd_scan = CMMBDConn::create_instance(this->m_output_proc,this->m_output_context);
-    if (!mmbd_scan) {
-        return -1;
-    }
+    if (!m_active) return -2;
+
+    close();
 
     warning_message(31,"No device path provided, scanning all inserted discs...");
 
-    if (!mmbd_scan->launch())
+    this->m_scan_ctx = &scan_ctx;
+    if (!m_apc.UpdateAvailableDrives(AP_UpdateDrivesFlagNoSingleDrive))
     {
-        CMMBDConn::destroy_instance(mmbd_scan);
-        return -2;
-    }
-    mmbd_scan->m_active = true;
-
-    mmbd_scan->m_scan_ctx = &scan_ctx;
-    if (!mmbd_scan->m_apc.UpdateAvailableDrives())
-    {
-        mmbd_scan->m_scan_ctx = NULL;
-        CMMBDConn::destroy_instance(mmbd_scan);
+        m_scan_ctx = NULL;
         return -31;
     }
 
-    mmbd_scan->WaitJob();
-    mmbd_scan->WaitJob();
+    WaitJob();
+    WaitJob();
 
-    mmbd_scan->m_scan_ctx = NULL;
-    CMMBDConn::destroy_instance(mmbd_scan);
+    m_scan_ctx = NULL;
 
-    const uint16_t* locator = scan_ctx.GetLocator();
+    const char* locator = scan_ctx.GetLocator();
     if (!locator)
     {
         error_message(30,"Failed to locate disc using user-specified file access callback");
         return -30;
     }
 
-    return openU(locator);
+    return open(NULL,locator);
 }
 
 CMMBDConn::ScanContext::ScanContext(void** user_data,mmbd_read_file_proc_t file_proc)
@@ -609,13 +534,13 @@ CMMBDConn::ScanContext::ScanContext(void** user_data,mmbd_read_file_proc_t file_
     m_cache_cert0.size=0;
 }
 
-const uint16_t* CMMBDConn::ScanContext::GetLocator()
+const char* CMMBDConn::ScanContext::GetLocator()
 {
     if (0==m_auto_locator[0]) return NULL;
     return m_auto_locator;
 }
 
-void CMMBDConn::ScanContext::TestDisc(const utf16_t *DeviceName,const void* DiskData,unsigned int DiskDataSize)
+void CMMBDConn::ScanContext::TestDisc(const char *DeviceName,const void* DiskData,unsigned int DiskDataSize)
 {
     DriveInfoItem item_mkb,item_cert0;
 
@@ -652,14 +577,14 @@ void CMMBDConn::ScanContext::TestDisc(const utf16_t *DeviceName,const void* Disk
     }
 
     // found!
-    size_t len = utf16len(DeviceName);
+    size_t len = strlen(DeviceName);
     if (len>(MaxLocatorLen-4)) return;
 
     m_auto_locator[0]='d';
     m_auto_locator[1]='e';
     m_auto_locator[2]='v';
     m_auto_locator[3]=':';
-    memcpy(m_auto_locator+4,DeviceName,(len+1)*sizeof(uint16_t));
+    memcpy(m_auto_locator+4,DeviceName,len+1);
     return;
 }
 

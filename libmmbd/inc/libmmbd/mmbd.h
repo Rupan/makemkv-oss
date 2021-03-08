@@ -45,12 +45,11 @@ typedef struct _mm_bd_context MMBD;
     user_context    - value passed to mmbd_create_context
     flags           - message priority and unique code
     utf8_message    - message string as utf8
-    utf16_message   - message string as utf16
 */
 #define MMBD_MESSAGE_FLAG_WARNING       0x10000000
 #define MMBD_MESSAGE_FLAG_ERROR         0x20000000
 #define MMBD_MESSAGE_FLAG_MMBD_ERROR    0x40000000
-typedef void (__cdecl * mmbd_output_proc_t)(void* user_context,uint32_t flags,const char* utf8_message,const uint16_t* utf16_message);
+typedef void (__cdecl * mmbd_output_proc_t)(void* user_context,uint32_t flags,const char* utf8_message,const void* always_null_do_not_use);
 
 #ifdef __cplusplus
 extern "C" {

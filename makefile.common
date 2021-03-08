@@ -46,7 +46,8 @@ LIBMAKEMKV_SRC=libmakemkv/src/ebmlwrite.cpp libmakemkv/src/libmkv.cpp libmakemkv
 
 MAKEMKVGUI_INC=makemkvgui/inc
 
-MAKEMKVGUI_SRC=makemkvgui/src/aboutbox.cpp makemkvgui/src/client.cpp makemkvgui/src/dirselectbox.cpp \
+MAKEMKVGUI_SRC=makemkvgui/src/aboutbox.cpp makemkvgui/src/client.cpp makemkvgui/src/clt_pipe.cpp makemkvgui/src/clt_shm.cpp \
+  makemkvgui/src/clt_std.cpp makemkvgui/src/utf8.cpp makemkvgui/src/dirselectbox.cpp \
   makemkvgui/src/logic.cpp makemkvgui/src/logtext.cpp makemkvgui/src/main.cpp \
   makemkvgui/src/mainwnd.cpp makemkvgui/src/marshall.cpp makemkvgui/src/progress.cpp makemkvgui/src/scsiinfo.cpp \
   makemkvgui/src/settingdlg.cpp makemkvgui/src/uisync.cpp makemkvgui/src/viteminfo.cpp makemkvgui/src/margui.cpp \
@@ -65,8 +66,9 @@ MAKEMKVGUI_SRC_LINUX=makemkvgui/src/api_posix.cpp makemkvgui/src/api_linux.cpp m
 
 LIBMMBD_INC=libmmbd/inc
 
-LIBMMBD_SRC=makemkvgui/src/client.cpp makemkvgui/src/marshall.cpp libmmbd/src/marmmbd.cpp libmmbd/src/nstring.cpp \
-  libmmbd/src/mmbd.cpp libmmbd/src/mmconn.cpp libmmbd/src/mmbdipc.cpp libmmbd/src/utf8.cpp libmmbd/src/aacs.cpp \
+LIBMMBD_SRC=makemkvgui/src/client.cpp makemkvgui/src/clt_pipe.cpp makemkvgui/src/clt_std.cpp \
+  makemkvgui/src/utf8.cpp makemkvgui/src/marshall.cpp libmmbd/src/marmmbd.cpp libmmbd/src/nstring.cpp \
+  libmmbd/src/mmbd.cpp libmmbd/src/mmconn.cpp libmmbd/src/mmbdipc.cpp libmmbd/src/aacs.cpp \
   libmmbd/src/bdplus.cpp libmmbd/src/crypto_ossl.cpp
 
 LIBMMBD_SRC_LINUX=makemkvgui/src/api_posix.cpp makemkvgui/src/api_linux.cpp makemkvgui/src/sem_posix.cpp \

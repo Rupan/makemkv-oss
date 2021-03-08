@@ -42,7 +42,7 @@ CBackupDialog::CBackupDialog(CApClient* ap_client,QIcon* icon,QWidget *parent) :
     QBoxLayout *oblay = new QVBoxLayout();
     check_Decrypt = new QCheckBox(UI_QSTRING(APP_IFACE_BACKUPDLG_DECRYPT));
     check_Decrypt->setChecked(backupDecrypt>0);
-    oblay->addWidget(check_Decrypt,0,0);
+    oblay->addWidget(check_Decrypt);
     obox->setLayout(oblay);
 
     QBoxLayout *lay = new QVBoxLayout();

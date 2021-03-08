@@ -62,7 +62,7 @@ static inline QFrame* createHLine()
 
 void AppendGrayBodyTag(QString &str,const QWidget *widget);
 
-QString FormatDiskFreeSpace(const utf16_t* FolderName);
+QString FormatDiskFreeSpace(const utf8_t* FolderName);
 
 QString GetInfo(AP_UiItem* item,AP_ItemAttributeId Id);
 QString BuildItemInfo(AP_UiItem *Item,bool expertMode);

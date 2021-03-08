@@ -52,8 +52,6 @@ extern const utf16_t* AppGetString(unsigned int code)
 
 extern bool AppGetInterfaceLanguageData(CGUIApClient* app)
 {
-    utf16_t*        name;
-    uint64_t*       param;
     const void*     data;
     unsigned int    dataSize1;
     unsigned int    dataSize2;
@@ -62,9 +60,7 @@ extern bool AppGetInterfaceLanguageData(CGUIApClient* app)
     delete[] stringData;
     stringData = NULL;
 
-    if (!app->GetInterfaceLanguage(AP_APP_LOC_MAX,&name,&param)) return false;
-
-    if (param[0]!=AP_APP_LOC_POGZ) return true;
+    if (NULL==app->GetAppString(AP_vastr_InterfaceLanguage,AP_APP_LOC_MAX,0)) return false;
 
     data=app->GetInterfaceLanguageData(AP_APP_LOC_MAX,&dataSize1,&dataSize2);
 

@@ -431,7 +431,7 @@ err:
 
 static ECDSA_SIG *ECDSA_SIG_new(void)
 {
-	ECDSA_SIG *p = OPENSSL_malloc(sizeof(ECDSA_SIG));
+	ECDSA_SIG *p = (ECDSA_SIG *)OPENSSL_malloc(sizeof(ECDSA_SIG));
 	if (!p) return NULL;
 
 	p->r = BN_new();

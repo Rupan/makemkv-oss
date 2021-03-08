@@ -16,9 +16,9 @@
 #include <lgpl/smem.h>
 #include <lgpl/sstring.h>
 
-uint64_t    get_free_space(const utf16_t* Folder);
+uint64_t    get_free_space(const utf8_t* Folder);
 
-QString FormatDiskFreeSpace(const utf16_t* FolderName)
+QString FormatDiskFreeSpace(const utf8_t* FolderName)
 {
     uint64_t free_sp = get_free_space(FolderName);
 

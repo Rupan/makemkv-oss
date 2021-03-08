@@ -24,6 +24,27 @@
 #include <stdio.h>
 #include <spawn.h>
 #include <lgpl/sysabi.h>
+#include <dlfcn.h>
+
+#ifdef _darwin_
+static const cpu_type_t     cpu_TYPE_ARM64  = (CPU_TYPE_ARM | CPU_ARCH_ABI64);
+static const cpu_subtype_t  cpu_SUBTYPE_ANY = ((cpu_subtype_t) -1);
+static const cpu_type_t     cpu_types[2]    = { cpu_TYPE_ARM64,  CPU_TYPE_ANY };
+static const cpu_subtype_t  cpu_subtypes[2] = { cpu_SUBTYPE_ANY, cpu_SUBTYPE_ANY };
+
+typedef int (*posix_spawnattr_setarchpref_np_t)(posix_spawnattr_t *, size_t, const cpu_type_t *, const cpu_subtype_t *, size_t *);
+
+static void darwin_spawnattr_set_best_arch(posix_spawnattr_t * attr)
+{
+    size_t count = 0;
+
+    posix_spawnattr_setarchpref_np_t setarchpref_np = (posix_spawnattr_setarchpref_np_t) dlsym(RTLD_DEFAULT,"posix_spawnattr_setarchpref_np");
+    if (setarchpref_np)
+    {
+        (*setarchpref_np)(attr,2,cpu_types,cpu_subtypes,&count);
+    }
+}
+#endif
 
 int SYS_posix_launch(char** argv,int fdstdin,int fdstdout,int fdstderr,char ** envp)
 {
@@ -49,6 +70,10 @@ int SYS_posix_launch2(uintptr_t* ppid,char** argv,int fdstdin,int fdstdout,int f
     {
         return -1;
     }
+#ifdef _darwin_
+    darwin_spawnattr_set_best_arch(&spawn_attr);
+#endif
+
     if (posix_spawn_file_actions_init(&spawn_actions))
     {
         return -1;

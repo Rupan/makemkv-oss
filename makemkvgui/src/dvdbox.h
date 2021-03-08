@@ -24,7 +24,7 @@ class CDVDBox : public QDialog
     Q_OBJECT;
 
 public:
-    CDVDBox(MainWnd *MainWnd,QIcon* icon,unsigned long Code,const utf16_t* Text[]);
+    CDVDBox(MainWnd *MainWnd,QIcon* icon,unsigned int Code, const unsigned int Codes[], const utf8_t* Text[]);
     inline QString getText()
     {
         return m_Line->text();

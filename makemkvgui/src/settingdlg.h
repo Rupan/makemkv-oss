@@ -48,7 +48,7 @@ public:
 
 public:
     CLanguageTab(CGUIApClient* ap_client,QWidget *parent = 0);
-    static void setValue(QComboBox*  comboBox,const utf16_t *value);
+    static void setValue(QComboBox*  comboBox,const utf8_t *value);
     static const utf16_t* getValue(QComboBox*  comboBox,QString &buffer);
 };
 
