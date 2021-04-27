@@ -13,21 +13,16 @@
 
 */
 #include <lgpl/aproxy.h>
-#include <lgpl/smem.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/mman.h>
-#include <semaphore.h>
 #include <sys/time.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <lgpl/sysabi.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <poll.h>
 
 const char* const* ApGetAppLocations();
@@ -154,33 +149,6 @@ int ApSpawnNewInstance()
     return err;
 }
 
-void* ApOpenShmem(const char *Name)
-{
-    int fd;
-    void* pmap;
-    struct stat st;
-
-    fd=shm_open(Name,O_RDWR,0);
-    if (fd<0)
-    {
-        return NULL;
-    }
-    shm_unlink(Name);
-
-    if (fstat(fd,&st))
-    {
-        return NULL;
-    }
-
-    pmap=mmap(NULL,st.st_size,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
-    if (MAP_FAILED==pmap)
-    {
-        return NULL;
-    }
-
-    return pmap;
-}
-
 uintptr_t ApDebugOpen(const char* name)
 {
     int fd = open(name,O_WRONLY|O_CREAT|O_TRUNC|O_SYNC,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
@@ -225,18 +193,12 @@ int ApReadPipe(uint64_t handle, void* buffer, unsigned int size,unsigned int tim
     err = read((int)handle,buffer,size);
     if (err<=0) return -1;
 
-#ifdef DBG_DUMP_PIPE
-    ApDebugDump("crp", buffer, err);
-#endif
 
     return err;
 }
 
 int ApWritePipe(uint64_t handle, const void* buffer, unsigned int size)
 {
-#ifdef DBG_DUMP_PIPE
-    ApDebugDump("cwp", buffer, size);
-#endif
 
     return write((int)handle,buffer,size);
 }

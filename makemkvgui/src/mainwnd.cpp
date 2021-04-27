@@ -1337,8 +1337,6 @@ void MainWnd::SlotNewInstance()
 
 int MainWnd::ReportUiDialog(unsigned long Code,unsigned long Flags,unsigned int Count,const unsigned int Codes[], const utf8_t* Text[],utf8_t* Buffer)
 {
-    *Buffer=0;
-
     if (Code==APP_DVD_MANUAL_TITLE)
     {
         CDVDBox dbox(this,mainIcon,Code,Codes,Text);
@@ -1349,10 +1347,9 @@ int MainWnd::ReportUiDialog(unsigned long Code,unsigned long Flags,unsigned int 
         if (r!=QDialog::Accepted) return AP_UIMSG_NO;
 
         QString str = dbox.getText();
-        const utf16_t* ustr = str.utf16();
-        size_t ulen = utf16len(ustr);
-        memcpy(Buffer,ustr,ulen*sizeof(utf16_t));
-        Buffer[ulen]=0;
+
+        m_app->SetUtf16(str.utf16());
+
         return AP_UIMSG_YES;
     }
 

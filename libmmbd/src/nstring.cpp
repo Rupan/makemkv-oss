@@ -20,10 +20,15 @@
 */
 #include <lgpl/aproxy.h>
 
-static const utf16_t error_string[]={'-','-','-',' ','e','r','r','o','r',' ','-','-','-',0};
+#include "dstring.h"
 
 extern const utf16_t* AppGetString(unsigned int code)
 {
-    return error_string;
+    return str_default_utf16(code);
+}
+
+extern const utf8_t* AppGetStringUtf8(unsigned int code)
+{
+    return str_default_utf8(code);
 }
 

@@ -16,11 +16,12 @@
 #include <zlib.h>
 #include <algorithm>
 
+#include "dstring.h"
+
 static uint32_t*    stringData=NULL;
+static utf8_t**     stringDataUtf8=NULL;
 
-extern "C" const unsigned short * en_po_getstr_utf16(unsigned int code);
-
-extern const utf16_t* AppGetString(unsigned int code)
+static const utf16_t* GetStringFromData(unsigned int code, unsigned int* p_ndx)
 {
     const utf16_t* string;
     uint32_t count;
@@ -28,7 +29,7 @@ extern const utf16_t* AppGetString(unsigned int code)
 
     if (!stringData)
     {
-        return en_po_getstr_utf16(code);
+        return NULL;
     }
 
     string = NULL;
@@ -38,17 +39,61 @@ extern const utf16_t* AppGetString(unsigned int code)
     if (*item==code)
     {
         string = (const utf16_t*)(stringData + item[count]);
-    }
-
-    if (!string)
-    {
-        string = en_po_getstr_utf16(code);
+        if (p_ndx)
+        {
+            *p_ndx = (unsigned int)(item - (stringData + 1));
+        }
     }
 
     return string;
 }
 
+extern const utf16_t* AppGetString(unsigned int code)
+{
+    const utf16_t* string = GetStringFromData(code, NULL);
 
+    if (!string)
+    {
+        string = str_default_utf16(code);
+    }
+
+    return string;
+}
+
+const utf8_t* AppGetStringUtf8(unsigned int code)
+{
+    unsigned int count,ndx;
+
+    const utf16_t* str16 = GetStringFromData(code, &ndx);
+    utf8_t* str8;
+
+    if (!str16)
+    {
+        return str_default_utf8(code);
+    }
+
+    count = stringData[0];
+
+    if (!stringDataUtf8)
+    {
+        stringDataUtf8 = new utf8_t*[count];
+        memset(stringDataUtf8, 0, count * sizeof(utf8_t*));
+    }
+
+    if (stringDataUtf8[ndx])
+    {
+        return stringDataUtf8[ndx];
+    }
+
+    size_t len = utf16toutf8len(str16);
+
+    stringDataUtf8[ndx] = str8 = new utf8_t[len+1];
+
+    utf16toutf8(str8, len, str16, utf16len(str16));
+    str8[len] = 0;
+
+    return str8;
+}
 
 extern bool AppGetInterfaceLanguageData(CGUIApClient* app)
 {
@@ -58,7 +103,9 @@ extern bool AppGetInterfaceLanguageData(CGUIApClient* app)
     uLongf          zlibDataSize;
 
     delete[] stringData;
+    delete[] stringDataUtf8;
     stringData = NULL;
+    stringDataUtf8 = NULL;
 
     if (NULL==app->GetAppString(AP_vastr_InterfaceLanguage,AP_APP_LOC_MAX,0)) return false;
 
@@ -79,3 +126,4 @@ extern bool AppGetInterfaceLanguageData(CGUIApClient* app)
 
     return true;
 }
+

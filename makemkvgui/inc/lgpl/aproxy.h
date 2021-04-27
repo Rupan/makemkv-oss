@@ -465,6 +465,7 @@ int ApWritePipe(uint64_t handle,const void* buffer,unsigned int size);
 // UI
 //
 extern const utf16_t* AppGetString(unsigned int code);
+extern const utf8_t*  AppGetStringUtf8(unsigned int code);
 extern bool AppGetInterfaceLanguageData(CGUIApClient* app);
 
 #define AP_UI_STRING(msg) AppGetString(msg)

@@ -51,15 +51,9 @@ bool CPipeTransport::SendCmd(AP_SHMEM* p_mem)
 
     bool r;
 
-#ifdef DBG_GUARD_PIPE
-    if (false == this->SendData("gR", 2)) return false;
-#endif
 
     r = this->SendData(data, all_size);
 
-#ifdef DBG_GUARD_PIPE
-    if (false == this->SendData("a\n", 2)) return false;
-#endif
 
     return r;
 }
@@ -72,15 +66,6 @@ bool CPipeTransport::RecvCmd(AP_SHMEM* p_mem)
 
     static const unsigned int data_buffer_size = (sizeof(AP_SHMEM) - offsetof(AP_SHMEM, args)) + 1*sizeof(uint32_t);
 
-#ifdef DBG_GUARD_PIPE
-    uint8_t gbuf[2];
-    if (false == RecvData(gbuf, 2, &rd)) {
-        return false;
-    }
-    if (0 != memcmp(gbuf, "gR", 2)) {
-        return false;
-    }
-#endif
 
     unsigned int have = 0;
 
@@ -123,10 +108,6 @@ bool CPipeTransport::RecvCmd(AP_SHMEM* p_mem)
         return false;
     }
 
-#ifdef DBG_GUARD_PIPE
-    if (false == RecvData(gbuf, 2, &rd)) return false;
-    if (0 != memcmp(gbuf, "a\n",2)) return false;
-#endif
 
     p_mem->cmd = cmd;
 

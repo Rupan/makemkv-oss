@@ -138,21 +138,10 @@ AP_CMD CApClient::Transact(uint32_t cmd)
 
 void CApClient::ReportFatalError(uint32_t code)
 {
-    char str[512];
-
-    const utf16_t* str16 = AP_UI_STRING(code);
-    if (NULL == str16)
-    {
-        str[0] = 0;
-    } else {
-        utf16toutf8(str, sizeof(str) - 2, str16, utf16len(str16) + 1);
-        str[sizeof(str) - 1] = 0;
-    }
-
     m_shutdown = true;
     if (NULL!=m_Ui)
     {
-        m_Ui->ReportUiMessage(APP_IFACE_FATAL_COMM, AP_UIMSG_BOXERROR, str, 0);
+        m_Ui->ReportUiMessage(APP_IFACE_FATAL_COMM, AP_UIMSG_BOXERROR, AppGetStringUtf8(code), 0);
         m_Ui->ExitApp();
     }
 }
