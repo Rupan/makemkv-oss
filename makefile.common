@@ -47,7 +47,7 @@ LIBMAKEMKV_SRC=libmakemkv/src/ebmlwrite.cpp libmakemkv/src/libmkv.cpp libmakemkv
 MAKEMKVGUI_INC=makemkvgui/inc
 
 MAKEMKVGUI_SRC=makemkvgui/src/aboutbox.cpp makemkvgui/src/client.cpp makemkvgui/src/clt_pipe.cpp makemkvgui/src/clt_shm.cpp \
-  makemkvgui/src/clt_std.cpp makemkvgui/src/utf8.cpp makemkvgui/src/dirselectbox.cpp \
+  makemkvgui/src/clt_std.cpp makemkvgui/src/utf8.cpp makemkvgui/src/dirselectbox.cpp makemkvgui/src/regbox.cpp \
   makemkvgui/src/logic.cpp makemkvgui/src/logtext.cpp makemkvgui/src/main.cpp \
   makemkvgui/src/mainwnd.cpp makemkvgui/src/marshall.cpp makemkvgui/src/progress.cpp makemkvgui/src/scsiinfo.cpp \
   makemkvgui/src/settingdlg.cpp makemkvgui/src/uisync.cpp makemkvgui/src/viteminfo.cpp makemkvgui/src/margui.cpp \
@@ -57,7 +57,8 @@ MAKEMKVGUI_SRC=makemkvgui/src/aboutbox.cpp makemkvgui/src/client.cpp makemkvgui/
 
 MAKEMKVGUI_GEN=\
   tmp/moc_mainwnd.cpp tmp/moc_logtext.cpp tmp/moc_dirselectbox.cpp tmp/moc_aboutbox.cpp tmp/moc_settingdlg.cpp \
-  tmp/moc_backupdlg.cpp tmp/moc_lineeditk.cpp tmp/moc_dvdbox.cpp tmp/moc_drivebox.cpp tmp/moc_toolbuttonp.cpp
+  tmp/moc_backupdlg.cpp tmp/moc_lineeditk.cpp tmp/moc_dvdbox.cpp tmp/moc_drivebox.cpp tmp/moc_toolbuttonp.cpp \
+  tmp/moc_regbox.cpp
 
 MAKEMKVGUI_SRC_LINUX=makemkvgui/src/api_posix.cpp makemkvgui/src/api_linux.cpp makemkvgui/src/sem_posix.cpp \
   makemkvgui/src/spawn_posix.cpp makemkvgui/src/logic_posix.cpp libabi/src/sys_linux.cpp makemkvgui/src/api_posix_shm.cpp \
@@ -69,7 +70,7 @@ LIBMMBD_INC=libmmbd/inc
 LIBMMBD_SRC=makemkvgui/src/client.cpp makemkvgui/src/clt_pipe.cpp makemkvgui/src/clt_std.cpp \
   makemkvgui/src/utf8.cpp makemkvgui/src/marshall.cpp libmmbd/src/marmmbd.cpp libmmbd/src/nstring.cpp \
   libmmbd/src/mmbd.cpp libmmbd/src/mmconn.cpp libmmbd/src/mmbdipc.cpp libmmbd/src/aacs.cpp \
-  libmmbd/src/bdplus.cpp libmmbd/src/crypto_ossl.cpp
+  libmmbd/src/bdplus.cpp libmmbd/src/crypto_ossl.cpp libmmbd/src/aacslog.cpp
 
 LIBMMBD_SRC_LINUX=makemkvgui/src/api_posix.cpp makemkvgui/src/api_linux.cpp makemkvgui/src/sem_posix.cpp \
   makemkvgui/src/spawn_posix.cpp

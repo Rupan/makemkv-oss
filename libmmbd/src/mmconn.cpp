@@ -95,6 +95,8 @@ bool CMMBDConn::launch()
         switch (err) {
         case 1:  errtxt="Can't locate makemkvcon executable"; break;
         case 2:  errtxt="Version mismatch"; break;
+        case 3:  errtxt="Handshake error"; break;
+        case 4:  errtxt="Handshake timeout"; break;
         default: errtxt="Unknown error"; break;
         }
         sprintf_s(strbuf,sizeof(strbuf),"Failed to launch MakeMKV in background : %s",errtxt);
@@ -295,6 +297,9 @@ int CMMBDConn::ReportUiMessage(unsigned long Code,unsigned long Flags,const utf8
     if (m_output_proc)
     {
         uint32_t flags = Code & 0x000fffff;
+
+        if (0 != (Flags & 0x1000)) flags |= MMBD_MESSAGE_FLAG_WARNING;
+        if (0 != (Flags & 0x2000)) flags |= MMBD_MESSAGE_FLAG_ERROR;
 
         (*m_output_proc)(m_output_context,flags,Text,NULL);
     }

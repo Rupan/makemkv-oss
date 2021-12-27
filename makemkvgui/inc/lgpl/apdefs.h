@@ -19,6 +19,7 @@ static const unsigned int AP_UIMSG_BOXERROR=516;
 static const unsigned int AP_UIMSG_BOXWARNING=1028;
 static const unsigned int AP_UIMSG_BOXYESNO=776;
 static const unsigned int AP_UIMSG_BOXYESNO_ERR=1288;
+static const unsigned int AP_UIMSG_BOXYESNO_REG=1544;
 static const unsigned int AP_UIMSG_YES=0;
 static const unsigned int AP_UIMSG_NO=1;
 static const unsigned int AP_UIMSG_DEBUG=32;
@@ -54,6 +55,7 @@ static const unsigned int AP_vastr_DefaultOutputFileName=21;
 static const unsigned int AP_vastr_ExternalAppItem=22;
 static const unsigned int AP_vastr_InterfaceLanguage=23;
 static const unsigned int AP_vastr_ProfileString=24;
+static const unsigned int AP_vastr_KeyString=25;
 //
 typedef enum _AP_ItemAttributeId
 {
@@ -156,6 +158,7 @@ static const unsigned long APP_ASK_FOLDER_CREATE=5013;
 static const unsigned long APP_FOLDER_INVALID=5016;
 static const unsigned long PROGRESS_APP_SAVE_MKV_FREE_SPACE=5033;
 static const unsigned long PROT_DEMO_KEY_EXPIRED=5021;
+static const unsigned long APP_KEYTYPE_INVALID=5095;
 static const unsigned long APP_EVAL_TIME_NEVER=5067;
 static const unsigned long APP_BACKUP_FAILED=5069;
 static const unsigned long APP_BACKUP_COMPLETED=5070;
@@ -303,6 +306,10 @@ static const unsigned long APP_IFACE_SETTINGS_ADV_OUTPUT_FILE_NAME_TEMPLATE=6178
 static const unsigned long APP_IFACE_SETTINGS_TAB_INTEGRATION=6190;
 static const unsigned long APP_IFACE_SETTINGS_INT_TEXT=6191;
 static const unsigned long APP_IFACE_SETTINGS_INT_HDR_PATH=6192;
+static const unsigned long APP_IFACE_KEY_TEXT=6179;
+static const unsigned long APP_IFACE_KEY_NAME=6182;
+static const unsigned long APP_IFACE_KEY_TYPE=6183;
+static const unsigned long APP_IFACE_KEY_DATE=6184;
 static const unsigned long APP_IFACE_BACKUPDLG_TEXT_CAPTION=6137;
 static const unsigned long APP_IFACE_BACKUPDLG_TEXT=6138;
 static const unsigned long APP_IFACE_BACKUPDLG_FOLDER=6139;

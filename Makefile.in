@@ -99,7 +99,7 @@ out/libmmbd.so.0.full:
 	$(INCF)$(LIBMAKEMKV_INC) $(INCF)$(SSTRING_INC) $(INCF)$(LIBABI_INC) $(LIBMMBD_SRC) $(LIBMMBD_SRC_LINUX) $(SSTRING_SRC) \
 	$(LIBDRIVEIO_SRC_PUB) \
 	-fPIC -Xlinker -dy -Xlinker --version-script=libmmbd/src/libmmbd.vers \
-	-Xlinker -soname=libmmbd.so.0 -lc -lstdc++ -lrt -lpthread -lcrypto
+	-Xlinker -soname=libmmbd.so.0 -lc -lstdc++ -lrt -lpthread -lcrypto -ldl
 
 out/makemkv.full: $(MAKEMKVGUI_GEN) $(MAKEMKVGUI_SRC_LINUX) tmp/gen_buildinfo.h
 	mkdir -p out

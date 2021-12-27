@@ -20,6 +20,7 @@
 */
 #include <libmmbd/mmbd.h>
 #include "aacs.h"
+#include "aacslog.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -38,46 +39,44 @@
     is discouraged.
 */
 
-static void __cdecl stderr_print(void* user_context,uint32_t flags,const char* message,const void*)
-{
-    fprintf(stderr,"MMBD: %s\n",message);
-    fflush(stderr);
-}
-
-#ifdef MMBD_WIN32_DEBUG
-#include <Windows.h>
-static void __cdecl windbg_print(void* user_context,uint32_t flags,const char* message,const void*)
-{
-    OutputDebugStringA(message);
-    OutputDebugStringA(L"\n");
-}
-#endif
-
-static mmbd_output_proc_t get_output_proc()
-{
-    if (getenv("MMBD_TRACE")) {
-        return stderr_print;
-    } else {
-#ifdef MMBD_WIN32_DEBUG
-        return windbg_print;
+#if defined(_MSC_VER) && defined(_WIN32)
+#include <intrin.h>
+#define CALLERADDR _ReturnAddress()
 #else
-        return NULL;
+#define CALLERADDR __builtin_return_address(0)
 #endif
+
+static mmbd_output_proc_t get_output_proc(void** p_context,void* caller)
+{
+    mmbd_output_proc_t p = NULL;
+
+    if (getenv("MMBD_TRACE")) {
+        p = aacs_log_stderr();
+        if (NULL != p) return p;
     }
+
+    p = aacs_log_jriver(p_context);
+    if (NULL != p) return p;
+
+    p = aacs_log_libbluray(p_context,caller);
+    if (NULL != p) return p;
+
+    p = aacs_log_windbg();
+    if (NULL != p) return p;
+
+    return NULL;
 }
 
 AACS_PUBLIC AACS * __cdecl aacs_init(void)
 {
-    MMBD* mmbd = mmbd_create_context(NULL,get_output_proc(),NULL);
+    void* caller = CALLERADDR;
+    void* out_ctx = NULL;
+    mmbd_output_proc_t out_proc = get_output_proc(&out_ctx, caller);
+    MMBD* mmbd = mmbd_create_context(out_ctx, out_proc, NULL);
     return (AACS*)mmbd;
 }
 
-AACS_PUBLIC AACS * __cdecl aacs_open(const char *path, const char *keyfile_path)
-{
-    return aacs_open2(path,keyfile_path,NULL);
-}
-
-AACS_PUBLIC AACS * __cdecl aacs_open2(const char *path, const char *keyfile_path, int *error_code)
+static AACS * __cdecl aacs_open(const char *path, const char *keyfile_path, int *error_code,void* caller)
 {
     const char* args[3];
     const char** p_args;
@@ -92,7 +91,10 @@ AACS_PUBLIC AACS * __cdecl aacs_open2(const char *path, const char *keyfile_path
         p_args = NULL;
     }
 
-    mmbd = mmbd_create_context(NULL,get_output_proc(),p_args);
+    void* out_ctx = NULL;
+    mmbd_output_proc_t out_proc = get_output_proc(&out_ctx, caller);
+
+    mmbd = mmbd_create_context(out_ctx,out_proc,p_args);
     if (mmbd) {
         if (error_code) *error_code=AACS_SUCCESS;
     } else {
@@ -108,6 +110,18 @@ AACS_PUBLIC AACS * __cdecl aacs_open2(const char *path, const char *keyfile_path
     }
 
     return (AACS*)mmbd;
+}
+
+AACS_PUBLIC AACS * __cdecl aacs_open2(const char *path, const char *keyfile_path, int *error_code)
+{
+    void* caller = CALLERADDR;
+    return aacs_open(path, keyfile_path, error_code, caller);
+}
+
+AACS_PUBLIC AACS * __cdecl aacs_open(const char *path, const char *keyfile_path)
+{
+    void* caller = CALLERADDR;
+    return aacs_open(path, keyfile_path, NULL, caller);
 }
 
 static int __cdecl mmbd_aacs_read_file(void** user_data,const char* file_path,uint8_t* buffer,uint64_t offset,unsigned int size)
@@ -145,6 +159,10 @@ AACS_PUBLIC int __cdecl aacs_open_device(AACS *aacs, const char *path, const cha
 {
     int err;
 
+    if (NULL == aacs) {
+        return AACS_ERROR_MMC_OPEN;
+    }
+
     if (keyfile_path) {
         const char* args[3];
 
@@ -155,8 +173,7 @@ AACS_PUBLIC int __cdecl aacs_open_device(AACS *aacs, const char *path, const cha
             return AACS_ERROR_NO_CONFIG;
         }
     }
-    if (NULL==path)
-    {
+    if (NULL==path) {
         err = mmbd_open_autodiscover((MMBD*)aacs,mmbd_aacs_read_file);
     } else {
         err = mmbd_open((MMBD*)aacs,path);
@@ -244,8 +261,10 @@ AACS_PUBLIC const uint8_t * __cdecl aacs_get_bdj_root_cert_hash(AACS *aacs)
 AACS_PUBLIC void __cdecl aacs_set_fopen(AACS *aacs, void *handle, AACS_FILE_OPEN2 p)
 {
     void** p_user_data = mmbd_user_data((MMBD*)aacs);
-    p_user_data[0] = handle;
-    p_user_data[1] = (void*)p;
+    if (NULL != p_user_data) {
+        p_user_data[0] = handle;
+        p_user_data[1] = (void*)p;
+    }
 }
 
 static AACS_FILE_OPEN file_open = NULL;

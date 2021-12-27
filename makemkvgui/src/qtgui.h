@@ -22,6 +22,7 @@
 #include <QtCore/QTimer>
 #include <QtCore/QElapsedTimer>
 #include <QtCore/QUrl>
+#include <QtCore/QMimeData>
 
 #include <QtGui/QImage>
 #include <QtGui/QPixmap>
@@ -29,6 +30,7 @@
 #include <QtGui/QKeyEvent>
 #include <QtGui/QDesktopServices>
 #include <QtGui/QScreen>
+#include <QtGui/QFontDatabase>
 
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>

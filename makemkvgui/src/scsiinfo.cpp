@@ -17,7 +17,7 @@
 #include <driveio/driveio.h>
 #include <lgpl/smem.h>
 
-static inline void append_item(QString &Qstr,const char *Str)
+static void append_item(QString &Qstr,const char *Str)
 {
     if (Qstr.length()>0)
     {
@@ -137,7 +137,7 @@ static inline void append_const(QString &Qstr,const uint8_t *Str,size_t Size)
     append_const(Qstr,(const char*)Str,Size);
 }
 
-static inline void append_trimmed(QString &Qstr,const char *Str,size_t Size)
+static void append_trimmed(QString &Qstr,const char *Str,size_t Size)
 {
     while ( (Size!=0) && (Str[Size-1]==' ') )
     {
@@ -150,6 +150,20 @@ static inline void append_trimmed(QString &Qstr,const uint8_t *Str,size_t Size)
 {
     append_trimmed(Qstr,(const char*)Str,Size);
 }
+
+static void append_tc(QString &Qstr, const utf16_t *Str)
+{
+    size_t size = utf16len(Str);
+    if ((size>2) && (Str[size - 2] == ' ') && (Str[size - 1] == ':'))
+    {
+        append_const(Qstr, Str, size - 2);
+        append_const(Qstr, ":");
+    } else {
+        append_const(Qstr, Str);
+    }
+    append_const(Qstr, " ");
+}
+
 
 static const char* GetMMCProfileString(unsigned int id)
 {
@@ -416,16 +430,7 @@ bool CDriveInfo::FormatDriveDiskInfo(const utf8_t* DeviceNameString,const void* 
 
         if (!strLabel.isEmpty())
         {
-            const utf16_t* label = AP_UI_STRING(APP_IFACE_EMPTY_FRAME_LABEL);
-            size_t label_size = utf16len(label);
-            if ((label_size>2) && (label[label_size-2]==' ') && (label[label_size-1]==':'))
-            {
-                append_const(str,label,label_size-2);
-                append_const(str,":");
-            } else {
-                append_const(str,label);
-            }
-            append_const(str," ");
+            append_tc(str, AP_UI_STRING(APP_IFACE_EMPTY_FRAME_LABEL));
             str.append(strLabel);
             append_const(str,"<br>");
         }
@@ -436,6 +441,13 @@ bool CDriveInfo::FormatDriveDiskInfo(const utf8_t* DeviceNameString,const void* 
             append_const(str,": ");
             AppendTimestamp(str,items.timestamp.Data);
             append_const(str,"<br>");
+        }
+
+        if (!strProt.isEmpty())
+        {
+            append_tc(str, AP_UI_STRING(APP_IFACE_EMPTY_FRAME_PROTECTION));
+            str.append(strProt);
+            append_const(str, "<br>");
         }
 
         // capacity

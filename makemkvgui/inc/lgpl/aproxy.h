@@ -97,6 +97,7 @@ typedef enum _AP_CMD
     apCallDecryptUnitMMBD,
     apCallSetExternAppFlags,
     apCallManageState,
+    apCallAppSetString,
 
     apBackEnterJobMode=192,
     apBackLeaveJobMode,
@@ -303,10 +304,14 @@ public:
     void SetSettingInt(ApSettingId id,int Value);
     void SetSettingString(ApSettingId id, const utf8_t* Value);
     void SetSettingString(ApSettingId id, const utf16_t* Value);
+    void SetAppString(unsigned int id, const utf8_t* Value, unsigned int Index1 = 0, unsigned int Index2 = 0);
+    void SetAppString(unsigned int id, const utf16_t* Value, unsigned int Index1 = 0, unsigned int Index2 = 0);
+    void SetAppString(unsigned int id, size_t Size, const utf8_t* Value, unsigned int Index1 = 0, unsigned int Index2 = 0);
     bool SaveSettings();
     const utf8_t* GetAppString(unsigned int Id,unsigned int Index1=0,unsigned int Index2=0);
 private:
     void SetSettingString(ApSettingId id, size_t ValueSize);
+    void SetAppString(size_t ValueSize, unsigned int Id, unsigned int Index1, unsigned int Index2);
 private:
     virtual void SetTitleCollInfo(uint64_t handle,unsigned int Count)=0;
     virtual void SetTitleInfo(unsigned int id,uint64_t handle,unsigned int TrackCount,unsigned int ChapterCount,uint64_t chap_handle)=0;

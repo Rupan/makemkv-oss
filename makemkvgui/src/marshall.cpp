@@ -89,6 +89,41 @@ void CApClient::SetSettingString(ApSettingId Id, size_t ValueSize)
     ExecCmd(apCallSetSettingString,2,ValueSize);
 }
 
+void CApClient::SetAppString(unsigned int id, const utf8_t* Value, unsigned int Index1, unsigned int Index2)
+{
+    SetAppString(SetUtf8(Value), id, Index1, Index2);
+}
+
+void CApClient::SetAppString(unsigned int id, const utf16_t* Value, unsigned int Index1, unsigned int Index2)
+{
+    SetAppString(SetUtf16(Value), id, Index1, Index2);
+}
+
+void CApClient::SetAppString(unsigned int id, size_t Size, const utf8_t* Value, unsigned int Index1, unsigned int Index2)
+{
+    if (Size > 65000)
+    {
+        Size = 65000;
+    }
+    memcpy((uint8_t*)m_mem->strbuf, Value, Size);
+    SetAppString(Size, id, Index1, Index2);
+}
+
+void CApClient::SetAppString(size_t ValueSize, unsigned int Id, unsigned int Index1, unsigned int Index2)
+{
+    m_mem->args[0] = Id;
+    m_mem->args[1] = Index1;
+    m_mem->args[2] = Index2;
+    m_mem->args[3] = 0;
+    if (0 == ValueSize)
+    {
+        m_mem->args[4] = 0;
+    } else {
+        m_mem->args[4] = 1;
+    }
+    ExecCmd(apCallAppSetString, 5, ValueSize);
+}
+
 bool CApClient::SaveSettings()
 {
     ExecCmd(apCallSaveSettings,0,0);

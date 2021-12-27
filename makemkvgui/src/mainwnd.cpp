@@ -18,14 +18,13 @@
 #include "settingdlg.h"
 #include "backupdlg.h"
 #include "aboutbox.h"
+#include "regbox.h"
 #include "notify.h"
 #include "abutton.h"
 #include "lineeditk.h"
 #include "dvdbox.h"
 #include "drivebox.h"
 #include "image_defs.h"
-
-#define AP_KEY_STRING_LEN 68
 
 MainWnd* MainWnd::m_myself_static=NULL;
 
@@ -382,6 +381,11 @@ static QString NBabsoluteFilePath(QFileInfo& info)
     return info.absoluteFilePath();
 }
 
+static inline QString FixFilePath(QString path)
+{
+    return path.trimmed();
+}
+
 void MainWnd::SlotBackup()
 {
     CBackupDialog dlg(m_app,mainIcon,this);
@@ -397,7 +401,7 @@ void MainWnd::SlotBackup()
 
     if (dlg.exec()==QDialog::Accepted)
     {
-        dlg.backupDir->setText(dlg.backupDir->text(),true);
+        dlg.backupDir->setText(FixFilePath(dlg.backupDir->text()),true);
         m_app->SetSettingString(apset_path_BackupDirMRU,Utf16FromQString(dlg.backupDir->getMRU()));
         m_app->BackupDisc(ndx,Utf16FromQString(dlg.backupDir->text()),dlg.backupDecrypt);
     }
@@ -405,7 +409,7 @@ void MainWnd::SlotBackup()
 
 void MainWnd::SlotSaveAllMkv()
 {
-    m_FileInfo.setFile(saveFolderBox->text());
+    m_FileInfo.setFile(FixFilePath(saveFolderBox->text()));
 
     QString defPath = QStringFromUtf8(m_app->GetAppString(AP_vastr_OutputFolderName));
     bool custPath = (defPath != saveFolderBox->text());
@@ -1094,22 +1098,37 @@ int MainWnd::ReportUiMessage(
         return 0;
     }
 
-    if ( (Flags&AP_UIMSG_BOX_MASK) == AP_UIMSG_BOXYESNO )
+    if (((Flags&AP_UIMSG_BOX_MASK) == AP_UIMSG_BOXYESNO ) ||
+        ((Flags&AP_UIMSG_BOX_MASK) == AP_UIMSG_BOXYESNO_ERR) ||
+        ((Flags&AP_UIMSG_BOX_MASK) == AP_UIMSG_BOXYESNO_REG))
     {
         m_disable_onidle++;
-        int v=QMessageBox::question(this,UI_QSTRING(APP_CAPTION_MSG),QStringFromUtf8(Text),QMessageBox::Yes|QMessageBox::No);
-        m_disable_onidle--;
-        switch(v)
+        int v;
+        switch (Flags&AP_UIMSG_BOX_MASK)
         {
-            case QMessageBox::Yes : return AP_UIMSG_YES;
-            case QMessageBox::No  : return AP_UIMSG_NO;
-            default: return -1;
+        case AP_UIMSG_BOXYESNO:
+            v = QMessageBox::question(this, UI_QSTRING(APP_CAPTION_MSG), QStringFromUtf8(Text), QMessageBox::Yes | QMessageBox::No);
+            break;
+        case AP_UIMSG_BOXYESNO_ERR:
+            v = QMessageBox::critical(this, UI_QSTRING(APP_CAPTION_MSG), QStringFromUtf8(Text), QMessageBox::Yes | QMessageBox::No);
+            break;
+        case AP_UIMSG_BOXYESNO_REG:
+            {
+                QMessageBox mBox(QMessageBox::Question, UI_QSTRING(APP_CAPTION_MSG), QStringFromUtf8(Text), QMessageBox::Yes | QMessageBox::No, this);
+                mBox.setEscapeButton(QMessageBox::No);
+                mBox.addButton(UI_QSTRING(APP_IFACE_ACT_REGISTER_NAME).remove(QLatin1Char('&')), QMessageBox::RejectRole);
+                v=mBox.exec();
+            }
+            if (0 == v)
+            {
+                QTimer::singleShot(0, this, &MainWnd::SlotRegister);
+                v = QMessageBox::No;
+            }
+            break;
+        default:
+            v = 0;
+            break;
         }
-    }
-    if ( (Flags&AP_UIMSG_BOX_MASK) == AP_UIMSG_BOXYESNO_ERR )
-    {
-        m_disable_onidle++;
-        int v=QMessageBox::critical(this,UI_QSTRING(APP_CAPTION_MSG),QStringFromUtf8(Text),QMessageBox::Yes|QMessageBox::No);
         m_disable_onidle--;
         switch(v)
         {
@@ -1211,57 +1230,18 @@ void MainWnd::SlotLaunchUrl(const QString &url)
     m_disable_onidle--;
 }
 
-static inline char KeyBitsToChar(uint8_t c)
-{
-    if (c==0) return '_';
-    if (c<11) return '0' + (c-1);
-    if (c<38) return '@'+(c-11);
-    return 'a'+(c-38);
-}
-
-static inline uint8_t KeyIsValidChar(utf16_t c)
-{
-    if (c=='_') return true;
-    if ( (c>='0') && (c<='9') ) return true;
-    if ( (c>='@') && (c<='Z') ) return true;
-    if ( (c>='a') && (c<='z') ) return true;
-    return false;
-}
-
-// PLEASE, do not copy&paste this function into keygen code :)
-static inline bool KeyCheckStringCrc(const utf16_t* str)
-{
-    size_t len = utf16len(str);
-
-    if (len != AP_KEY_STRING_LEN )
-    {
-        return false;
-    }
-
-    uint16_t crc=0;
-
-    for (unsigned int i=0;i<(AP_KEY_STRING_LEN-2);i++)
-    {
-        if ( (i>=2) && (KeyIsValidChar(str[i])==false)) return false;
-
-        crc += ((uint8_t)str[i]) & 0x7f;
-
-        crc = (uint16_t) (((crc*(11+i)))%4093);
-    }
-
-    if (KeyBitsToChar( (uint8_t) (crc&0x3f) ) != str[AP_KEY_STRING_LEN-2]) return false;
-    if (KeyBitsToChar( (uint8_t) ((crc>>6)&0x3f)) != str[AP_KEY_STRING_LEN-1]) return false;
-
-    return true;
-}
-
 void MainWnd::SlotRegister()
 {
-    bool ok = false;
-    QString key_string = QStringFromUtf8(m_app->GetSettingString(apset_app_Key));
+    CRegBox box(this, mainIcon);
 
-    QString reg_code = QInputDialog::getText(this,UI_QSTRING(APP_CAPTION_MSG),UI_QSTRING(APP_IFACE_REGISTER_TEXT),QLineEdit::Normal,key_string,&ok);
-    if ( (false==ok) || (reg_code.isEmpty()) ) return;
+    QString reg_code;
+
+    if (box.exec() == QDialog::Accepted)
+    {
+        reg_code = box.key();
+    }
+
+    QString key_string = QStringFromUtf8(m_app->GetSettingString(apset_app_Key));
 
     reg_code = reg_code.trimmed();
     if (reg_code.isEmpty()) return;

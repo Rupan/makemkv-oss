@@ -328,6 +328,11 @@ public:
 
 public:
     QString formatURL(const char* tail);
+
+    inline void DbgOut(const QString &str)
+    {
+        DoProcessLogMessage(str, 0, 0);
+    }
 };
 
 #endif
