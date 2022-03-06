@@ -1,4 +1,4 @@
-Copyright (C) 2007-2021 GuinpinSoft inc
+Copyright (C) 2007-2022 GuinpinSoft inc
 
 IMPORTANT NOTE
 

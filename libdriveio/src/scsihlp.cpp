@@ -1,7 +1,7 @@
 /*
     libDriveIo - MMC drive interrogation library
 
-    Copyright (C) 2007-2021 GuinpinSoft inc <libdriveio@makemkv.com>
+    Copyright (C) 2007-2022 GuinpinSoft inc <libdriveio@makemkv.com>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -104,7 +104,7 @@ int LibDriveIo::ExecuteReadScsiCommand(ISimpleScsiTarget* ScsiTarget,const uint8
 
     if (res.Status!=0)
     {
-        return DRIVEIO_ERR_SCSI_STATUS(res.Status);
+        return ScsiErrorFromResult(&res);
     }
 
     *BufferSize = res.Transferred;
@@ -126,7 +126,7 @@ int LibDriveIo::ExecuteWriteScsiCommand(ISimpleScsiTarget* ScsiTarget,const uint
 
     if (res.Status!=0)
     {
-        return DRIVEIO_ERR_SCSI_STATUS(res.Status);
+        return ScsiErrorFromResult(&res);
     }
 
     if (res.Transferred!=BufferSize)
@@ -233,6 +233,8 @@ static void AddInquiryData(ScsiInquiryData *InquiryData,const uint8_t* Data)
 
 static void AddFirmwareDate(ScsiDriveInfo *DriveInfo,const uint8_t* Data)
 {
+    unsigned int len = Data[3];
+    if (len<14) return;
     CopyPaddedString(DriveInfo->FirmwareDate,14,Data+4);
 }
 
@@ -256,6 +258,12 @@ static int ReadSingleFeatureDescriptor(ISimpleScsiTarget* ScsiTarget,uint16_t Id
 
     len = BufferLen;
     err=LibDriveIo::ExecuteReadScsiCommand(ScsiTarget,cdb_rf,10,Buffer,&len);
+    if (DRIVEIO_ERROR_TYPE(err) == DRIVEIO_ERROR_TYPE(DRIVEIO_ERR_SCSI_SENSE(0)))
+    {
+        // Some drives do error out on mandatory commands...
+        *Have = false;
+        return 0;
+    }
     if (err) return err;
 
     slen = rd32be(Buffer) + 4;
@@ -465,6 +473,23 @@ int LibDriveIo::ScsiErrorFromResult(const ScsiCmdResponse *CmdResult)
             }
         }
     }
+
+    if ((CmdResult->Status == 0xff) &&
+        (CmdResult->SenseLen == 7) &&
+        (CmdResult->SenseData[0]==0xfe))
+    {
+        uint16_t wrap_type = rd16be(CmdResult->SenseData + 1);
+        uint32_t wrap_code = rd32be(CmdResult->SenseData + 1 + 2);
+
+        switch (wrap_type)
+        {
+        case 1: return (0xc0000000 | wrap_code);
+        default:
+        case 2:
+            return DRIVEIO_IO_ERROR(wrap_code);
+        }
+    }
+
 
     return DRIVEIO_ERR_SCSI_STATUS(CmdResult->Status);
 }

@@ -34,6 +34,7 @@ int __cdecl swprintf_s(wchar_t *buffer,size_t sizeOfBuffer,const wchar_t *format
 #endif // ALREADY_HAVE_SSTRING_API
 
 int __cdecl tolower_ascii(int c);
+void* __cdecl lgpl_memmem(const void* wheremem, size_t wherelen, const void* whatmem, size_t whatlen);
 
 #ifdef __cplusplus
 };

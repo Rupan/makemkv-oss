@@ -66,7 +66,7 @@
 
 #endif
 
-#if ( (defined(__GNUC__) || defined (__clang__)) && (defined(__i386__) || defined(__x86_64)) )
+#if ( (defined(__GNUC__) || defined (__clang__)) && ((defined(__i386__) || defined(__x86_64))) )
 #define BYTEORDER_ARCH_ALLOWS_UNALIGNED_ACCESS 1
 #endif
 

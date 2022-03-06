@@ -1,7 +1,7 @@
 /*
     libDriveIo - MMC drive interrogation library
 
-    Copyright (C) 2007-2021 GuinpinSoft inc <libdriveio@makemkv.com>
+    Copyright (C) 2007-2022 GuinpinSoft inc <libdriveio@makemkv.com>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,8 @@
 #include <errno.h>
 
 #define DRIVEIO_ERROR(type,code)                (int)(unsigned int)(0x80000000|(((type)&0x7f)<<24)|((code)&0xffffff))
+#define DRIVEIO_ERROR_TYPE(code)                (((code)>>24)&0xff)
+#define DRIVEIO_ERROR_CODE(code)                ((code)&0x00ffffff)
 
 // driveio errors (comparable)
 #define DRIVEIO_ERR_SCSI_STATUS(status)         DRIVEIO_ERROR(1,(status))
