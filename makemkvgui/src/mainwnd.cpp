@@ -388,12 +388,14 @@ static inline QString FixFilePath(QString path)
 
 void MainWnd::SlotBackup()
 {
-    CBackupDialog dlg(m_app,mainIcon,this);
-
     int ndx = GetEmptyBoxDriveId();
     if (ndx<0) return;
 
     QString name = DriveInfo[ndx].strLabel;
+    bool is_dvd = (dtDvd==DriveInfo[ndx].diskType);
+    if (is_dvd) name.append(QLatin1String(".iso"));
+
+    CBackupDialog dlg(m_app, is_dvd, mainIcon, this);
 
     dlg.backupDir->setAppendName(&name);
     dlg.backupDir->setText(QStringFromUtf8(m_app->GetAppString(AP_vastr_OutputBaseName)) + QLatin1String("/backup/") + name,true);
@@ -403,7 +405,7 @@ void MainWnd::SlotBackup()
     {
         dlg.backupDir->setText(FixFilePath(dlg.backupDir->text()),true);
         m_app->SetSettingString(apset_path_BackupDirMRU,Utf16FromQString(dlg.backupDir->getMRU()));
-        m_app->BackupDisc(ndx,Utf16FromQString(dlg.backupDir->text()),dlg.backupDecrypt);
+        m_app->BackupDisc(ndx,Utf16FromQString(dlg.backupDir->text()),dlg.backupDecrypt|(is_dvd?6:2));
     }
 }
 

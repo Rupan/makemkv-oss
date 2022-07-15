@@ -21,6 +21,7 @@
 
 #include <stdint.h>
 #include <lgpl/ffabi.h>
+#include <math.h>
 
 #include <libavutil/common.h>
 #include "internal.h"

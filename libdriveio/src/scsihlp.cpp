@@ -286,7 +286,7 @@ static int ReadSingleFeatureDescriptor(ISimpleScsiTarget* ScsiTarget,uint16_t Id
     return 0;
 }
 
-int LibDriveIo::QueryInquiryInfo(ISimpleScsiTarget* ScsiTarget,uint8_t Evpd,uint8_t *Buffer,unsigned int *BufferSize)
+int LibDriveIo::QueryInquiryInfo(ISimpleScsiTarget* ScsiTarget,uint8_t *Buffer,unsigned int *BufferSize)
 {
     int err;
     unsigned int len,slen;
@@ -295,43 +295,27 @@ int LibDriveIo::QueryInquiryInfo(ISimpleScsiTarget* ScsiTarget,uint8_t Evpd,uint
 
     memset(cdb_inquiry,0,sizeof(cdb_inquiry));
     cdb_inquiry[0]=0x12;
-    if (Evpd!=0)
-    {
-        cdb_inquiry[1]=1;
-        cdb_inquiry[2]=Evpd;
-    }
 
-    err=ExecuteReadScsiCommand(ScsiTarget,cdb_inquiry,6,Buffer,254,&res);
+    err=ExecuteReadScsiCommand(ScsiTarget,cdb_inquiry,6,Buffer,0x60,&res);
     if (err) return err;
     len = res.Transferred;
 
-    if (Evpd==0)
+    if (res.Status != 0) return DRIVEIO_ERR_SCSI_STATUS(res.Status);
+    slen = ((unsigned int)Buffer[4]) + 5;
+    if (slen > len)
     {
-        if (res.Status!=0) return DRIVEIO_ERR_SCSI_STATUS(res.Status);
-        slen = ((unsigned int)Buffer[4])+5;
-        if (slen>len)
+        if (len >= 35)
         {
-            if (len>=35)
-            {
-                //
-                // Some drives return incomplete inquiry data, accept it
-                // as long as mandatory portion is present
-                //
-                memset(Buffer+len,0,slen-len);
-            } else {
-                return DRIVEIO_ERROR_BAD_DATA;
-            }
+            //
+            // Some drives return incomplete inquiry data, accept it
+            // as long as mandatory portion is present
+            //
+            memset(Buffer + len, 0, slen - len);
+        } else {
+            return DRIVEIO_ERROR_BAD_DATA;
         }
-    } else {
-        *BufferSize=0;
-        if (res.Status!=0)
-        {
-            return 0;
-        }
-        slen = ((unsigned int)Buffer[3])+4;
-        if (slen>len) return 0;
-        if (Buffer[1]!=Evpd) return 0;
     }
+
     *BufferSize = slen;
     return 0;
 }
@@ -349,7 +333,7 @@ int LibDriveIo::BuildInquiryData(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List
         AddInquiryData(InquiryData,(const uint8_t*)item.Data);
     } else {
         // no drive info, query all data manually
-        if (0!=(err=QueryInquiryInfo(ScsiTarget,0,buf,&len))) return err;
+        if (0!=(err=QueryInquiryInfo(ScsiTarget,buf,&len))) return err;
         AddInquiryData(InquiryData,buf);
 
         if ((buf[0]&0x1f)!=5) return DRIVEIO_ERROR_BAD_DATA; // not a MMC drive

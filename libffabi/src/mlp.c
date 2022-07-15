@@ -35,7 +35,7 @@ av_cold void ffabi_ff_mlp_init_crc(void)
     av_crc_init(crc_2D, 0, 16, 0x002D, sizeof(crc_2D));
 }
 
-uint16_t ffm_mlp_checksum16(const uint8_t *buf, unsigned int buf_size)
+uint16_t __cdecl ffm_mlp_checksum16(const uint8_t *buf, unsigned int buf_size)
 {
     uint16_t crc;
 

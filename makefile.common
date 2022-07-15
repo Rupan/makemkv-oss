@@ -75,3 +75,18 @@ LIBMMBD_SRC=makemkvgui/src/client.cpp makemkvgui/src/clt_pipe.cpp makemkvgui/src
 LIBMMBD_SRC_LINUX=makemkvgui/src/api_posix.cpp makemkvgui/src/api_linux.cpp makemkvgui/src/sem_posix.cpp \
   makemkvgui/src/spawn_posix.cpp
 
+
+MMGPL_DEF=-DLOG_DEBUG=1 -DTRACE=1 -DDVDNAV_NO_CACHE=1 -DDVDNAV_NO_LOCKING=1 -DDVDNAV_NO_TXTDT=1 -DDVDNAV_NO_ERRSTR=1
+
+MMGPL_INC=mmgpl
+DVDNAV_INC=mmgpl/dvdnav
+DVDREAD_INC=mmgpl/dvdread
+
+MMGPL_SRC_LINUX=makemkvgui/src/api_posix.cpp makemkvgui/src/api_linux.cpp
+
+MMGPL_SRC=mmgpl/mmgpl.cpp mmgpl/dvdnavsrv.cpp mmgpl/dvdread.cpp mmgpl/navapi.cpp makemkvgui/src/clt_pipe.cpp \
+  mmgpl/dvdread/bitreader.c mmgpl/dvdread/ifo_read.c mmgpl/dvdread/logger.c mmgpl/dvdread/nav_read.c \
+  mmgpl/dvdnav/dvdnav.c mmgpl/dvdnav/highlight.c mmgpl/dvdnav/logger.c mmgpl/dvdnav/navigation.c \
+  mmgpl/dvdnav/settings.c mmgpl/dvdnav/vm/decoder.c mmgpl/dvdnav/vm/getset.c mmgpl/dvdnav/vm/play.c \
+  mmgpl/dvdnav/vm/rand.cpp mmgpl/dvdnav/vm/vm.c mmgpl/dvdnav/vm/vmcmd.c mmgpl/dvdnav/vm/vmget.c \
+

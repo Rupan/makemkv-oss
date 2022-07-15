@@ -696,6 +696,7 @@ void MainWnd::updateEmptyBox(int cur_ndx,bool boxEnabled)
                 empty_big_btn->setDefaultAction(dvdToHdAct);
                 empty_big_btn->setButtonIcon(AP_IMG_ANIMATION0621+AP_IMG_ANIMATION0621_COUNT-1);
                 empty_big_btn->setEnabled(boxEnabled);
+                backupAct->setEnabled(boxEnabled);
                 empty_dvd->setVisible(iface_ExpertMode);
                 empty_dvd_box->setVisible(iface_ExpertMode);
                 empty_dvd_box->setEnabled(iface_ExpertMode && boxEnabled);

@@ -31,7 +31,7 @@
 //
 // Queries all standard drive info
 //
-static int QueryDriveInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,bool Total)
+static int QueryDriveInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List)
 {
     int err;
     unsigned int len,slen;
@@ -40,36 +40,17 @@ static int QueryDriveInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,bool T
     //
     // Inquiry
     //
-    err=QueryInquiryInfo(ScsiTarget,0,data_buffer,&slen);
+    err=QueryInquiryInfo(ScsiTarget,data_buffer,&slen);
     if (err) return err;
     if (DriveInfoList_AddItem(List,diid_InquiryData,data_buffer,slen)) return DRIVEIO_ERR_NO_MEMORY;
     if ((data_buffer[0]&0x1f)!=5) return DRIVEIO_ERROR_BAD_DATA; // not a MMC drive
 
-    if (Total)
-    {
-        uint8_t inqdata[34];
-        memcpy(inqdata,data_buffer,34);
-
-        for (unsigned int evpd=1;evpd<256;evpd++)
-        {
-            err=QueryInquiryInfo(ScsiTarget,(uint8_t)evpd,data_buffer,&slen);
-            if (err) return err;
-            if (slen>=34)
-            {
-                if (0==memcmp(inqdata,data_buffer,34)) slen=0;
-            }
-            if (slen==0) continue;
-            if (DriveInfoList_AddItem(List,(DriveInfoId)(diid_InquiryData+evpd),data_buffer,slen)) return DRIVEIO_ERR_NO_MEMORY;
-        }
-    }
-
     //
     // All feature descriptors
     //
-    unsigned int current_feature = 0;
+    unsigned int current_feature = 0, first_feature;
     while(current_feature<0x10000)
     {
-        bool first_feature;
         uint8_t cdb_get_configuration[10];
         ScsiCmdResponse res;
 
@@ -94,10 +75,10 @@ static int QueryDriveInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,bool T
 
         if (slen < 12) return DRIVEIO_ERROR_BAD_DATA;
 
-        first_feature = true;
-
         const uint8_t *dptr=data_buffer+8;
         slen-=8;
+
+        first_feature = current_feature;
 
         while(slen>=4)
         {
@@ -105,17 +86,12 @@ static int QueryDriveInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,bool T
 
             feature_code = rd16be(dptr);
 
-            if (first_feature && (feature_code<current_feature))
+            if ((feature_code < first_feature) ||
+                ((current_feature !=0) && (feature_code == 0)))
             {
                 // drive is supposed to return empty feature header
-                // but returned the last feature descriptor
-                unsigned int diff = current_feature - feature_code;
-                if (diff<3)
-                {
-                    current_feature++;
-                } else {
-                    current_feature = 0x10000;
-                }
+                // but returned the last feature descriptor (or garbage)
+                current_feature = 0x10000;
                 break;
             }
 
@@ -123,20 +99,13 @@ static int QueryDriveInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,bool T
 
             if (feature_len > slen)
             {
-                if (first_feature)
-                {
-                    // feature is bigger than max buffer size, skip it
-                    current_feature = feature_code+1;
-                    break;
-                } else {
-                    break;
-                }
+                if (feature_code >= current_feature) current_feature = (feature_code + 1);
+                break;
             }
 
             if (DriveInfoList_AddItem(List,(DriveInfoId)(diid_FeatureDescriptor + feature_code),dptr,feature_len)) return DRIVEIO_ERR_NO_MEMORY;
 
-            first_feature = false;
-            current_feature = feature_code+1;
+            if (feature_code >= current_feature) current_feature = (feature_code + 1);
             dptr += feature_len;
             slen -= feature_len;
         }
@@ -419,11 +388,11 @@ static int DriveIoQuery(ISimpleScsiTarget* ScsiTarget,DriveIoQueryType QueryType
     switch(QueryType)
     {
     case diq_QueryAllInfo:
-        if (0!=(err = QueryDriveInfo(ScsiTarget,list,false))) break;
+        if (0!=(err = QueryDriveInfo(ScsiTarget,list))) break;
         if (0!=(err = QueryDiscInfo(ScsiTarget,list,false))) break;
         break;
     case diq_QueryDriveInfo:
-        err = QueryDriveInfo(ScsiTarget,list,false);
+        err = QueryDriveInfo(ScsiTarget,list);
         break;
     case diq_QueryDiscInfo:
         err = QueryDiscInfo(ScsiTarget,list,true);

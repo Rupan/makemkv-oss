@@ -23,7 +23,7 @@ class CBackupDialog : public QDialog
 {
     Q_OBJECT
 public:
-    CBackupDialog(CApClient* ap_client,QIcon* icon,QWidget *parent = 0);
+    CBackupDialog(CApClient* ap_client,bool ForceDecrypted,QIcon* icon,QWidget *parent = 0);
 private:
     CApClient* client;
     QDialogButtonBox *buttonBox;

@@ -31,7 +31,7 @@ int ExecuteWriteScsiCommand(ISimpleScsiTarget* ScsiTarget,const uint8_t* Cdb,uns
 int TestUnitReady(ISimpleScsiTarget* ScsiTarget, bool* Ready);
 int BuildInquiryData(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,ScsiInquiryData *InquiryData);
 int BuildDriveInfo(ISimpleScsiTarget* ScsiTarget,DIO_INFOLIST List,ScsiDriveInfo *DriveInfo);
-int QueryInquiryInfo(ISimpleScsiTarget* ScsiTarget,uint8_t Evpd,uint8_t *Buffer,unsigned int *BufferSize);
+int QueryInquiryInfo(ISimpleScsiTarget* ScsiTarget,uint8_t *Buffer,unsigned int *BufferSize);
 void BuildDriveId(ScsiDriveId* DriveId,const ScsiDriveInfo *DriveInfo);
 int IsScsiMmcDeviceNonBlacklisted(ISimpleScsiTarget* Target);
 int ScsiErrorFromResult(const ScsiCmdResponse *CmdResult);

@@ -28,14 +28,14 @@ CSettingDialog::CSettingDialog(MainWnd* mainwnd, QIcon* icon, QWidget *parent) :
     tabWidget->setUsesScrollButtons(false);
     buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel | QDialogButtonBox::Apply , Qt::Horizontal);
 
+    // dvd
+    dvdTab = new CDVDTab(client);
+    tabWidget->addTab(dvdTab, UI_QSTRING(APP_TTREE_VIDEO));
+
     // general
     generalTab = new CGeneralTab();
     tabWidget->addTab(generalTab,UI_QSTRING(APP_IFACE_SETTINGS_TAB_GENERAL));
     check(connect(generalTab->check_ExpertMode, &QCheckBox::stateChanged, this, &CSettingDialog::SlotExpertStateChanged));
-
-    // dvd
-    dvdTab = new CDVDTab(client);
-    tabWidget->addTab(dvdTab,UI_QSTRING(APP_TTREE_VIDEO));
 
     // IO
     ioTab = new CIOTab();
@@ -384,6 +384,7 @@ CProtTab::CProtTab(QWidget *parent) : QWidget(parent)
     comboBoxSpRemoveMethod->addItem(UI_QSTRING(APP_IFACE_SETTINGS_DVD_AUTO));
     comboBoxSpRemoveMethod->addItem(QLatin1String("CellWalk"));
     comboBoxSpRemoveMethod->addItem(QLatin1String("CellTrim"));
+    comboBoxSpRemoveMethod->addItem(QLatin1String("CellFull"));
 
     QGridLayout *b_lay = new QGridLayout();
     b_lay->setColumnStretch(0,2);

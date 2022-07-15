@@ -17,7 +17,7 @@
 #include "mainwnd.h"
 #include <lgpl/sstring.h>
 
-CBackupDialog::CBackupDialog(CApClient* ap_client,QIcon* icon,QWidget *parent) : QDialog(parent)
+CBackupDialog::CBackupDialog(CApClient* ap_client,bool ForceDecrypted,QIcon* icon,QWidget *parent) : QDialog(parent)
 {
     setWindowIcon(*icon);
     setWindowTitle(UI_QSTRING(APP_BACKUPDLG_TITLE));
@@ -30,7 +30,7 @@ CBackupDialog::CBackupDialog(CApClient* ap_client,QIcon* icon,QWidget *parent) :
     labelText->setWordWrap(true);
     labelText->setText(UI_QSTRING(APP_IFACE_BACKUPDLG_TEXT));
 
-    backupDir = new CDirSelectBox(ap_client,CDirSelectBox::DirBoxOutDirBackup,UI_QSTRING(APP_IFACE_BACKUPDLG_FOLDER));
+    backupDir = new CDirSelectBox(ap_client, CDirSelectBox::DirBoxOutDirBackup, UI_QSTRING(APP_IFACE_BACKUPDLG_FOLDER));
     buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel , Qt::Horizontal);
 
     QGroupBox* box = new QGroupBox(UI_QSTRING(APP_IFACE_BACKUPDLG_TEXT_CAPTION));
@@ -44,6 +44,12 @@ CBackupDialog::CBackupDialog(CApClient* ap_client,QIcon* icon,QWidget *parent) :
     check_Decrypt->setChecked(backupDecrypt>0);
     oblay->addWidget(check_Decrypt);
     obox->setLayout(oblay);
+
+    if (ForceDecrypted)
+    {
+        check_Decrypt->setChecked(true);
+        check_Decrypt->setEnabled(false);
+    }
 
     QBoxLayout *lay = new QVBoxLayout();
     lay->addWidget(box);
@@ -61,7 +67,7 @@ CBackupDialog::CBackupDialog(CApClient* ap_client,QIcon* icon,QWidget *parent) :
 void CBackupDialog::SlotAccepted()
 {
     int newDecrypt = check_Decrypt->isChecked()?1:0;
-    if (backupDecrypt!=newDecrypt)
+    if ( (backupDecrypt!=newDecrypt) && (check_Decrypt->isEnabled()))
     {
         client->SetSettingInt(apset_app_BackupDecrypted,newDecrypt);
         client->SaveSettings();

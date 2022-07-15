@@ -47,9 +47,9 @@
 
 #include <machine/endian.h>
 
-#define __bswap64(x)    _OSSwapInt64(x)
-#define __bswap32(x)    _OSSwapInt32(x)
-#define __bswap16(x)    _OSSwapInt16(x)
+#define __bswap64(x)    __builtin_bswap64(x)
+#define __bswap32(x)    __builtin_bswap32(x)
+#define __bswap16(x)    __builtin_bswap16(x)
 
 #define _LITTLE_ENDIAN  __DARWIN_LITTLE_ENDIAN
 #define _BIG_ENDIAN     __DARWIN_BIG_ENDIAN

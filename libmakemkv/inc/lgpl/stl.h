@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <exception>
 #include <vector>
+#include <map>
 #include <stdexcept>
 #include <limits>
 

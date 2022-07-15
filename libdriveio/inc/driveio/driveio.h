@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include "scsicmd.h"
 
-#define LIBDRIVEIO_VERSION "2.5"
+#define LIBDRIVEIO_VERSION "2.6"
 
 //
 // All values in enums below are fixed, new values may be added

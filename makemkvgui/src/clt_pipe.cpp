@@ -71,7 +71,7 @@ bool CPipeTransport::RecvCmd(AP_SHMEM* p_mem)
 
     while (have < 4)
     {
-        if (false == RecvData(data+have, data_buffer_size-have, &rd))
+        if (false == RecvData( ((uint8_t*)data)+have, data_buffer_size-have, &rd))
         {
             return false;
         }
