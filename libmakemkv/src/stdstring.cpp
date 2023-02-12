@@ -1,7 +1,7 @@
 /*
     libMakeMKV - MKV multiplexer library
 
-    Copyright (C) 2007-2022 GuinpinSoft inc <libmkv@makemkv.com>
+    Copyright (C) 2007-2023 GuinpinSoft inc <libmkv@makemkv.com>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -24,10 +24,7 @@
 #include <stdarg.h>
 #include <alloca.h>
 
-#ifdef _WIN32
-#define vsnprintf _vsnprintf
-#endif
-
+const char* MkvErrorText = "$fail";
 const char* buf::string::emptyString = "";
 
 void buf::string::assign(const char* value)
@@ -58,11 +55,5 @@ void buf::string::format(size_t maxSize, const char* fmt, ...)
     tmp[maxSize] = 0;
 
     assign(tmp);
-}
-
-int MkvAssertHelper(const char* Message)
-{
-    throw mkv_error_exception_unbuffered(Message);
-    return 0;
 }
 

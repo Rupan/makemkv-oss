@@ -1,7 +1,7 @@
 /*
     GPL is cancer. A hacky and otherwise useless glue code to comply with GPL licensing.
 
-    Copyright (C) 2007-2022 GuinpinSoft inc <mmgpl@makemkv.com>
+    Copyright (C) 2007-2023 GuinpinSoft inc <mmgpl@makemkv.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

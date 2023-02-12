@@ -1,7 +1,7 @@
 /*
     libMakeMKV - MKV multiplexer library
 
-    Copyright (C) 2007-2022 GuinpinSoft inc <libmkv@makemkv.com>
+    Copyright (C) 2007-2023 GuinpinSoft inc <libmkv@makemkv.com>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -40,6 +40,7 @@
 #define BAD_TIMECODE                ((1ll<<62)+1)
 
 #define CNZ(x) if (!(x)) { ThrowMkvExceptionUnbuffered( "Error in " #x ); };
+#define RCNZ(x) if (!(x)) { return ThrowMkvExceptionUnbuffered( "Error in " #x ); };
 
 template <class Tv,class Te>
 static inline Tv& GetChild(EbmlMaster *node)
@@ -53,9 +54,10 @@ static inline Tv& GetChild(EbmlMaster &node)
     return GetChild<Tv,Te>(&node);
 }
 
-static void ThrowMkvExceptionUnbuffered(const char* Msg)
+static bool ThrowMkvExceptionUnbuffered(const char* Msg)
 {
-    throw mkv_error_exception_unbuffered(Msg);
+    MKV_THROW_ERROR(Msg);
+    return false;
 };
 
 static inline int64_t ScaleTimecode(int64_t UnscaledTimecode)
@@ -485,7 +487,7 @@ static void RenderVoid(IOCallback &File,unsigned int Size)
         return;
     }
 
-    throw mkv_error_exception("RenderVoid failed");
+    MKV_THROW_ERROR("RenderVoid failed");
 }
 
 static DataBuffer* GetDataBuffer(IMkvChunk* frame,MyMkvTrackInfo* track)
@@ -497,7 +499,7 @@ static DataBuffer* GetDataBuffer(IMkvChunk* frame,MyMkvTrackInfo* track)
         MKV_ASSERT(frame->get_size()>track->info.header_comp_size);
         if (memcmp(frame->get_data(),track->info.header_comp_data,track->info.header_comp_size))
         {
-            throw mkv_error_exception("header_comp_data missing");
+            MKV_THROW_ERROR("header_comp_data missing");
         }
         mkv_buffer = new MyDataBuffer(frame,track->info.header_comp_size);
     } else {
@@ -508,7 +510,7 @@ static DataBuffer* GetDataBuffer(IMkvChunk* frame,MyMkvTrackInfo* track)
     return mkv_buffer;
 }
 
-static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInfo* TitleInfo,MkvFormatInfo* FormatInfo,const char *WritingApp)
+static bool MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInfo* TitleInfo,MkvFormatInfo* FormatInfo,const char *WritingApp)
 {
     EbmlHead FileHead;
 
@@ -521,7 +523,7 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
     EDocTypeReadVersion & MyDocTypeReadVer = GetChild<EDocTypeReadVersion>(FileHead);
     *(static_cast<EbmlUInteger *>(&MyDocTypeReadVer)) = 2;
 
-    CNZ(FileHead.Render(File,true));
+    RCNZ(FileHead.Render(File,true));
 
     // objects
     KaxSegment FileSegment;
@@ -543,7 +545,7 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
     KaxSeek* seek_att = AddSeekEntry<KaxAttachments>(MetaSeek);
     KaxSeek* seek_tags = AddSeekEntry<KaxTags>(MetaSeek);
 
-    CNZ(MetaSeek.Render(File));
+    RCNZ(MetaSeek.Render(File));
 
     MkvTitleInfo    titleInfo;
 
@@ -574,8 +576,9 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
     GetChild<EbmlBinary,KaxSegmentUID>(MyInfos).CopyBuffer(SegmentUid, 16);
 
     RenderVoid(File,FormatInfo->debug.evoid[0]);
-    CNZ(MyInfos.Render(File,true));
+    RCNZ(MyInfos.Render(File,true));
 
+    if (false == MkvCheckError()) return false;
 
     // tracks
     KaxTracks & MyTracks = GetChild<KaxTracks>(FileSegment);
@@ -599,10 +602,13 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
         track_info[i].stat_bytes=0;
         track_info[i].stat_bytes_out=0;
 
+        if (false == MkvCheckError()) return false;
+
         memset(ti,0,sizeof(*ti));
         if (false==Input->MkvGetStream(i)->UpdateTrackInfo(ti))
         {
-            throw mkv_error_exception("UpdateTrackInfo failed");
+            MKV_THROW_ERROR("UpdateTrackInfo failed");
+            return false;
         }
 
         cur_track = & AddNewChild<KaxTrackEntry>(MyTracks);
@@ -623,7 +629,7 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
         case mttVideo : ttype = track_video; break;
         case mttAudio : ttype = track_audio; break;
         case mttSubtitle : ttype = track_subtitle; break;
-        default: throw mkv_error_exception("bad track type");
+        default: MKV_THROW_ERROR("bad track type"); return false;
         }
 
         GetChild<EbmlUInteger,KaxTrackType>(cur_track) = ttype;
@@ -788,8 +794,9 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
             }
         }
     }
+    if (false == MkvCheckError()) return false;
 
-    CNZ(MyTracks.Render(File));
+    RCNZ(MyTracks.Render(File));
 
     Chapters.Render(File,seek_chap,FileSegment);
     RenderVoid(File,FormatInfo->debug.evoid[1]);
@@ -810,7 +817,7 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
             GetChild<EbmlUInteger,KaxFileUID>(pa) = 1+i;
             GetChild<EbmlBinary,KaxFileData>(pa).CopyBuffer((const binary *)ainfo.data,ainfo.size);
         }
-        CNZ(MyAttachments.Render(File));
+        RCNZ(MyAttachments.Render(File));
         UpdateSeekEntry(seek_att,File,MyAttachments,FileSegment);
         MyAttachments.RemoveAll();
     } else {
@@ -821,6 +828,7 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
     UpdateSeekEntry(seek_infos,File,MyInfos,FileSegment);
     UpdateSeekEntry(seek_tracks,File,MyTracks,FileSegment);
     MyTracks.RemoveAll();
+    if (false == MkvCheckError()) return false;
 
     KaxCluster *curr_cluster=NULL,*prev_cluster=NULL;
     int64_t cluster_timecode=0;
@@ -851,7 +859,8 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
 
             if (false==Input->MkvGetStream(i)->FetchFrames(1,force_fetch))
             {
-                throw mkv_error_exception("Error while reading input");
+                MKV_THROW_ERROR("Error while reading input");
+                return false;
             }
 
             frames_scan = (track_info[i].info.type==mttVideo)?16:1;
@@ -877,7 +886,10 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
 
                 IMkvChunk* tf = Input->MkvGetStream(i)->PeekFrame(j);
 
-                if (tf->timecode==-1) throw mkv_error_exception("Frame not timestamped");
+                if (tf->timecode == -1) {
+                    MKV_THROW_ERROR("Frame not timestamped");
+                    return false;
+                }
                 dts = ScaleTimecode(TimecodeFromClock(tf->timecode)+(TIMECODE_SCALE/2));
 
                 if (dts<min_timecode1)
@@ -896,7 +908,7 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
                 frames_scan = Input->MkvGetStream(i)->GetAvailableFramesCount();
                 for (unsigned int k=0;k<frames_scan;k++)
                 {
-                    CNZ(Input->MkvGetStream(i)->PeekFrame(k)->compress_start(
+                    RCNZ(Input->MkvGetStream(i)->PeekFrame(k)->compress_start(
                         track_info[i].compression_type,
                         track_info[i].compression_level));
                 }
@@ -926,8 +938,8 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
             new_cluster = false;
             break;
         default:
-            throw mkv_error_exception("clusterFlags");
-            break;
+            MKV_THROW_ERROR("clusterFlags");
+            return false;
         }
 
         if (new_cluster)
@@ -952,6 +964,8 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
         {
             lgpl_update_current_progress(Input,&prg_val);
         }
+
+        if (false == MkvCheckError()) return false;
 
         IMkvChunk*  frame,*prev_frame;
 
@@ -981,9 +995,9 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
 
             if (FormatInfo->debug.compatFlags&1)
             {
-                CNZ(curr_cluster->WriteHead(File, 3));
+                RCNZ(curr_cluster->WriteHead(File, 3));
             } else {
-                CNZ(curr_cluster->WriteHead(File, clusterlen));
+                RCNZ(curr_cluster->WriteHead(File, clusterlen));
             }
 
             cluster_timecode = GetClusterTimecode(Input);
@@ -999,10 +1013,11 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
                 GetChild<KaxClusterPrevSize>(*curr_cluster).Render(File);
             }
         }
+        if (false == MkvCheckError()) return false;
 
         if (frame->get_size()==0)
         {
-            CNZ(frame->compress_wait());
+            RCNZ(frame->compress_wait());
             stream->PopFrame();
             continue;
         }
@@ -1047,8 +1062,8 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
 
         if (frames_count>1)
         {
-            CNZ(frame->compress_start(track_info[stream_id].compression_type,track_info[stream_id].compression_level));
-            CNZ(frame->compress_wait());
+            RCNZ(frame->compress_start(track_info[stream_id].compression_type,track_info[stream_id].compression_level));
+            RCNZ(frame->compress_wait());
         }
 
         frame_keyframe = frame->keyframe();
@@ -1062,7 +1077,8 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
             {
                 if (false==stream->FetchFrames(i+1,true))
                 {
-                    throw mkv_error_exception("Error while reading input");
+                    MKV_THROW_ERROR("Error while reading input");
+                    return false;
                 }
                 if (stream->GetAvailableFramesCount()<(i+1))
                 {
@@ -1088,8 +1104,8 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
                 break;
             }
 
-            CNZ(frame->compress_start(track_info[stream_id].compression_type,track_info[stream_id].compression_level));
-            CNZ(frame->compress_wait());
+            RCNZ(frame->compress_start(track_info[stream_id].compression_type,track_info[stream_id].compression_level));
+            RCNZ(frame->compress_wait());
 
             if (frame->get_size()!=same_frame_size)
             {
@@ -1115,7 +1131,7 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
             frames_count=1;
 
             DataBuffer* mkv_buffer = GetDataBuffer(frame,&track_info[stream_id]);
-            CNZ(blkg->AddFrame( * (tracks[stream_id]) , TimecodeFromClock(frame->timecode)+(TIMECODE_SCALE/2) , *mkv_buffer));
+            RCNZ(blkg->AddFrame( * (tracks[stream_id]) , TimecodeFromClock(frame->timecode)+(TIMECODE_SCALE/2) , *mkv_buffer));
             track_info[stream_id].UpdateStat(frame);
 
             if (frame->auto_duration())
@@ -1168,7 +1184,8 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
                 }
             }
 
-            CNZ(blkg->Render(File));
+            if (false == MkvCheckError()) return false;
+            RCNZ(blkg->Render(File));
 
             if (track_info[stream_id].duration_pos)
             {
@@ -1200,18 +1217,21 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
                 frame=stream->PeekFrame(i);
 
                 DataBuffer* mkv_buffer = GetDataBuffer(frame,&track_info[stream_id]);
-                CNZ(blks->AddFrame( * (tracks[stream_id]) , TimecodeFromClock(frame->timecode)+(TIMECODE_SCALE/2) , *mkv_buffer , all_same ? LACING_FIXED : LACING_EBML ));
+                RCNZ(blks->AddFrame( * (tracks[stream_id]) , TimecodeFromClock(frame->timecode)+(TIMECODE_SCALE/2) , *mkv_buffer , all_same ? LACING_FIXED : LACING_EBML ));
 
                 track_info[stream_id].UpdateStat(frame);
             }
-            CNZ(blks->Render(File));
+            RCNZ(blks->Render(File));
         }
+        if (false == MkvCheckError()) return false;
 
         if (new_cluster)
         {
             KaxCuePoint *cp = & AddNewChild<KaxCuePoint>(AllCues);
             cp->PositionSet(*blki,blkg,TIMECODE_SCALE);
         }
+
+        if (false == MkvCheckError()) return false;
 
         delete blks;
         delete blkg;
@@ -1227,10 +1247,11 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
     GetChild<EbmlFloat,KaxDuration>(MyInfos) = (double) ScaleTimecode(TimecodeFromClock(max_duration));
     GetChild<KaxDuration>(MyInfos).OverwriteData(File,true);
 
-    CNZ(AllCues.Render(File));
+    RCNZ(AllCues.Render(File));
     UpdateSeekEntry(seek_cues,File,AllCues,FileSegment);
 
     Chapters.Finalize(File,seek_chap,max_duration);
+    if (false == MkvCheckError()) return false;
 
     for (unsigned int i=1;i<Input->MkvGetStreamCount();i++)
     {
@@ -1262,7 +1283,8 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
             memset(&ti,0,sizeof(ti));
             if (false==Input->MkvGetStream(i)->UpdateTrackInfo(&ti))
             {
-                throw mkv_error_exception("UpdateTrackInfo failed");
+                MKV_THROW_ERROR("UpdateTrackInfo failed");
+                return false;
             }
 
             if (track_info[i].codec_private->GetSize()==ti.codec_private_size)
@@ -1278,6 +1300,7 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
                 }
             }
         }
+        if (false == MkvCheckError()) return false;
     }
 
     // tags
@@ -1288,14 +1311,17 @@ static void MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
 
         track_info[i].RenderStat(MyTags,i+1,mtime,WritingApp);
     }
-    CNZ(MyTags.Render(File));
+    RCNZ(MyTags.Render(File));
     UpdateSeekEntry(seek_tags,File,MyTags,FileSegment);
 
     // end
+    if (false == MkvCheckError()) return false;
 
     // Set the correct size for the segment.
-    CNZ(FileSegment.ForceSize(File.getFilePointer() - ( FileSegment.GetElementPosition() + FileSegment.HeadSize() ) ));
-    CNZ(FileSegment.OverwriteHead(File));
+    RCNZ(FileSegment.ForceSize(File.getFilePointer() - ( FileSegment.GetElementPosition() + FileSegment.HeadSize() ) ));
+    RCNZ(FileSegment.OverwriteHead(File));
+
+    return MkvCheckError();
 }
 
 static void FinishCluster(KaxCluster *cluster,IOCallback *File,KaxSegment *Segment)
@@ -1314,25 +1340,24 @@ extern "C"
 bool __cdecl MkvCreateFile(IMkvWriteTarget* Output,IMkvTrack *Input,const char *WritingApp,IMkvTitleInfo* TitleInfo,MkvFormatInfo* FormatInfo) throw()
 {
     CEbmlWrite  wrt(Output);
-    try
+
+    MkvClearError();
+
+    if (false == MkvCreateFileInternal(wrt, Input, TitleInfo, FormatInfo, WritingApp))
     {
-        MkvCreateFileInternal(wrt,Input,TitleInfo,FormatInfo,WritingApp);
-        return true;
-    } catch(std::exception &Ex)
-    {
+        const char* what = (NULL != MkvGetErrorText()) ? MkvGetErrorText() : "$unknown";
+
         // no memory allocations here
-        if (Ex.what()[0]!='$')
+        if (what[0] != '$')
         {
             char tstr[512];
-            strcpy(tstr,"Exception: ");
-            strncat(tstr,Ex.what(),sizeof(tstr)-1);
-            tstr[sizeof(tstr)-1]=0;
+            strcpy(tstr, "Exception: ");
+            strncat(tstr, what, sizeof(tstr) - 1);
+            tstr[sizeof(tstr) - 1] = 0;
             lgpl_trace(tstr);
         }
-    } catch(...)
-    {
-        lgpl_trace("Exception: unknown");
+        return false;
     }
-    return false;
+    return true;
 }
 

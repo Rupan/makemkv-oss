@@ -220,12 +220,14 @@ EbmlCallbacks::EbmlCallbacks(EbmlElement & (*Creator)(), const EbmlId & aGlobalI
 const EbmlSemantic & EbmlSemanticContext::GetSemantic(size_t i) const
 {
   assert(i<Size);
-  if (i<Size)
+  /* if (i<Size) */
     return MyTable[i];
 
+  /*
   buf::string ss;
   ss.format(128, "EbmlSemanticContext::GetSemantic: programming error: index i outside of table size (%u >= %u)", (unsigned int)i, (unsigned int)Size);
   throw mkv_logic_error(ss);
+  */
 }
 
 

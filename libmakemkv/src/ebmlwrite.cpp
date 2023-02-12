@@ -1,7 +1,7 @@
 /*
     libMakeMKV - MKV multiplexer library
 
-    Copyright (C) 2007-2022 GuinpinSoft inc <libmkv@makemkv.com>
+    Copyright (C) 2007-2023 GuinpinSoft inc <libmkv@makemkv.com>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -25,13 +25,13 @@
 
 uint32 CEbmlWrite::read(void*Buffer,size_t Size)
 {
-    throw mkv_error_exception("CEbmlWrite::read");
+    MKV_THROW_ERROR("CEbmlWrite::read");
     return 0;
 }
 
 void CEbmlWrite::close()
 {
-    throw mkv_error_exception("CEbmlWrite::close");
+    MKV_THROW_ERROR("CEbmlWrite::close");
 }
 
 

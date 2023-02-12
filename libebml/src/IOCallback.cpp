@@ -52,14 +52,14 @@ void IOCallback::writeFully(const void*Buffer,size_t Size)
     return;
 
   if (Buffer == nullptr)
-    throw;
+    MKV_THROW_ERROR("$NULL in writeFully");
 
   if(write(Buffer,Size) != Size) {
 #if !defined(__GNUC__) || (__GNUC__ > 2)
     //stringstream Msg;
     //Msg<<"EOF in writeFully("<<Buffer<<","<<Size<<")";
-    throw mkv_error_exception("$EOF in writeFully");
 #endif // GCC2
+    MKV_THROW_ERROR("$EOF in writeFully");
   }
 }
 

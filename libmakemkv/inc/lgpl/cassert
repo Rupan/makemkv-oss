@@ -1,7 +1,7 @@
 /*
     libMakeMKV - MKV multiplexer library
 
-    Copyright (C) 2007-2022 GuinpinSoft inc <libmkv@makemkv.com>
+    Copyright (C) 2007-2023 GuinpinSoft inc <libmkv@makemkv.com>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -36,7 +36,7 @@
 #endif // assert
 #endif // _darwin_
 
-class mkv_error_exception_unbuffered : public std::exception
+class mkv_error_exception_unbuffered
 {
     const char* m_message;
 public:
@@ -53,7 +53,7 @@ public:
     }
 };
 
-class mkv_error_exception_buffered : public std::exception
+class mkv_error_exception_buffered
 {
     buf::string m_message;
 public:
@@ -70,7 +70,7 @@ public:
     }
     const char* what() const throw()
     {
-        return m_message.c_str();
+        return strdup(m_message.c_str());
     }
 };
 
@@ -78,10 +78,36 @@ typedef mkv_error_exception_buffered mkv_logic_error;
 
 #define mkv_error_exception(x) mkv_error_exception_unbuffered(x "\0")
 
-int MkvAssertHelper(const char* Message);
+extern const char* MkvErrorText;
+
+inline static bool MkvCheckError()
+{
+    return (MkvErrorText == NULL);
+}
+
+inline static void MkvClearError()
+{
+    MkvErrorText = NULL;
+}
+
+inline static const char* MkvGetErrorText()
+{
+    return MkvErrorText;
+}
+
+inline static int MkvErrorHelper(const char* Message)
+{
+    MkvErrorText = Message;
+    return 0;
+}
+
 
 #define MKV_ASSERT(_Expression_) \
-    (void)( (!!(_Expression_)) || (MkvAssertHelper("MKV_ASSERT: " #_Expression_ )) );
+    (void)( (!!(_Expression_)) || (MkvErrorHelper("MKV_ASSERT: " #_Expression_ )) );
+
+#define MKV_THROW_ERROR(_Message_) \
+    (MkvErrorHelper(_Message_))
+
 
 #ifdef assert
 #error assert

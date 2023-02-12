@@ -1,7 +1,7 @@
 /*
     libDriveIo - MMC drive interrogation library
 
-    Copyright (C) 2007-2022 GuinpinSoft inc <libdriveio@makemkv.com>
+    Copyright (C) 2007-2023 GuinpinSoft inc <libdriveio@makemkv.com>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -91,9 +91,6 @@ CTIPSClient::CTIPSClient()
 {
     m_socket=INVALID_SOCKET;
     m_version=1;
-#ifdef TIPS_CLIENT_ENABLE_V0_PROTOCOL
-    //m_version=0;
-#endif
 }
 
 CTIPSClient::~CTIPSClient()
@@ -251,63 +248,6 @@ int CTIPSClient::Exec(const ScsiCmd* Cmd,ScsiCmdResponse *CmdResult)
 
     return err;
 }
-
-#ifdef TIPS_CLIENT_ENABLE_V0_PROTOCOL
-int CTIPSClient::ExecV0(const ScsiCmd* Cmd,ScsiCmdResponse *CmdResult)
-{
-    int err;
-
-    err=snd_char(m_socket,Cmd->CdbLen);
-    if (err<0) return err;
-
-    err=snd_data(m_socket,Cmd->Cdb,Cmd->CdbLen);
-    if (err<0) return err;
-
-    err=snd_int(m_socket,Cmd->InputLen);
-    if (err<0) return err;
-
-    err=snd_data(m_socket,Cmd->InputBuffer,Cmd->InputLen);
-    if (err<0) return err;
-
-    err=snd_int(m_socket,Cmd->OutputLen);
-    if (err<0) return err;
-
-    unsigned long tv;
-    unsigned char tc;
-
-    err=recv_int(m_socket,&tv);
-    if (err<0) return err;
-    CmdResult->Transferred=tv;
-
-    if (Cmd->OutputLen!=0)
-    {
-        if (CmdResult->Transferred>Cmd->OutputLen)
-        {
-            return DRIVEIO_TIPS_ERROR(ERANGE);
-        }
-
-        err=recv_data(m_socket,Cmd->OutputBuffer,CmdResult->Transferred);
-        if (err<0) return err;
-    }
-
-    err=recv_char(m_socket,&CmdResult->Status);
-    if (err<0) return err;
-
-    err=recv_char(m_socket,&tc);
-    if (err<0) return err;
-    CmdResult->SenseLen=tc;
-
-    if (CmdResult->SenseLen>sizeof(CmdResult->SenseData))
-    {
-        return DRIVEIO_TIPS_ERROR(ERANGE);
-    }
-
-    err=recv_data(m_socket,CmdResult->SenseData,CmdResult->SenseLen);
-    if (err<0) return err;
-
-    return 0;
-}
-#endif // TIPS_CLIENT_ENABLE_V0_PROTOCOL
 
 int CTIPSClient::ExecV1(const ScsiCmd* Cmd,ScsiCmdResponse *CmdResult)
 {

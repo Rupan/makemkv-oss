@@ -20,8 +20,10 @@
 extern "C" {
 #endif
 
+#ifndef _SSIZE_T_DEFINED
 #define _SSIZE_T_DEFINED
 typedef intptr_t ssize_t;
+#endif
 
 typedef uint16_t uid_t;
 typedef uint64_t useconds_t;

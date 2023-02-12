@@ -1,7 +1,7 @@
 /*
     libDriveIo - MMC drive interrogation library
 
-    Copyright (C) 2007-2022 GuinpinSoft inc <libdriveio@makemkv.com>
+    Copyright (C) 2007-2023 GuinpinSoft inc <libdriveio@makemkv.com>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -37,127 +37,6 @@ using namespace LibDriveIo;
 static volatile bool g_Run = true;
 
 static const unsigned int MaxBufferSize = 128*1024;
-
-#ifdef TIPS_SERVER_ENABLE_V0_PROTOCOL
-static int ProcessCommandV0(unsigned char CdbLen,SOCKET s,DriveIoExecScsiCmdFunc ScsiProc,void* ScsiContext)
-{
-    int err;
-    ScsiCmd Cmd;
-    ScsiCmdResponse CmdResult;
-
-    static const unsigned int SmallBufferSize = 4096;
-
-    uint8_t s_buf_in[SmallBufferSize],s_buf_out[SmallBufferSize];
-    void *mem_in=NULL,*mem_out=NULL,*p_in;
-
-    unsigned long ti;
-
-    memset(&Cmd,0,sizeof(Cmd));
-    memset(&CmdResult,0,sizeof(CmdResult));
-
-    Cmd.CdbLen=CdbLen;
-    if (Cmd.CdbLen>sizeof(Cmd.Cdb)) return DRIVEIO_TIPS_ERROR(ERANGE);
-
-    err=recv_data(s,Cmd.Cdb,Cmd.CdbLen);
-    if (err<0) return err;
-
-    err=recv_int(s,&ti);
-    if (err<0) return err;
-    Cmd.InputLen=ti;
-
-    if (Cmd.InputLen>MaxBufferSize) return DRIVEIO_TIPS_ERROR(ERANGE);
-    if (Cmd.InputLen>SmallBufferSize)
-    {
-        Cmd.InputBuffer = p_in = mem_in = malloc(Cmd.InputLen);
-        if (NULL==mem_in) return DRIVEIO_ERR_NO_MEMORY;
-    } else {
-        Cmd.InputBuffer = p_in = s_buf_in;
-    }
-
-    err=recv_data(s,p_in,Cmd.InputLen);
-    if (err<0)
-    {
-        free(mem_in);
-        return err;
-    }
-
-    err=recv_int(s,&ti);
-    if (err<0)
-    {
-        free(mem_in);
-        return err;
-    }
-    Cmd.OutputLen=ti;
-
-    if (Cmd.OutputLen>MaxBufferSize)
-    {
-        free(mem_in);
-        return DRIVEIO_TIPS_ERROR(ERANGE);
-    }
-
-    if (Cmd.OutputLen>SmallBufferSize)
-    {
-        Cmd.OutputBuffer = mem_out = malloc(Cmd.OutputLen);
-        if (NULL==mem_out)
-        {
-            free(mem_in);
-            return DRIVEIO_ERR_NO_MEMORY;
-        }
-    } else {
-        Cmd.OutputBuffer = s_buf_out;
-    }
-
-    if ( (Cmd.InputLen!=0) && (Cmd.OutputLen!=0) )
-    {
-        free(mem_in);
-        free(mem_out);
-        return DRIVEIO_TIPS_ERROR(EINVAL);
-    }
-
-    Cmd.Timeout = 100;
-
-    err=(*ScsiProc)(ScsiContext,&Cmd,&CmdResult);
-    if (err!=0)
-    {
-        memset(&CmdResult,0,sizeof(CmdResult));
-        CmdResult.Status=0xff;
-    }
-
-    free(mem_in);
-    mem_in=NULL;
-
-    err=snd_int(s,CmdResult.Transferred);
-    if (err<0)
-    {
-        free(mem_out);
-        return err;
-    }
-
-    if (Cmd.OutputLen!=0)
-    {
-        err=snd_data(s,Cmd.OutputBuffer,CmdResult.Transferred);
-        if (err<0)
-        {
-            free(mem_out);
-            return err;
-        }
-    }
-
-    free(mem_out);
-    mem_out=NULL;
-
-    err=snd_char(s,CmdResult.Status);
-    if (err<0) return err;
-
-    err=snd_char(s,(unsigned char)CmdResult.SenseLen);
-    if (err<0) return err;
-
-    err=snd_data(s,CmdResult.SenseData,CmdResult.SenseLen);
-    if (err<0) return err;
-
-    return 0;
-}
-#endif // TIPS_SERVER_ENABLE_V0_PROTOCOL
 
 class v1_state_t
 {

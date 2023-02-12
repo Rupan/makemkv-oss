@@ -570,6 +570,8 @@ void vm_position_get(vm_t *vm, vm_position_t *position) {
   /* still already determined */
   if (position->still)
     return;
+
+#if 0
   /* This is a rough fix for some strange still situations on some strange DVDs.
    * There are discs (like the German "Back to the Future" RC2) where the only
    * indication of a still is a cell playback time higher than the time the frames
@@ -597,6 +599,7 @@ void vm_position_get(vm_t *vm, vm_position_t *position) {
     if (time > 0xff) time = 0xff;
     position->still = time;
   }
+#endif
 }
 
 void vm_get_next_cell(vm_t *vm) {
@@ -759,6 +762,8 @@ int vm_exec_cmd(vm_t *vm, vm_cmd_t *cmd) {
 
 static int process_command(vm_t *vm, link_t link_values) {
 
+  int counter=0, max_count = 2500;
+
   while(link_values.command != PlayThis) {
 
 #ifdef TRACE
@@ -771,6 +776,11 @@ static int process_command(vm_t *vm, link_t link_values) {
       Log3(vm, "Before printout ends.");
     }
 #endif
+
+    if (counter++ > max_count) {
+        vm->stopped = 1;
+        return 0;
+    }
 
     switch(link_values.command) {
 
