@@ -79,6 +79,11 @@ int     pwrite64(int fd,const void* buf,size_t count,uint64_t offset);
 int     ftruncate64(int fd,uint64_t offset);
 int     fsync(int fd);
 
+int     puts_utf8(char const* _Buffer);
+int     fputs_utf8(char const* _Buffer, FILE* _Stream);
+int     fprintf_utf8(FILE* const _Stream, char const* const _Format, ...);
+
+
 #ifdef __cplusplus
 };
 #endif
@@ -112,6 +117,10 @@ int     fsync(int fd);
 #define mkdir_utf8  mkdir
 #define rename_utf8 rename
 
+#define puts_utf8       puts
+#define fputs_utf8      fputs
+#define fprintf_utf8    fprintf
+
 #elif defined(_linux_)
 
 #define O_BINARY 0
@@ -124,6 +133,10 @@ int     fsync(int fd);
 #define rmdir_utf8  rmdir
 #define mkdir_utf8  mkdir
 #define rename_utf8 rename
+
+#define puts_utf8       puts
+#define fputs_utf8      fputs
+#define fprintf_utf8    fprintf
 
 #endif
 

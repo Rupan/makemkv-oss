@@ -67,7 +67,7 @@ bool KaxCues::AddBlockGroup(const KaxBlockGroup & BlockRef)
 bool KaxCues::AddBlockBlob(const KaxBlockBlob & BlockReference)
 {
   // Do not add the element if it's already present.
-  bool present = std::any_of(myTempReferences.begin(), myTempReferences.end(),
+  bool present = stl::any_of(myTempReferences.begin(), myTempReferences.end(),
     [&](const KaxBlockBlob *myTempReference) { return myTempReference == &BlockReference; });
   if (present) {
     return true;
@@ -80,7 +80,7 @@ bool KaxCues::AddBlockBlob(const KaxBlockBlob & BlockReference)
 void KaxCues::PositionSet(const KaxBlockBlob & BlockReference)
 {
   // look for the element in the temporary references
-  auto it = std::find_if(myTempReferences.begin(), myTempReferences.end(),
+  auto it = stl::find_if(myTempReferences.begin(), myTempReferences.end(),
     [&](const KaxBlockBlob *myTempReference){ return myTempReference == &BlockReference; });
 
   if (it != myTempReferences.end()) {
@@ -94,7 +94,7 @@ void KaxCues::PositionSet(const KaxBlockBlob & BlockReference)
 void KaxCues::PositionSet(const KaxBlockGroup & BlockRef)
 {
   // look for the element in the temporary references
-  auto it = std::find_if(myTempReferences.begin(), myTempReferences.end(),
+  auto it = stl::find_if(myTempReferences.begin(), myTempReferences.end(),
     [&](const KaxBlockBlob *myTempReference)
       { const KaxInternalBlock &refTmp = *myTempReference;
         return refTmp.GlobalTimecode() == BlockRef.GlobalTimecode()

@@ -81,7 +81,7 @@ DECLARE_MKX_MASTER(KaxCues)
     }
 
   protected:
-    std::vector<const KaxBlockBlob *> myTempReferences;
+    stl::vector<const KaxBlockBlob *> myTempReferences;
     bool   bGlobalTimecodeScaleIsSet;
     uint64 mGlobalTimecodeScale;
 };

@@ -18,18 +18,14 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
-#ifndef LGPL_STL_H_INCLUDED
-#define LGPL_STL_H_INCLUDED
+#ifndef LGPL_STL_STLSORT_H_INCLUDED
+#define LGPL_STL_STLSORT_H_INCLUDED
 
-#include <string.h>
-#include <memory>
 #include <algorithm>
-#include <exception>
-#include <vector>
-#include <map>
-#include <stdexcept>
-#include <limits>
 
-#define stl std
+template <class iterator, class T> inline void stl_sort(iterator begin, iterator end, bool(*comp)(const T* left, const T* right))
+{
+    std:sort(begin,end,comp);
+}
 
-#endif // LGPL_STL_H_INCLUDED
+#endif // LGPL_STL_STLSORT_H_INCLUDED

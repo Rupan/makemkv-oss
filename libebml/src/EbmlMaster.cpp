@@ -36,6 +36,7 @@
 
 #include <lgpl/cassert>
 #include <lgpl/stl.h>
+#include <lgpl/stlsort.h>
 
 #include "ebml/EbmlMaster.h"
 #include "ebml/EbmlStream.h"
@@ -264,7 +265,7 @@ std::vector<std::string> EbmlMaster::FindAllMissingElements()
 
 EbmlElement *EbmlMaster::FindElt(const EbmlCallbacks & Callbacks) const
 {
-  auto it = std::find_if(ElementList.begin(), ElementList.end(), [&](const EbmlElement *Element)
+  auto it = stl::find_if(ElementList.begin(), ElementList.end(), [&](const EbmlElement *Element)
     { return EbmlId(*Element) == EBML_INFO_ID(Callbacks); });
 
   return it != ElementList.end() ? *it : nullptr;
@@ -272,7 +273,7 @@ EbmlElement *EbmlMaster::FindElt(const EbmlCallbacks & Callbacks) const
 
 EbmlElement *EbmlMaster::FindFirstElt(const EbmlCallbacks & Callbacks, bool bCreateIfNull)
 {
-  auto it = std::find_if(ElementList.begin(), ElementList.end(), [&](const EbmlElement *Element)
+  auto it = stl::find_if(ElementList.begin(), ElementList.end(), [&](const EbmlElement *Element)
     { return Element && EbmlId(*Element) == EBML_INFO_ID(Callbacks); });
 
   if (it != ElementList.end())
@@ -296,7 +297,7 @@ EbmlElement *EbmlMaster::FindFirstElt(const EbmlCallbacks & Callbacks, bool bCre
 
 EbmlElement *EbmlMaster::FindFirstElt(const EbmlCallbacks & Callbacks) const
 {
-  auto it = std::find_if(ElementList.begin(), ElementList.end(), [&](const EbmlElement *Element)
+  auto it = stl::find_if(ElementList.begin(), ElementList.end(), [&](const EbmlElement *Element)
     { return EbmlId(*Element) == EBML_INFO_ID(Callbacks); });
 
   return it != ElementList.end() ? *it : nullptr;
@@ -380,7 +381,7 @@ EbmlElement *EbmlMaster::AddNewElt(const EbmlCallbacks & Callbacks)
 
 void EbmlMaster::Sort()
 {
-  std::sort(ElementList.begin(), ElementList.end(), EbmlElement::CompareElements);
+  stl_sort(ElementList.begin(), ElementList.end(), EbmlElement::CompareElements);
 }
 
 /*!

@@ -70,7 +70,7 @@ KaxSeek * KaxSeekHead::FindFirstOf(const EbmlCallbacks & Callbacks) const
   while (aElt != nullptr) {
     KaxSeekID * aId = nullptr;
     EBML_MASTER_ITERATOR Itr;
-    auto it = std::find_if(aElt->begin(), aElt->end(), [&](EbmlElement *Elt)
+    auto it = stl::find_if(aElt->begin(), aElt->end(), [&](EbmlElement *Elt)
       { return (EbmlId(*Elt) == EBML_ID(KaxSeekID)); });
     if (it != aElt->end()) {
       aId = static_cast<KaxSeekID*>(*it);

@@ -43,10 +43,10 @@
 #include "EbmlElement.h"
 #include "EbmlCrc32.h"
 
-#define EBML_MASTER_ITERATOR  std::vector<EbmlElement *>::iterator
-#define EBML_MASTER_CONST_ITERATOR  std::vector<EbmlElement *>::const_iterator
-#define EBML_MASTER_RITERATOR std::vector<EbmlElement *>::reverse_iterator
-#define EBML_MASTER_CONST_RITERATOR std::vector<EbmlElement *>::const_reverse_iterator
+#define EBML_MASTER_ITERATOR  stl::vector<EbmlElement *>::iterator
+#define EBML_MASTER_CONST_ITERATOR  stl::vector<EbmlElement *>::const_iterator
+#define EBML_MASTER_RITERATOR stl::vector<EbmlElement *>::reverse_iterator
+#define EBML_MASTER_CONST_RITERATOR stl::vector<EbmlElement *>::const_reverse_iterator
 
 START_LIBEBML_NAMESPACE
 
@@ -125,8 +125,8 @@ class EBML_DLL_API EbmlMaster : public EbmlElement {
     void Sort();
 
     size_t ListSize() const {return ElementList.size();}
-    std::vector<EbmlElement *> const &GetElementList() const {return ElementList;}
-    std::vector<EbmlElement *> &GetElementList() {return ElementList;}
+    stl::vector<EbmlElement *> const &GetElementList() const {return ElementList;}
+    stl::vector<EbmlElement *> &GetElementList() {return ElementList;}
 
         inline EBML_MASTER_ITERATOR begin() {return ElementList.begin();}
         inline EBML_MASTER_ITERATOR end() {return ElementList.end();}
@@ -187,7 +187,7 @@ class EBML_DLL_API EbmlMaster : public EbmlElement {
 #else
     protected:
 #endif
-    std::vector<EbmlElement *> ElementList;
+    stl::vector<EbmlElement *> ElementList;
 
     const EbmlSemanticContext & Context;
 

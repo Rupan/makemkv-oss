@@ -136,7 +136,7 @@ DECLARE_MKX_MASTER_CONS(KaxCluster)
 
   protected:
     KaxBlockBlob     * currentNewBlob;
-    std::vector<KaxBlockBlob*> Blobs;
+    stl::vector<KaxBlockBlob*> Blobs;
     KaxBlockGroup    * currentNewBlock;
     const KaxSegment * ParentSegment;
 

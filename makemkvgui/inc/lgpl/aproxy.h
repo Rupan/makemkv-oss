@@ -15,10 +15,6 @@
 #include <lgpl/stl.h>
 #include <lgpl/utf8.h>
 
-#ifndef APROXY_STD
-#define APROXY_STD std
-#endif
-
 typedef uint16_t    utf16_t;
 typedef char        utf8_t;
 
@@ -189,8 +185,8 @@ class AP_UiTitle : public AP_UiItem
     friend class CGUIApClient;
 private:
     AP_UiItem               m_ChaptersContainer;
-    APROXY_STD::vector<AP_UiItem>  m_Tracks;
-    APROXY_STD::vector<AP_UiItem>  m_Chapters;
+    stl::vector<AP_UiItem>  m_Tracks;
+    stl::vector<AP_UiItem>  m_Chapters;
 public:
     unsigned int GetTrackCount()
     {
@@ -218,7 +214,7 @@ class AP_UiTitleCollection : public AP_UiItem
 {
     friend class CGUIApClient;
 private:
-    APROXY_STD::vector<AP_UiTitle> m_Titles;
+    stl::vector<AP_UiTitle> m_Titles;
 public:
     bool        m_Updated;
 public:

@@ -196,7 +196,7 @@ class CChapters
 {
 private:
     KaxChapters         m_Chapters;
-    std::vector<KaxChapterAtom*> m_Atoms;
+    stl::vector<KaxChapterAtom*> m_Atoms;
     unsigned int        m_RealCount;
     bool                m_DoRender;
     IMkvTitleInfo*      m_TitleInfo;
@@ -583,8 +583,8 @@ static bool MkvCreateFileInternal(IOCallback &File,IMkvTrack *Input,IMkvTitleInf
     // tracks
     KaxTracks & MyTracks = GetChild<KaxTracks>(FileSegment);
 
-    std::vector<MyMkvTrackInfo> track_info;
-    std::vector<KaxTrackEntry*> tracks;
+    stl::vector<MyMkvTrackInfo> track_info;
+    stl::vector<KaxTrackEntry*> tracks;
 
     track_info.resize(Input->MkvGetStreamCount());
     tracks.resize(Input->MkvGetStreamCount());

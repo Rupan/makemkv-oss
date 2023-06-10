@@ -268,8 +268,8 @@ class MATROSKA_DLL_API KaxInternalBlock : public EbmlBinary {
     uint64 ClusterPosition() const;
 
   protected:
-    std::vector<DataBuffer *> myBuffers;
-    std::vector<int32>        SizeList;
+    stl::vector<DataBuffer *> myBuffers;
+    stl::vector<int32>        SizeList;
     uint64     Timecode; // temporary timecode of the first frame, non scaled
     int16      LocalTimecode;
     bool       bLocalTimecodeUsed;
